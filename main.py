@@ -7,7 +7,7 @@ from datetime import datetime
 # import os
 
 # version number
-version = "1.1"
+version = "1.2"
 
 
 # Function to update the time displayed in the label
@@ -80,7 +80,7 @@ def load_texts():
 def update_last_entries(new_entry):
     last_entries.append(new_entry)
     if len(last_entries) > 5:
-        last_entries.pop(0)  # Keep only the last 5 entries
+        last_entries.pop(0)
     last_entries_text.set("\n".join(last_entries))
 
 # Function to handle key press events
@@ -180,6 +180,11 @@ last_entries = []
 
 # Bind key press events to the corresponding functions
 window.bind("<Key>", on_key_press)
+
+# Add a footer with version, copyright, and documentation link
+footer_text = f"QuickEDL v{version} | © 2024 Eric Kirchheim | https://github.com/punkerschaf"
+footer_label = tk.Label(window, text=footer_text, font=("Helvetica", 12), fg="gray")
+footer_label.pack(side="bottom", pady=5)
 
 # Start the main loop
 window.mainloop()
