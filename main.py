@@ -1,10 +1,13 @@
+# QuickEDL
+# 2024 / Eric Kirchheim (punkerschaf)
+
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, simpledialog
 from datetime import datetime
 # import os
 
 # version number
-version = "1.0"
+version = "1.1"
 
 
 # Function to update the time displayed in the label
@@ -24,7 +27,6 @@ def create_new_file():
     if file_path:
         with open(file_path, 'w') as file:
             file.write("File created on " + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
-        # Display the file path and name of the EDL file
         file_label.config(text=f"EDL file created: {file_path}")
 
 # Function to show error message if no file is created
@@ -92,18 +94,33 @@ def on_key_press(event):
                 add_separator()  # Separator for key '0'
             elif 1 <= key_num <= 9:
                 add_to_file(key_num - 1)  # Corresponding button for keys 1-9
+        elif event.keysym == "space":
+            add_with_popup()  # Trigger the pop-up entry for spacebar
 
 # Function to remove focus only when clicking outside of text fields
 def remove_focus(event):
     widget = event.widget
-    # Remove focus only if the click is not inside a text entry
     if widget not in text_entries:
         window.focus()
+
+# Function to handle the pop-up entry after adding an entry with a timestamp
+def add_with_popup():
+    if file_path:
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        entry = f"{timestamp} - "
+        text_input = simpledialog.askstring("Input", "Enter your text:")
+        if text_input:
+            entry += text_input
+            with open(file_path, 'a') as file:
+                file.write(entry + "\n")
+            update_last_entries(entry)
+    else:
+        show_error()
 
 # Create the window
 window = tk.Tk()
 window.title(f"QuickEDL v{version}")
-window.geometry("400x700")
+window.geometry("400x750")
 
 # Bind click events to remove focus when clicking outside of text fields
 window.bind("<Button-1>", remove_focus)
@@ -144,9 +161,13 @@ for i in range(9):
     button.pack(side="right")
     buttons.append(button)
 
-# Button 10 for adding a separator
-button_10 = tk.Button(window, text="Button 10 (Separator)", command=add_separator)
-button_10.pack(pady=10)
+# Additional button to add a timestamped entry with a pop-up input
+popup_button = tk.Button(window, text="Button 10 (Add with Popup)", command=add_with_popup)
+popup_button.pack(pady=10)
+
+# Button for adding a separator line
+button_11 = tk.Button(window, text="Button 11 (Separator)", command=add_separator)
+button_11.pack(pady=10)
 
 # Area to display the last 5 entries
 last_entries_text = tk.StringVar()
