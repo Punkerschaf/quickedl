@@ -9,7 +9,7 @@ from datetime import datetime
 from export_cmx import export_cmx
 
 # version number
-version = "1.2"
+version = "1.3"
 
 
 # Function to update the time displayed in the label
