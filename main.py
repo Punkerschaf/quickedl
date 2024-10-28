@@ -6,6 +6,8 @@ from tkinter import filedialog, messagebox, simpledialog
 from datetime import datetime
 # import os
 
+from export_cmx import export_cmx
+
 # version number
 version = "1.2"
 
@@ -131,6 +133,10 @@ save_button.pack(pady=5)
 
 load_button = tk.Button(window, text="Load Texts", command=load_texts)
 load_button.pack(pady=5)
+
+# Button for exporting to CMX 3600 format
+export_button = tk.Button(window, text="Export CMX", command=lambda: export_cmx(file_path))
+export_button.pack(pady=5)
 
 # Display the current time
 time_label = tk.Label(window, text="", font=("Helvetica", 24))
