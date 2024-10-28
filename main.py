@@ -128,20 +128,13 @@ window.geometry("400x900")
 window.bind("<Button-1>", remove_focus)
 
 # Buttons to save and load the text field content
-save_button = tk.Button(window, text="Save Texts", command=save_texts)
-save_button.pack(pady=5)
+frame_saveloadtext = tk.Frame(window)
+frame_saveloadtext.pack(pady=5)
+save_button = tk.Button(frame_saveloadtext, text="Save Texts", command=save_texts)
+save_button.pack(side="left", padx=10)
 
-load_button = tk.Button(window, text="Load Texts", command=load_texts)
-load_button.pack(pady=5)
-
-# Button for exporting to CMX 3600 format
-export_button = tk.Button(window, text="Export CMX", command=lambda: export_cmx(file_path))
-export_button.pack(pady=5)
-
-# Display the current time
-time_label = tk.Label(window, text="", font=("Helvetica", 24))
-time_label.pack(pady=10)
-update_time()  # Start the time display
+load_button = tk.Button(frame_saveloadtext, text="Load Texts", command=load_texts)
+load_button.pack(side="right", padx=10)
 
 # Button to create a new file
 file_path = None
@@ -151,6 +144,15 @@ create_button.pack(pady=10)
 # Label to display the file path and name
 file_label = tk.Label(window, text="")
 file_label.pack(pady=5)
+
+# Button for exporting to CMX 3600 format
+export_button = tk.Button(window, text="Export CMX", command=lambda: export_cmx(file_path))
+export_button.pack(pady=5)
+
+# Display the current time
+time_label = tk.Label(window, text="", font=("Helvetica", 30))
+time_label.pack(pady=10)
+update_time()  # Start the time display
 
 # Create 9 buttons and corresponding text fields
 text_entries = []
