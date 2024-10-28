@@ -122,7 +122,7 @@ def add_with_popup():
 # Create the window
 window = tk.Tk()
 window.title(f"QuickEDL v{version}")
-window.geometry("400x750")
+window.geometry("400x900")
 
 # Bind click events to remove focus when clicking outside of text fields
 window.bind("<Button-1>", remove_focus)
