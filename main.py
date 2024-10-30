@@ -11,7 +11,6 @@ from export_cmx import export_cmx
 # version number
 version = "1.3"
 
-
 # Function to update the time displayed in the label
 def update_time():
     current_time = datetime.now().strftime("%H:%M:%S")
@@ -30,6 +29,13 @@ def create_new_file():
         with open(file_path, 'w') as file:
             file.write("File created on " + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
         file_label.config(text=f"EDL file created: {file_path}")
+
+def load_file():
+    global file_path
+    file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
+    if file_path:
+        with open(file_path) as file:
+            file_label.config(text=f"EDL file loaded: {file_path}")
 
 # Function to show error message if no file is created
 def show_error():
@@ -130,16 +136,23 @@ window.bind("<Button-1>", remove_focus)
 # Buttons to save and load the text field content
 frame_saveloadtext = tk.Frame(window)
 frame_saveloadtext.pack(pady=5)
+
 save_button = tk.Button(frame_saveloadtext, text="Save Texts", command=save_texts)
 save_button.pack(side="left", padx=10)
 
 load_button = tk.Button(frame_saveloadtext, text="Load Texts", command=load_texts)
 load_button.pack(side="right", padx=10)
 
-# Button to create a new file
+# Button to load or create a new file
 file_path = None
-create_button = tk.Button(window, text="Create New File", command=create_new_file)
-create_button.pack(pady=10)
+
+frame_loadcreatefile = tk.Frame(window)
+frame_loadcreatefile.pack(pady=5)
+
+create_button = tk.Button(frame_loadcreatefile, text="Load File", command=load_file)
+create_button.pack(side="left", padx=10)
+create_button = tk.Button(frame_loadcreatefile, text="Create New File", command=create_new_file)
+create_button.pack(side="right", padx=10)
 
 # Label to display the file path and name
 file_label = tk.Label(window, text="")
