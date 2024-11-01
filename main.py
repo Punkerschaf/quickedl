@@ -9,10 +9,11 @@ from datetime import datetime
 from export_cmx import export_cmx
 
 # version number
-version = "1.3"
+version = "1.3.1"
 
-""" MERGE LIST
-- fokus indicator
+"""
+MERGE LIST
+.1) fokus indicator
 """
 
 # Function to update the time displayed in the label
