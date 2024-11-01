@@ -11,6 +11,10 @@ from export_cmx import export_cmx
 # version number
 version = "1.3"
 
+""" MERGE LIST
+- fokus indicator
+"""
+
 # Function to update the time displayed in the label
 def update_time():
     current_time = datetime.now().strftime("%H:%M:%S")
@@ -125,10 +129,27 @@ def add_with_popup():
     else:
         show_error()
 
+# Function to remove focus only when clicking outside of text fields and update hotkey indicator
+def remove_focus(event):
+    widget = event.widget
+    if widget not in text_entries:
+        window.focus()
+        update_hotkey_indicator()  # Refresh indicator when focus shifts to window
+
+# Function to update the hotkey indicator based on current focus
+def update_hotkey_indicator():
+    focused_widget = window.focus_get()
+    if focused_widget not in text_entries and window.focus_displayof() is not None:
+        hotkey_status.config(text="hotkeys active", bg="red", fg="black")
+    else:
+        hotkey_status.config(text="hotkeys blocked", bg=default_bg_color, fg="black")
+
+
 # Create the window
 window = tk.Tk()
 window.title(f"QuickEDL v{version}")
 window.geometry("400x900")
+default_bg_color = window.cget("bg")
 
 # Bind click events to remove focus when clicking outside of text fields
 window.bind("<Button-1>", remove_focus)
@@ -163,9 +184,13 @@ export_button = tk.Button(window, text="Export CMX", command=lambda: export_cmx(
 export_button.pack(pady=5)
 
 # Display the current time
-time_label = tk.Label(window, text="", font=("Helvetica", 30))
-time_label.pack(pady=10)
+time_label = tk.Label(window, text="", font=("Courier New", 30))
+time_label.pack(pady=5)
 update_time()  # Start the time display
+
+# label for hotkey status
+hotkey_status = tk.Label(window, text="hotkeys blocked", font=("Courier New", 24), fg="black")
+hotkey_status.pack(pady=5)
 
 # Create 9 buttons and corresponding text fields
 text_entries = []
@@ -201,6 +226,11 @@ last_entries = []
 
 # Bind key press events to the corresponding functions
 window.bind("<Key>", on_key_press)
+window.bind("<Button-1>", remove_focus)
+# Update the function that binds the focus-in and focus-out events
+for entry in text_entries:
+    entry.bind("<FocusIn>", lambda e: update_hotkey_indicator())
+    entry.bind("<FocusOut>", lambda e: update_hotkey_indicator())
 
 # Add a footer with version, copyright, and documentation link
 footer_text = f"QuickEDL v{version} | © 2024 Eric Kirchheim | https://github.com/punkerschaf"
