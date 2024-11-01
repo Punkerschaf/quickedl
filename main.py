@@ -110,12 +110,6 @@ def on_key_press(event):
         elif event.keysym == "space":
             add_with_popup()  # Trigger the pop-up entry for spacebar
 
-# Function to remove focus only when clicking outside of text fields
-def remove_focus(event):
-    widget = event.widget
-    if widget not in text_entries:
-        window.focus()
-
 # Function to handle the pop-up entry after adding an entry with a timestamp
 def add_with_popup():
     if file_path:
