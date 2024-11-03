@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 from datetime import datetime
+import os
 
 # Frame rate constant for calculating frame timecodes
 FRAME_RATE = 50
@@ -44,3 +45,53 @@ def export_xml(file_path, output_path):
     tree.write(output_path, encoding="utf-8", xml_declaration=True)
 
     print(f"XML export completed and saved to {output_path}")
+
+def export_to_xml_with_static(file_path):
+    # Ensure the loaded file path exists
+    if not file_path:
+        raise ValueError("No EDL file has been loaded.")
+
+    # Read entries from the TXT file
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        
+    # Initialize the XML content by reading prefix
+    prefix_path = os.path.join(os.path.dirname(__file__), 'fcp7-prefix.xml')
+    with open(prefix_path, 'r') as prefix_file:
+        xml_content = prefix_file.read()
+
+    # Convert each entry in TXT to XML format and add to content
+    for line in lines:
+        try:
+            # Split line into text and time
+            text, time_str = line.rsplit(" - ", 1)
+            # Parse the time
+            time_obj = datetime.strptime(time_str.strip(), "%H:%M:%S")
+            start_frame = (time_obj.hour * 3600 + time_obj.minute * 60 + time_obj.second) * FRAME_RATE
+            end_frame = start_frame + FRAME_RATE  # Assuming each entry is 1 second long
+
+            # Create XML entry
+            entry = f"""
+            <marker>
+                <comment></comment>
+                <name>{text.strip()}</name>
+                <in>{start_frame}</in>
+                <out>{end_frame}</out>
+            </marker>
+            """
+            xml_content += entry
+        except ValueError:
+            # Skip lines without proper format
+            print(f"Skipping line due to formatting issue: {line.strip()}")
+
+    # Read suffix and add it to content
+    suffix_path = os.path.join(os.path.dirname(__file__), 'fcp7-suffix.xml')
+    with open(suffix_path, 'r') as suffix_file:
+        xml_content += suffix_file.read()
+
+    # Define output XML file path and write the full content
+    output_path = os.path.join(os.path.dirname(file_path), 'output.xml')
+    with open(output_path, 'w') as output_file:
+        output_file.write(xml_content)
+
+    print(f"XML export completed: {output_path}")
