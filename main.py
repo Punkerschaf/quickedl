@@ -7,6 +7,7 @@ from datetime import datetime
 # import os
 
 from export_cmx import export_cmx
+from export_fcp7 import export_to_xml_with_static
 
 # version number
 version = "1.3.1"
@@ -31,8 +32,8 @@ def create_new_file():
         filetypes=[("Text files", "*.txt")]
     )
     if file_path:
-        with open(file_path, 'w') as file:
-            file.write("File created on " + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
+#        with open(file_path, 'w') as file:
+#            file.write("File created on " + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
         file_label.config(text=f"EDL file created: {file_path}")
 
 def load_file():
@@ -177,6 +178,9 @@ file_label.pack(pady=5)
 # Button for exporting to CMX 3600 format
 export_button = tk.Button(window, text="Export CMX", command=lambda: export_cmx(file_path))
 export_button.pack(pady=5)
+
+exportfcp7_button = tk.Button(window, text="Export FCP7 XML (Alpha)", command=lambda: export_to_xml_with_static(file_path))
+exportfcp7_button.pack(pady=5)
 
 # Display the current time
 time_label = tk.Label(window, text="", font=("Courier New", 30))
