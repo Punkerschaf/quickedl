@@ -4,8 +4,8 @@
 		<uuid>e6d240fb-cb71-423a-89ab-9d68fd806b2e</uuid>
 		<duration>0</duration>
 		<rate>
-			<timebase>30</timebase>
-			<ntsc>TRUE</ntsc>
+			<timebase>50</timebase>
+			<ntsc>FALSE</ntsc>
 		</rate>
 		<name>Sample Sequence with Markers</name>
 		<media>
@@ -121,8 +121,8 @@
 		</media>
 		<timecode>
 			<rate>
-				<timebase>30</timebase>
-				<ntsc>TRUE</ntsc>
+				<timebase>50</timebase>
+				<ntsc>FALSE</ntsc>
 			</rate>
 			<string>00;00;00;00</string>
 			<frame>0</frame>
