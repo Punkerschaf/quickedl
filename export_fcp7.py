@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 from datetime import datetime
 import os
+from tkinter import messagebox
 
 # Frame rate constant for calculating frame timecodes
 FRAME_RATE = 50
@@ -45,53 +46,88 @@ def export_xml(file_path, output_path):
     tree.write(output_path, encoding="utf-8", xml_declaration=True)
 
     print(f"XML export completed and saved to {output_path}")
+    try:
+        messagebox.showinfo("Export", f"FCP7-XML exportiert nach {output_path}.")
 
 def export_to_xml_with_static(file_path):
-    # Ensure the loaded file path exists
+    entries = []
     if not file_path:
         raise ValueError("No EDL file has been loaded.")
 
     # Read entries from the TXT file
     with open(file_path, 'r') as file:
         lines = file.readlines()
-        
-    # Initialize the XML content by reading prefix
-    prefix_path = os.path.join(os.path.dirname(__file__), 'fcp7-prefix.xml')
-    with open(prefix_path, 'r') as prefix_file:
-        xml_content = prefix_file.read()
 
     # Convert each entry in TXT to XML format and add to content
     for line in lines:
-        try:
-            # Split line into text and time
-            text, time_str = line.rsplit(" - ", 1)
-            # Parse the time
-            time_obj = datetime.strptime(time_str.strip(), "%H:%M:%S")
-            start_frame = (time_obj.hour * 3600 + time_obj.minute * 60 + time_obj.second) * FRAME_RATE
-            end_frame = start_frame + FRAME_RATE  # Assuming each entry is 1 second long
+        # Check if the line has the expected delimiter
+        if " - " in line:
+            try:
+                # Split into timestamp and text
+                time_str, text = line.split(" - ", 1)
+                time_str = time_str.strip()
+                text = text.strip()
 
-            # Create XML entry
-            entry = f"""
-            <marker>
-                <comment></comment>
-                <name>{text.strip()}</name>
-                <in>{start_frame}</in>
-                <out>{end_frame}</out>
-            </marker>
-            """
-            xml_content += entry
-        except ValueError:
-            # Skip lines without proper format
-            print(f"Skipping line due to formatting issue: {line.strip()}")
+                # Ensure the timestamp matches the HH:MM:SS format
+                time_obj = datetime.strptime(time_str, "%H:%M:%S")
+                frames = (time_obj.hour * 3600 + time_obj.minute * 60 + time_obj.second) * 50
 
-    # Read suffix and add it to content
-    suffix_path = os.path.join(os.path.dirname(__file__), 'fcp7-suffix.xml')
-    with open(suffix_path, 'r') as suffix_file:
-        xml_content += suffix_file.read()
+                entry = {
+                    "name": text,
+                    "in": frames,
+                    "out": frames + 50,  # Example, can be adjusted
+                    "comment": ""
+                }
+                entries.append(entry)
+                
+            except ValueError:
+                print(f"Skipping line due to formatting issue: {line.strip()}")
+        else:
+            print(f"Skipping line due to missing delimiter: {line.strip()}")
 
     # Define output XML file path and write the full content
     output_path = os.path.join(os.path.dirname(file_path), 'output.xml')
-    with open(output_path, 'w') as output_file:
-        output_file.write(xml_content)
+    with open(output_path, "w") as output_file:
+
+        # Add prefix
+        output_file.write("""
+<?xml version="1.0" encoding="UTF-8"?>
+<xmeml version="4">
+    <sequence id="sequence-1" TL.SQAudioVisibleBase="0" TL.SQVideoVisibleBase="0" TL.SQVisibleBaseTime="0" TL.SQAVDividerPosition="0.5" TL.SQHideShyTracks="0" TL.SQHeaderWidth="184" Monitor.ProgramZoomOut="0" Monitor.ProgramZoomIn="0" TL.SQTimePerPixel="0.73210623869801095" MZ.EditLine="36072439603200" MZ.Sequence.PreviewFrameSizeHeight="1080" MZ.Sequence.PreviewFrameSizeWidth="1920" MZ.Sequence.AudioTimeDisplayFormat="200" MZ.Sequence.PreviewRenderingClassID="1297106761" MZ.Sequence.PreviewRenderingPresetCodec="1297107278" MZ.Sequence.PreviewRenderingPresetPath="EncoderPresets/SequencePreview/795454d9-d3c2-429d-9474-923ab13b7018/I-Frame Only MPEG.epr" MZ.Sequence.PreviewUseMaxRenderQuality="false" MZ.Sequence.PreviewUseMaxBitDepth="false" MZ.Sequence.EditingModeGUID="795454d9-d3c2-429d-9474-923ab13b7018" MZ.Sequence.VideoTimeDisplayFormat="102" MZ.WorkOutPoint="0" MZ.WorkInPoint="0" explodedTracks="true">
+        <uuid>e6d240fb-cb71-423a-89ab-9d68fd806b2e</uuid>
+        <duration>0</duration>
+        <rate>
+            <timebase>50</timebase>
+            <ntsc>FALSE</ntsc>
+        </rate>
+        <name>Sequence with Markers</name>
+        <timecode>
+            <rate>
+                <timebase>50</timebase>
+                <ntsc>FALSE</ntsc>
+            </rate>
+            <string>00;00;00;00</string>
+            <frame>0</frame>
+            <displayformat>DF</displayformat>
+        </timecode>
+        """
+        )
+        
+        # Add entries
+        for entry in entries:
+            output_file.write(
+                f"<marker>\n"
+                f"    <comment>{entry['comment']}</comment>\n"
+                f"    <name>{entry['name']}</name>\n"
+                f"    <in>{entry['in']}</in>\n"
+                f"    <out>{entry['out']}</out>\n"
+                f"</marker>\n")
+        # Add suffix
+        output_file.write("""
+	</sequence>
+</xmeml>
+
+        """
+        )
 
     print(f"XML export completed: {output_path}")
