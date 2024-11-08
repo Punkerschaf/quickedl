@@ -12,11 +12,6 @@ from export_fcp7 import export_to_xml_with_static
 # version number
 version = "1.3.1"
 
-"""
-MERGE LIST
-.1) fokus indicator
-"""
-
 # Function to update the time displayed in the label
 def update_time():
     current_time = datetime.now().strftime("%H:%M:%S")

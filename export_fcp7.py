@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as ET
 from datetime import datetime
 import os
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 
 # Frame rate constant for calculating frame timecodes
 FRAME_RATE = 50
@@ -12,6 +12,8 @@ def convert_time_to_frames(time_str):
     total_seconds = time_obj.hour * 3600 + time_obj.minute * 60 + time_obj.second
     return total_seconds * FRAME_RATE
 
+###########################################
+# Other method of parsing, currently unused
 def export_xml(file_path, output_path):
     # Calculate frame conversion factor for 50 fps
     frames_per_second = 50
@@ -51,6 +53,7 @@ def export_xml(file_path, output_path):
 
     except RuntimeError:
         print("Messagebox failed: FCP7-Export successful.}")
+###########################################
 
 def export_to_xml_with_static(file_path):
     entries = []
@@ -89,7 +92,16 @@ def export_to_xml_with_static(file_path):
             print(f"Skipping line due to missing delimiter: {line.strip()}")
 
     # Define output XML file path and write the full content
-    output_path = os.path.join(os.path.dirname(file_path), 'output.xml')
+    initial_dir = os.path.dirname(file_path)
+    default_filename = "FCP7 Markers.xml"
+
+    output_path = filedialog.asksaveasfilename(
+        initialdir=initial_dir,
+        initialfile=default_filename,
+        defaultextension=".xml",
+        filetypes=[("XML files", "*.xml")]
+    )
+
     with open(output_path, "w") as output_file:
 
         # Add prefix
@@ -132,5 +144,9 @@ def export_to_xml_with_static(file_path):
 
         """
         )
+    try:
+        messagebox.showinfo("Export", f"FCP7-XML exportiert nach {output_path}.")
 
+    except RuntimeError:
+        print("Messagebox failed: FCP7-Export successful.}")
     print(f"XML export completed: {output_path}")
