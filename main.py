@@ -27,15 +27,15 @@ def create_new_file():
         filetypes=[("Text files", "*.txt")]
     )
     if file_path:
-#        with open(file_path, 'w') as file:
-#            file.write("File created on " + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
+        with open(file_path, 'w') as file:
+            file.write("File created on " + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
         file_label.config(text=f"EDL file created: {file_path}")
 
 def load_file():
     global file_path
     file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
     if file_path:
-        with open(file_path) as file:
+        with open(file_path): # as file:
             file_label.config(text=f"EDL file loaded: {file_path}")
 
 # Function to show error message if no file is created
