@@ -81,7 +81,7 @@ def load_texts():
     if load_path:
         with open(load_path, 'r') as file:
             lines = file.readlines()
-            for i, line in enumerate(lines[:9]):  # Max 9 text fields
+            for i, line in enumerate(lines[:9]):
                 text_entries[i].delete(0, tk.END)
                 text_entries[i].insert(0, line.strip())
 

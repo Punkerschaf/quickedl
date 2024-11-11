@@ -27,3 +27,4 @@ Simple Python app with TKinter-UI for creating simple *Edit Decision Lists* (EDL
 - use tkinter.grid
 - Get export working
 - change to cooler GUI framework
+- adjustible timestamp offset
