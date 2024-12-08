@@ -4,7 +4,6 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog
 from datetime import datetime
-# import os
 
 from export_cmx import export_cmx
 from export_fcp7 import export_to_xml_with_static
@@ -170,11 +169,14 @@ create_button.pack(side="right", padx=10)
 file_label = tk.Label(window, text="")
 file_label.pack(pady=5)
 
-# Button for exporting to CMX 3600 format
-export_button = tk.Button(window, text="Export CMX", command=lambda: export_cmx(file_path))
+# Export-Buttons
+export_label = tk.Label(window, text="Export (experimental!)")
+export_label.pack(pady=5)
+
+export_button = tk.Button(window, text="CMX 3600 (.edl)", command=lambda: export_cmx(file_path))
 export_button.pack(pady=5)
 
-exportfcp7_button = tk.Button(window, text="Export FCP7 XML (Alpha)", command=lambda: export_to_xml_with_static(file_path))
+exportfcp7_button = tk.Button(window, text="FCP7 (.xml)", command=lambda: export_to_xml_with_static(file_path))
 exportfcp7_button.pack(pady=5)
 
 # Display the current time
