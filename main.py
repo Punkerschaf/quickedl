@@ -4,17 +4,12 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog
 from datetime import datetime
-# import os
 
 from export_cmx import export_cmx
+from export_fcp7 import export_to_xml_with_static
 
 # version number
-version = "1.3.1"
-
-"""
-MERGE LIST
-.1) fokus indicator
-"""
+version = "1.4-beta1"
 
 # Function to update the time displayed in the label
 def update_time():
@@ -39,7 +34,7 @@ def load_file():
     global file_path
     file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
     if file_path:
-        with open(file_path) as file:
+        with open(file_path): # as file:
             file_label.config(text=f"EDL file loaded: {file_path}")
 
 # Function to show error message if no file is created
@@ -85,7 +80,7 @@ def load_texts():
     if load_path:
         with open(load_path, 'r') as file:
             lines = file.readlines()
-            for i, line in enumerate(lines[:9]):  # Max 9 text fields
+            for i, line in enumerate(lines[:9]):
                 text_entries[i].delete(0, tk.END)
                 text_entries[i].insert(0, line.strip())
 
@@ -174,9 +169,15 @@ create_button.pack(side="right", padx=10)
 file_label = tk.Label(window, text="")
 file_label.pack(pady=5)
 
-# Button for exporting to CMX 3600 format
-export_button = tk.Button(window, text="Export CMX", command=lambda: export_cmx(file_path))
+# Export-Buttons
+export_label = tk.Label(window, text="Export (experimental!)")
+export_label.pack(pady=5)
+
+export_button = tk.Button(window, text="CMX 3600 (.edl)", command=lambda: export_cmx(file_path))
 export_button.pack(pady=5)
+
+exportfcp7_button = tk.Button(window, text="FCP7 (.xml)", command=lambda: export_to_xml_with_static(file_path))
+exportfcp7_button.pack(pady=5)
 
 # Display the current time
 time_label = tk.Label(window, text="", font=("Courier New", 30))
