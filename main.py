@@ -9,7 +9,7 @@ from export_cmx import export_cmx
 from export_fcp7 import export_to_xml_with_static
 
 # version number
-version = "1.3.1"
+version = "1.4-beta1"
 
 # Function to update the time displayed in the label
 def update_time():
