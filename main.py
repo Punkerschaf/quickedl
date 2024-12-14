@@ -65,6 +65,7 @@ class QuickEDLApp:
     def create_widgets(self):
         # Bind click to root for defocusing text fields
         self.root.bind("<Button-1>", self.defocus_text)
+        self.root.bind("<KeyPress>", self.on_key_press)
 
         # Time display
         self.time_label = ttk.Label(self.root, text="", font=("Courier New", 30))
@@ -119,7 +120,7 @@ class QuickEDLApp:
         self.root.after(100, self.check_window_focus)  # Repeat focus check
     
     def defocus_text(self, event):
-    # Check if click is outside text fields
+    # Check if click is in root
         if event.widget not in self.text_entries:
             self.root.focus_set()  # Remove focus from any widget
 
@@ -141,6 +142,19 @@ class QuickEDLApp:
         else:
             self.hotkeys_active = False
             self.hotkey_status.config(text="Hotkeys Inactive", foreground="red")
+    
+    def on_key_press(self, event):
+    # Check if any text field has focus
+        if self.root.focus_get() not in self.text_entries:
+            key = event.char
+            if key.isdigit():
+                key_num = int(key)
+                if key_num == 0:
+                    self.add_separator()  # Separator for key '0'
+                elif 1 <= key_num <= 9:
+                    self.add_to_file(key_num - 1)  # Corresponding button for keys 1-9
+            elif event.keysym == "space":
+                self.add_with_popup()  # Trigger the pop-up entry for spacebar
 
 #####################
 ### APP FUNCTIONS ###
