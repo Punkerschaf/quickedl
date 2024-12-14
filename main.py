@@ -97,14 +97,13 @@ class QuickEDLApp:
             button = ttk.Button(frame, text=f"{i + 1}", command=lambda i=i: self.add_to_file(i))
             button.pack(side=RIGHT)
 
+        # Special entries
         specialbuttons = ttk.Frame(self.root)
         specialbuttons.pack(pady=5)
 
-        # Separator button
         separator_button = ttk.Button(specialbuttons, text="Separator (0)", command=self.add_separator)
         separator_button.pack(side=LEFT, pady=10)
 
-        # Popup button
         popup_button = ttk.Button(specialbuttons, text="Popup (Space)", command=self.add_with_popup)
         popup_button.pack(side=RIGHT, padx=10, pady=10)
 
