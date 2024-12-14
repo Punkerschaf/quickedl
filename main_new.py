@@ -1,23 +1,16 @@
-# QuickEDL
-# 2024 / Eric Kirchheim (punkerschaf)
-
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from ttkbootstrap.dialogs import Messagebox
 from datetime import datetime
 from tkinter import filedialog
 
-# from export_cmx import export_cmx
-# from export_fcp7 import export_to_xml_with_static
-
-# version number
-version = "1.4-ttkbootstrap"
-
 class QuickEDLApp:
     def __init__(self, root):
         self.root = root
-        self.root.title(f"QuickEDL {version}")
+        self.root.title("QuickEDL v1.3.1")
         self.root.geometry("600x700")
+
+        # Set dark theme
         self.style = ttk.Style("darkly")
 
         # File path for current EDL
@@ -26,20 +19,15 @@ class QuickEDLApp:
 
         # Hotkey status
         self.hotkeys_active = True
-        self.entry_focused = False
-        self.window_focused = True
-        self.hotkey_status = None # init-Placeholder for label widget
 
-        # create window
+        # Create menu
         self.create_menu()
 
+        # Create widgets
         self.create_widgets()
 
         self.check_window_focus()
 
-#####################
-### GUI FUNCTIONS ###
-#####################
 
     def create_menu(self):
         menu_bar = ttk.Menu(self.root)
@@ -65,7 +53,6 @@ class QuickEDLApp:
     def create_widgets(self):
         # Bind click to root for defocusing text fields
         self.root.bind("<Button-1>", self.defocus_text)
-
         # Time display
         self.time_label = ttk.Label(self.root, text="", font=("Courier New", 30))
         self.time_label.pack(pady=10)
@@ -90,62 +77,52 @@ class QuickEDLApp:
             self.text_entries.append(entry)
 
             # Bind focus events to update hotkey status
-            entry.bind("<FocusIn>", lambda e: self.set_entry_focus(True))
-            entry.bind("<FocusOut>", lambda e: self.set_entry_focus(False))
+            entry.bind("<FocusIn>", lambda e: self.set_hotkeys_active(False))
+            entry.bind("<FocusOut>", lambda e: self.set_hotkeys_active(True))
 
-
-            button = ttk.Button(frame, text=f"{i + 1}", command=lambda i=i: self.add_to_file(i))
+            button = ttk.Button(frame, text=f"Button {i + 1}", command=lambda i=i: self.add_to_file(i))
             button.pack(side=RIGHT)
 
-        specialbuttons = ttk.Frame(self.root)
-        specialbuttons.pack(pady=5)
+        # Popup button
+        popup_button = ttk.Button(self.root, text="Button 10 (Add with Popup)", command=self.add_with_popup)
+        popup_button.pack(pady=10)
 
         # Separator button
-        separator_button = ttk.Button(specialbuttons, text="Separator (0)", command=self.add_separator)
-        separator_button.pack(side=LEFT, pady=10)
-
-        # Popup button
-        popup_button = ttk.Button(specialbuttons, text="Popup (Space)", command=self.add_with_popup)
-        popup_button.pack(side=RIGHT, padx=10, pady=10)
+        separator_button = ttk.Button(self.root, text="Button 11 (Separator)", command=self.add_separator)
+        separator_button.pack(pady=10)
 
         # Last entries display
         self.last_entries_text = ttk.StringVar(value="No entries yet.")
         last_entries_label = ttk.Label(self.root, textvariable=self.last_entries_text, justify=LEFT)
         last_entries_label.pack(pady=10)
 
-    def check_window_focus(self):
-    # Check if the entire window has focus and update hotkey status
-        self.window_focused = bool(self.root.focus_displayof())
-        self.update_hotkey_status()
-        self.root.after(100, self.check_window_focus)  # Repeat focus check
-    
     def defocus_text(self, event):
-    # Check if click is outside text fields
+        # Check if click is outside text fields
         if event.widget not in self.text_entries:
             self.root.focus_set()  # Remove focus from any widget
+            self.set_hotkeys_active(True)
+    
+    def check_window_focus(self):
+        # Prüfen, ob das Fenster innerhalb des Betriebssystems den Fokus hat
+        if self.root.focus_displayof():
+            self.hotkeys_active = True
+            self.hotkey_status.config(text="Hotkeys Active", foreground="green")
+        else:
+            self.hotkeys_active = False
+            self.hotkey_status.config(text="Hotkeys Inactive", foreground="red")
+        # Alle 100 ms den Fokusstatus erneut prüfen
+        self.root.after(100, self.check_window_focus)
 
     def update_time(self):
         current_time = datetime.now().strftime("%H:%M:%S")
         self.time_label.config(text=current_time)
         self.root.after(1000, self.update_time)
 
-    def set_entry_focus(self, focused):
-    # Set the entry focus status and update hotkey status.
-        self.entry_focused = focused
-        self.update_hotkey_status()
-
-    def update_hotkey_status(self):
-    # Update the hotkey status based on window and entry focus.
-        if self.window_focused and not self.entry_focused:
-            self.hotkeys_active = True
-            self.hotkey_status.config(text="Hotkeys Active", foreground="green")
-        else:
-            self.hotkeys_active = False
-            self.hotkey_status.config(text="Hotkeys Inactive", foreground="red")
-
-#####################
-### APP FUNCTIONS ###
-#####################
+    def set_hotkeys_active(self, active):
+        self.hotkeys_active = active
+        status_text = "Hotkeys Active" if active else "Hotkeys Inactive"
+        status_color = "green" if active else "red"
+        self.hotkey_status.config(text=status_text, foreground=status_color)
 
     def create_new_file(self):
         self.file_path = filedialog.asksaveasfilename(
@@ -234,10 +211,6 @@ class QuickEDLApp:
     def export_fcp7(self):
         # Placeholder for FCP7 export
         Messagebox.show_info("Export FCP7", "Export FCP7 XML functionality is not implemented yet.")
-
-################
-### APP CALL ###
-################
 
 if __name__ == "__main__":
     root = ttk.Window(themename="darkly")
