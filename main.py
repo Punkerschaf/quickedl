@@ -32,9 +32,7 @@ class QuickEDLApp:
 
         # create window
         self.create_menu()
-
         self.create_widgets()
-
         self.check_window_focus()
 
 #####################
@@ -212,12 +210,38 @@ class QuickEDLApp:
         if self.hotkeys_active and self.file_path:
             timestamp = datetime.now().strftime("%H:%M:%S")
             entry = f"{timestamp} - "
-            text_input = Messagebox.prompt("Input", "Enter your text:")
-            if text_input:
-                entry += text_input
-                with open(self.file_path, 'a') as file:
-                    file.write(entry + "\n")
-                self.update_last_entries(entry)
+
+            def get_input():
+                text_input = input_var.get()
+                popup.destroy()
+                if text_input:
+                    entry_popup = entry + text_input
+                    with open(self.file_path, 'a') as file:
+                        file.write(entry_popup + "\n")
+                    self.update_last_entries(entry_popup)
+            def cancel_popup():
+                popup.destroy()
+            
+            popup = ttk.Toplevel(self.root)
+            popup.title(f"Text for {timestamp}")
+            popup.geometry("400x150")
+            popup.resizable(False, False)
+ #           popup.bind("<Escape>", cancel_popup)
+ #           popup.bind("<Return>", get_input)
+
+
+            input_var = ttk.StringVar()
+            input_entry = ttk.Entry(popup, textvariable=input_var, width=50)
+            input_entry.pack(pady=5)
+            cancel_button = ttk.Button(popup, text="Cancel", command=cancel_popup)
+            cancel_button.pack(pady=10)
+            submit_button = ttk.Button(popup, text="Save", command=get_input)
+            submit_button.pack(side=RIGHT, pady=10)
+
+            input_entry.focus()
+            popup.transient(self.root)
+            self.root.wait_window(popup)
+        
         elif not self.hotkeys_active:
             Messagebox.show_error("Hotkeys are inactive. Please click outside text fields to enable.")
         else:
