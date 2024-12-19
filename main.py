@@ -260,11 +260,11 @@ class QuickEDLApp:
 
     def export_cmx(self):
         # Placeholder for CMX export
-        Messagebox.show_info("Export CMX", "Export CMX functionality is not implemented yet.")
+        Messagebox.show_info("Export CMX functionality is not implemented yet.")
 
     def export_fcp7(self):
         # Placeholder for FCP7 export
-        Messagebox.show_info("Export FCP7", "Export FCP7 XML functionality is not implemented yet.")
+        Messagebox.show_info("Export FCP7 XML functionality is not implemented yet.")
 
     def entry_error(self):
         if not self.hotkeys_active:
