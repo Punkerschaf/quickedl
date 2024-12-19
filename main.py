@@ -63,6 +63,7 @@ class QuickEDLApp:
     def create_widgets(self):
         # Bind click to root for defocusing text fields
         self.root.bind("<Button-1>", self.defocus_text)
+        self.root.bind("<Return>", self.defocus_text_by_key)
         self.root.bind("<KeyPress>", self.on_key_press)
 
         # File label
@@ -123,6 +124,10 @@ class QuickEDLApp:
     # Check if click is in root
         if event.widget not in self.text_entries:
             self.root.focus_set()  # Remove focus from any widget
+    
+    def defocus_text_by_key(self, event):
+        if self.window_focused and self.entry_focused:
+            self.root.focus_set()
 
     def update_time(self):
         current_time = datetime.now().strftime("%H:%M:%S")
