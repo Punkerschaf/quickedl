@@ -65,17 +65,19 @@ class QuickEDLApp:
         self.root.bind("<Button-1>", self.defocus_text)
         self.root.bind("<KeyPress>", self.on_key_press)
 
+        # File label
+        self.file_labelframe = ttk.Labelframe(self.root, bootstyle="warning", text="loaded File")
+        self.file_labelframe.pack(fill="x", padx=10, pady=10)
+        self.file_label = ttk.Label(self.file_labelframe, text="No EDL file loaded.")
+        self.file_label.pack(anchor="w", padx=5, pady=5)
+
         # Time display
         self.time_label = ttk.Label(self.root, text="", font=("Courier New", 30))
-        self.time_label.pack(pady=10)
+        self.time_label.pack(pady=5)
         self.update_time()
 
-        # File label
-        self.file_label = ttk.Label(self.root, text="No EDL file loaded.")
-        self.file_label.pack(pady=10)
-
         # Hotkey status label
-        self.hotkey_status = ttk.Label(self.root, text="Hotkeys Active", font=("Helvetica", 10), foreground="green")
+        self.hotkey_status = ttk.Label(self.root, text="Hotkeys Active", font=("Courier New", 20), bootstyle="success")
         self.hotkey_status.pack(pady=5)
 
         # Text entry fields
@@ -136,10 +138,10 @@ class QuickEDLApp:
     # Update the hotkey status based on window and entry focus.
         if self.window_focused and not self.entry_focused:
             self.hotkeys_active = True
-            self.hotkey_status.config(text="Hotkeys Active", foreground="green")
+            self.hotkey_status.config(text="Hotkeys Active", bootstyle="success")
         else:
             self.hotkeys_active = False
-            self.hotkey_status.config(text="Hotkeys Inactive", foreground="red")
+            self.hotkey_status.config(text="Hotkeys Inactive", bootstyle="inverse-danger")
     
     def on_key_press(self, event):
     # Check if any text field has focus
@@ -167,12 +169,14 @@ class QuickEDLApp:
         if self.file_path:
             with open(self.file_path, 'w') as file:
                 file.write("File created on " + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
-            self.file_label.config(text=f"EDL file created: {self.file_path}")
+            self.file_label.config(text=f"CREATED: {self.file_path}")
+            self.file_labelframe.config(bootstyle="success")
 
     def load_file(self):
         self.file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
         if self.file_path:
-            self.file_label.config(text=f"EDL file loaded: {self.file_path}")
+            self.file_label.config(text=f"{self.file_path}")
+            self.file_labelframe.config(bootstyle="success")
 
     def save_texts(self):
         save_path = filedialog.asksaveasfilename(
@@ -227,14 +231,16 @@ class QuickEDLApp:
             popup.bind("<Escape>", cancel_popup)
             popup.bind("<Return>", get_input)
 
-
             input_var = ttk.StringVar()
             input_entry = ttk.Entry(popup, textvariable=input_var, width=50)
             input_entry.pack(pady=5)
-            cancel_button = ttk.Button(popup, text="Cancel", command=cancel_popup)
-            cancel_button.pack(pady=10)
-            submit_button = ttk.Button(popup, text="Save", command=get_input)
-            submit_button.pack(side=RIGHT, pady=10)
+
+            buttonframe = ttk.Frame(popup)
+            buttonframe.pack(pady=10)
+            cancel_button = ttk.Button(buttonframe, bootstyle="danger", text="Cancel", command=cancel_popup)
+            cancel_button.pack(side=LEFT, padx=10, pady=10)
+            submit_button = ttk.Button(buttonframe, bootstyle="success", text="Save", command=get_input)
+            submit_button.pack(side=RIGHT, padx=10, pady=10)
 
             input_entry.focus()
             popup.transient(self.root)
