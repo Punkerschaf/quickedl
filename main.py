@@ -211,7 +211,7 @@ class QuickEDLApp:
             timestamp = datetime.now().strftime("%H:%M:%S")
             entry = f"{timestamp} - "
 
-            def get_input():
+            def get_input(event = None):
                 text_input = input_var.get()
                 popup.destroy()
                 if text_input:
@@ -219,15 +219,15 @@ class QuickEDLApp:
                     with open(self.file_path, 'a') as file:
                         file.write(entry_popup + "\n")
                     self.update_last_entries(entry_popup)
-            def cancel_popup():
+            def cancel_popup(event = None):
                 popup.destroy()
             
             popup = ttk.Toplevel(self.root)
             popup.title(f"Text for {timestamp}")
             popup.geometry("400x150")
             popup.resizable(False, False)
- #           popup.bind("<Escape>", cancel_popup)
- #           popup.bind("<Return>", get_input)
+            popup.bind("<Escape>", cancel_popup)
+            popup.bind("<Return>", get_input)
 
 
             input_var = ttk.StringVar()
