@@ -200,11 +200,9 @@ class QuickEDLApp:
             entry = f"{datetime.now().strftime('%H:%M:%S')} - {text}"
             with open(self.file_path, 'a') as file:
                 file.write(entry + "\n")
-            self.update_last_entries(entry)
-        elif not self.hotkeys_active:
-            Messagebox.show_error("Hotkeys are inactive. Please click outside text fields to enable.")
+            self.update_last_entries(entry)        
         else:
-            Messagebox.show_error("No EDL file has been created. Please create a file first.")
+            self.entry_error()
 
     def add_with_popup(self):
         if self.hotkeys_active and self.file_path:
@@ -242,21 +240,17 @@ class QuickEDLApp:
             popup.transient(self.root)
             self.root.wait_window(popup)
         
-        elif not self.hotkeys_active:
-            Messagebox.show_error("Hotkeys are inactive. Please click outside text fields to enable.")
         else:
-            Messagebox.show_error("No EDL file has been created. Please create a file first.")
+            self.entry_error()
 
     def add_separator(self):
         if self.hotkeys_active and self.file_path:
             separator = "-" * 40
             with open(self.file_path, 'a') as file:
                 file.write(separator + "\n")
-            self.update_last_entries(separator)
-        elif not self.hotkeys_active:
-            Messagebox.show_error("Hotkeys are inactive. Please click outside text fields to enable.")
+            self.update_last_entries(separator)        
         else:
-            Messagebox.show_error("No EDL file has been created. Please create a file first.")
+            self.entry_error()
 
     def update_last_entries(self, new_entry):
         self.last_entries.append(new_entry)
@@ -271,6 +265,12 @@ class QuickEDLApp:
     def export_fcp7(self):
         # Placeholder for FCP7 export
         Messagebox.show_info("Export FCP7", "Export FCP7 XML functionality is not implemented yet.")
+
+    def entry_error(self):
+        if not self.hotkeys_active:
+            Messagebox.show_error("Hotkeys are inactive. Please click outside text fields to enable.")
+        else:
+            Messagebox.show_error("No EDL file has been created. Please create a file first.")
 
 ################
 ### APP CALL ###
