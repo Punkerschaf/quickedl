@@ -71,7 +71,7 @@ class QuickEDLApp:
         self.root.bind("<KeyPress>", self.on_key_press)
 
         # File label
-        self.file_labelframe = ttk.Labelframe(self.root, bootstyle="warning", text="loaded File")
+        self.file_labelframe = ttk.Labelframe(self.root, bootstyle="warning", text=" loaded File ")
         self.file_labelframe.pack(fill="x", padx=10, pady=10)
         self.file_label = ttk.Label(self.file_labelframe, text="No EDL file loaded.")
         self.file_label.pack(anchor="w", padx=5, pady=5)
@@ -114,8 +114,10 @@ class QuickEDLApp:
         popup_button.pack(side=RIGHT, padx=10, pady=5)
 
         # Last entries display
+        self.entries_labelframe = ttk.Labelframe(self.root, bootstyle="primary", text=" last marker ")
+        self.entries_labelframe.pack(fill="x", padx=10, pady=10)
         self.last_entries_text = ttk.StringVar(value="No entries yet.")
-        last_entries_label = ttk.Label(self.root, textvariable=self.last_entries_text, justify=LEFT)
+        last_entries_label = ttk.Label(self.entries_labelframe, textvariable=self.last_entries_text, justify=LEFT)
         last_entries_label.pack(pady=5)
 
     def check_window_focus(self):
