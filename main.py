@@ -66,7 +66,6 @@ class QuickEDLApp:
         self.root.config(menu=menu_bar)
 
     def create_widgets(self):
-        # Bind click to root for defocusing text fields
         self.root.bind("<Button-1>", self.defocus_text)
         self.root.bind("<Return>", self.defocus_text_by_key)
         self.root.bind("<KeyPress>", self.on_key_press)
