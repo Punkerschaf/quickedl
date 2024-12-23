@@ -127,7 +127,7 @@ class QuickEDLApp:
     
     def defocus_text(self, event):
     # Check if click is in root
-        if event.widget and "#menu" not in self.text_entries:
+        if event.widget not in self.text_entries:
             self.root.focus_set()  # Remove focus from any widget
     
     def defocus_text_by_key(self, event):
