@@ -9,6 +9,7 @@ from tkinter import filedialog
 
 # from export_cmx import export_cmx
 # from export_fcp7 import export_to_xml_with_static
+from about import show_about
 
 # version number
 version = "1.4-ttkbootstrap"
@@ -17,7 +18,7 @@ class QuickEDLApp:
     def __init__(self, root):
         self.root = root
         self.root.title(f"QuickEDL {version}")
-        self.root.geometry("600x700")
+        self.root.geometry("400x700")
         self.style = ttk.Style("darkly")
 
         # File path for current EDL
@@ -42,10 +43,14 @@ class QuickEDLApp:
     def create_menu(self):
         menu_bar = ttk.Menu(self.root)
 
+        app_menu = ttk.Menu(menu_bar, tearoff=0)
+        app_menu.add_command(label="About", command=lambda: show_about(self, version=version))
+        app_menu.add_command(label="Exit", command=self.root.quit)
+        menu_bar.add_cascade(label="App", menu=app_menu)
+
         edl_menu = ttk.Menu(menu_bar, tearoff=0)
         edl_menu.add_command(label="New EDL", command=self.create_new_file)
         edl_menu.add_command(label="Open EDL", command=self.load_file)
-        edl_menu.add_command(label="Exit", command=self.root.quit)
         menu_bar.add_cascade(label="EDL", menu=edl_menu)
 
         texts_menu = ttk.Menu(menu_bar, tearoff=0)
@@ -87,7 +92,7 @@ class QuickEDLApp:
             frame = ttk.Frame(self.root)
             frame.pack(pady=5)
 
-            entry = ttk.Entry(frame, width=40)
+            entry = ttk.Entry(frame, width=30)
             entry.pack(side=LEFT, padx=10)
             self.text_entries.append(entry)
 
@@ -104,15 +109,15 @@ class QuickEDLApp:
         specialbuttons.pack(pady=5)
 
         separator_button = ttk.Button(specialbuttons, text="Separator (0)", command=self.add_separator)
-        separator_button.pack(side=LEFT, pady=10)
+        separator_button.pack(side=LEFT, pady=5)
 
         popup_button = ttk.Button(specialbuttons, text="Popup (Space)", command=self.add_with_popup)
-        popup_button.pack(side=RIGHT, padx=10, pady=10)
+        popup_button.pack(side=RIGHT, padx=10, pady=5)
 
         # Last entries display
         self.last_entries_text = ttk.StringVar(value="No entries yet.")
         last_entries_label = ttk.Label(self.root, textvariable=self.last_entries_text, justify=LEFT)
-        last_entries_label.pack(pady=10)
+        last_entries_label.pack(pady=5)
 
     def check_window_focus(self):
     # Check if the entire window has focus and update hotkey status
@@ -122,7 +127,7 @@ class QuickEDLApp:
     
     def defocus_text(self, event):
     # Check if click is in root
-        if event.widget not in self.text_entries:
+        if event.widget and "#menu" not in self.text_entries:
             self.root.focus_set()  # Remove focus from any widget
     
     def defocus_text_by_key(self, event):
