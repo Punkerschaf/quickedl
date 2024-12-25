@@ -10,6 +10,7 @@ from tkinter import filedialog
 # from export_cmx import export_cmx
 # from export_fcp7 import export_to_xml_with_static
 from about import show_about
+from random_entry import random_entry
 
 # version number
 version = "1.4-ttkbootstrap"
@@ -212,6 +213,8 @@ class QuickEDLApp:
     def add_to_file(self, index):
         if self.hotkeys_active and self.file_path:
             text = self.text_entries[index].get()
+            if not text:
+                text = random_entry(self)
             entry = f"{datetime.now().strftime('%H:%M:%S')} - {text}"
             with open(self.file_path, 'a') as file:
                 file.write(entry + "\n")
