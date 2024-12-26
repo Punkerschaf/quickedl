@@ -1,2 +1,2 @@
-# pyinstaller --onefile --icon ./quickedl_icon_1_mac.icns --name quickedl main.py
-pyinstaller --onefile --name quickedl main.py
+# LINUX:
+pyinstaller --onefile --noconsole --icon ./resources/quickedl_icon_1.png --name quickEDL main.py
