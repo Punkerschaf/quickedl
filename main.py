@@ -196,6 +196,10 @@ class QuickEDLApp:
         if self.file_path:
             self.file_label.config(text=f"{self.file_path}")
             self.file_labelframe.config(bootstyle="success")
+            with open(self.file_path, 'r') as file:
+                lines = file.readlines()
+                for line in lines:
+                    self.update_last_entries(line)
 
     def save_texts(self):
         save_path = filedialog.asksaveasfilename(
