@@ -122,10 +122,17 @@ class QuickEDLApp:
         last_entries_label.pack(pady=5)
 
     def check_window_focus(self):
-    # Check if the entire window has focus and update hotkey status
-        self.window_focused = bool(self.root.focus_displayof())
+        try:
+            focused_widget = self.root.focus_displayof()
+            widget_name = str(focused_widget) if focused_widget else ""
+            if widget_name and "#menu" not in widget_name:
+                self.window_focused = True
+            else:
+                self.window_focused = False
+        except KeyError:
+            self.window_focused = False
         self.update_hotkey_status()
-        self.root.after(100, self.check_window_focus)  # Repeat focus check
+        self.root.after(100, self.check_window_focus)
     
     def defocus_text(self, event):
     # Check if click is in root
