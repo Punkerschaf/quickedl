@@ -12,6 +12,7 @@ from pathlib import Path
 # from export_fcp7 import export_to_xml_with_static
 from about import show_about
 from random_entry import random_entry
+import settings
 
 # version number
 version = "2.0.0-dev"
@@ -26,6 +27,7 @@ class QuickEDLApp:
         # File path for current EDL
         self.file_path = None
         self.last_entries = []
+        self.settings_folder = None
 
         # Hotkey status
         self.hotkeys_active = True
@@ -180,6 +182,9 @@ class QuickEDLApp:
 ### APP FUNCTIONS ###
 #####################
 
+### FILE HANDLING ###
+#####################
+
     def create_new_file(self):
         self.file_path = filedialog.asksaveasfilename(
             defaultextension=".txt",
@@ -214,12 +219,18 @@ class QuickEDLApp:
 
     def load_texts(self):
         load_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
+        self.import_texts(load_path)
+
+    def import_texts(self, load_path):    
         if load_path:
             load_path = Path(load_path)
             lines = load_path.read_text().splitlines()
             for i, line in enumerate(lines[:9]):
                 self.text_entries[i].delete(0, END)
                 self.text_entries[i].insert(0, line.strip())
+
+### CORE FUNCTIONS ###
+######################
 
     def add_to_file(self, index):
         if self.hotkeys_active and self.file_path:
