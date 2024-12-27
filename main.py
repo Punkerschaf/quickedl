@@ -5,7 +5,7 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from ttkbootstrap.dialogs import Messagebox
 from datetime import datetime
-from tkinter import filedialog
+from tkinter import filedialog, StringVar
 from pathlib import Path
 
 # from export_cmx import export_cmx
@@ -16,6 +16,7 @@ import settings
 
 # version number
 version = "2.0.0-dev"
+debug = False
 
 class QuickEDLApp:
     def __init__(self, root):
@@ -28,6 +29,11 @@ class QuickEDLApp:
         self.file_path = None
         self.last_entries = []
         self.settings_folder = None
+        self.settings_folder_str = StringVar(value=str(self.settings_folder))
+
+        # settings variables
+        self.funny = False
+        self.default_edl_path = None
 
         # Hotkey status
         self.hotkeys_active = True
@@ -48,6 +54,7 @@ class QuickEDLApp:
         menu_bar = ttk.Menu(self.root)
 
         app_menu = ttk.Menu(menu_bar, tearoff=0)
+        app_menu.add_command(label="Settings", command=lambda: settings.show_settings_window(self))
         app_menu.add_command(label="About", command=lambda: show_about(self, version=version))
         app_menu.add_command(label="Exit", command=self.root.quit)
         menu_bar.add_cascade(label="App", menu=app_menu)
@@ -228,6 +235,19 @@ class QuickEDLApp:
             for i, line in enumerate(lines[:9]):
                 self.text_entries[i].delete(0, END)
                 self.text_entries[i].insert(0, line.strip())
+    
+    def load_settings(self):
+        self.settings_folder = settings.get_settings_folder()
+        self.settings_folder_str = StringVar(value=str(self.settings_folder))
+        if self.settings_folder.exists():
+            load_path = self.settings_folder / "texts.txt"
+            if load_path.exists():
+                self.import_texts(load_path)
+                print("Loaded texts from settings folder.")
+            else:
+                return
+        else:
+            print("No texts loaded.")
 
 ### CORE FUNCTIONS ###
 ######################
@@ -321,4 +341,5 @@ class QuickEDLApp:
 if __name__ == "__main__":
     root = ttk.Window(themename="darkly")
     app = QuickEDLApp(root)
+    app.load_settings()
     root.mainloop()
