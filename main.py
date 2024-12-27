@@ -6,6 +6,7 @@ from ttkbootstrap.constants import *
 from ttkbootstrap.dialogs import Messagebox
 from datetime import datetime
 from tkinter import filedialog
+from pathlib import Path
 
 # from export_cmx import export_cmx
 # from export_fcp7 import export_to_xml_with_static
@@ -208,18 +209,17 @@ class QuickEDLApp:
             filetypes=[("Text files", "*.txt")]
         )
         if save_path:
-            with open(save_path, 'w') as file:
-                for entry in self.text_entries:
-                    file.write(entry.get() + "\n")
+            save_path = Path(save_path)
+            save_path.write_text("\n".join(entry.get() for entry in self.text_entries) + "\n")
 
     def load_texts(self):
         load_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
         if load_path:
-            with open(load_path, 'r') as file:
-                lines = file.readlines()
-                for i, line in enumerate(lines[:9]):
-                    self.text_entries[i].delete(0, END)
-                    self.text_entries[i].insert(0, line.strip())
+            load_path = Path(load_path)
+            lines = load_path.read_text().splitlines()
+            for i, line in enumerate(lines[:9]):
+                self.text_entries[i].delete(0, END)
+                self.text_entries[i].insert(0, line.strip())
 
     def add_to_file(self, index):
         if self.hotkeys_active and self.file_path:
@@ -227,7 +227,7 @@ class QuickEDLApp:
             if not text:
                 text = random_entry(self)
             entry = f"{datetime.now().strftime('%H:%M:%S')} - {text}"
-            with open(self.file_path, 'a') as file:
+            with Path(self.file_path).open('a') as file:
                 file.write(entry + "\n")
             self.update_last_entries(entry)        
         else:
@@ -238,12 +238,12 @@ class QuickEDLApp:
             timestamp = datetime.now().strftime("%H:%M:%S")
             entry = f"{timestamp} - "
 
-            def get_input(event = None):
+            def get_input(event=None):
                 text_input = input_var.get()
                 popup.destroy()
                 if text_input:
                     entry_popup = entry + text_input
-                    with open(self.file_path, 'a') as file:
+                    with Path(self.file_path).open('a') as file:
                         file.write(entry_popup + "\n")
                     self.update_last_entries(entry_popup)
             def cancel_popup(event = None):
