@@ -14,7 +14,7 @@ from about import show_about
 from random_entry import random_entry
 
 # version number
-version = "1.4-ttkbootstrap"
+version = "2.0.0-dev"
 
 class QuickEDLApp:
     def __init__(self, root):
