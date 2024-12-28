@@ -3,7 +3,7 @@ from pathlib import Path
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from datetime import datetime
-from tkinter import filedialog, StringVar
+from tkinter import filedialog, StringVar, BooleanVar
 
 #######################
 ### SETTINGS FOLDER ###
@@ -66,7 +66,9 @@ def show_settings_window(app):
 # misc settings
     misc_frame = ttk.LabelFrame(settings_window, text=" misc ")
     misc_frame.pack(padx=10, pady=5, fill='x')
-    funny_toggle = ttk.Checkbutton(misc_frame, text="funny mode", bootstyle="success-square-toggle")
+    funny_var = BooleanVar(value=app.funny)
+    funny_toggle = ttk.Checkbutton(misc_frame, text="funny mode", bootstyle="success-square-toggle",
+                                   variable=funny_var, command=lambda: setattr(app, 'funny', funny_var.get()))
     funny_toggle.pack(pady=5)
 
 # close Button
