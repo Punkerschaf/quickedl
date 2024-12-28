@@ -18,11 +18,6 @@ def get_settings_folder():
         return None
         print("Error: Could not find settings folder")
 
-def folder_indicator_style(app):
-    if app.settings_folder.exists():
-        return "success"
-    else:
-        return "warning-outline"
 
 #######################
 ### Settings WINDOW ###
@@ -32,16 +27,21 @@ def show_settings_window(app):
     settings_window.title("QuickEDL: Settings")
     settings_window.geometry("400x500")
 
+    def update_folder_indicator(app, folder_indicator):
+        if app.settings_folder.exists():
+            folder_indicator.config(text="found", bootstyle="success")
+        else:
+            return
+
 # settings folder
     settings_folder_frame = ttk.LabelFrame(settings_window, text=" settings folder")
     settings_folder_frame.pack(padx= 10, pady=5, fill='x',)
     folder_label = ttk.Label(settings_folder_frame, textvariable=app.settings_folder_str, justify=LEFT)
-    folder_label.pack(padx=5, pady=5)
-    indicator_frame = ttk.Frame(settings_folder_frame)
-    indicator_frame.pack(anchor=W, pady=5)
-    folder_indicator = ttk.Button(indicator_frame, text="settings folder", state="active",
-                                  bootstyle=folder_indicator_style(app))
-    folder_indicator.pack(padx=5)
+    folder_label.pack(padx=5)
+    folder_indicator = ttk.Label(settings_folder_frame, text="not found", bootstyle="warning")
+    folder_indicator.pack()
+    update_folder_indicator(app, folder_indicator)
+
 
 # default edl path
     default_edl_frame = ttk.LabelFrame(settings_window, text=" default EDL path ")
