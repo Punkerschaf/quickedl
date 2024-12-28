@@ -4,6 +4,8 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from ttkbootstrap.dialogs import Messagebox
+from ttkbootstrap.toast import ToastNotification
+
 from datetime import datetime
 from tkinter import filedialog, StringVar
 from pathlib import Path
@@ -56,6 +58,7 @@ class QuickEDLApp:
         app_menu = ttk.Menu(menu_bar, tearoff=0)
         app_menu.add_command(label="Settings", command=lambda: settings.show_settings_window(self))
         app_menu.add_command(label="About", command=lambda: show_about(self, version=version))
+        app_menu.add_separator()
         app_menu.add_command(label="Exit", command=self.root.quit)
         menu_bar.add_cascade(label="App", menu=app_menu)
 
@@ -184,6 +187,16 @@ class QuickEDLApp:
                     self.add_to_file(key_num - 1)  # Corresponding button for keys 1-9
             elif event.keysym == "space":
                 self.add_with_popup()  # Trigger the pop-up entry for spacebar
+    
+    def toast(self, message):
+        toast = ToastNotification(
+            title="QuickEDL",
+            message=message,
+            duration=3000,
+            bootstyle="primary",
+            icon=""
+        )
+        toast.show_toast()
 
 #####################
 ### APP FUNCTIONS ###
@@ -245,6 +258,7 @@ class QuickEDLApp:
                 self.import_texts(load_path)
                 print("Loaded texts from settings folder.")
                 settings.load_yaml(self)
+                self.toast("Found and loaded settings.")
             else:
                 return
         else:
@@ -321,6 +335,9 @@ class QuickEDLApp:
             self.last_entries.pop(0)
         self.last_entries_text.set("\n".join(self.last_entries))
 
+### EXPORT ###
+##############
+
     def export_cmx(self):
         # Placeholder for CMX export
         Messagebox.show_info("Export CMX functionality is not implemented yet.")
@@ -328,6 +345,9 @@ class QuickEDLApp:
     def export_fcp7(self):
         # Placeholder for FCP7 export
         Messagebox.show_info("Export FCP7 XML functionality is not implemented yet.")
+
+### ERRORS ###
+##############
 
     def entry_error(self):
         if not self.hotkeys_active:
