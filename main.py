@@ -16,7 +16,6 @@ import settings
 
 # version number
 version = "2.0.0-dev"
-debug = False
 
 class QuickEDLApp:
     def __init__(self, root):
@@ -32,6 +31,7 @@ class QuickEDLApp:
         self.settings_folder_str = StringVar(value=str(self.settings_folder))
 
         # settings variables
+        self.debug = False
         self.funny = False
         self.default_edl_path = None
 
@@ -244,6 +244,7 @@ class QuickEDLApp:
             if load_path.exists():
                 self.import_texts(load_path)
                 print("Loaded texts from settings folder.")
+                settings.load_yaml(self)
             else:
                 return
         else:

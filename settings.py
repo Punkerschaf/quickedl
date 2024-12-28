@@ -1,4 +1,4 @@
-import os
+import yaml
 from pathlib import Path
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
@@ -18,6 +18,20 @@ def get_settings_folder():
         return None
         print("Error: Could not find settings folder")
 
+def load_yaml(app):
+    settings_file = app.settings_folder / "settings.yaml"
+    if settings_file.exists():
+        with settings_file.open('r') as file:
+            settings_data = yaml.safe_load(file)
+            app.debug = settings_data.get('debug', app.debug)
+            print("debug: ", app.debug)
+            app.funny = settings_data.get('funny', app.funny)
+            print("funny: ", app.funny)
+            app.default_edl_path = settings_data.get('default_edl_path', app.default_edl_path)
+            print("default_edl_path: ", app.default_edl_path)
+    else:
+        print("Error: Could not find settings file")
+        return
 
 #######################
 ### Settings WINDOW ###
