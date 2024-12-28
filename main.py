@@ -270,8 +270,10 @@ class QuickEDLApp:
     def add_to_file(self, index):
         if self.hotkeys_active and self.file_path:
             text = self.text_entries[index].get()
-            if not text:
+            if not text and self.funny:
                 text = random_entry(self)
+            elif not text and not self.funny:
+                text = f"Button {index +1}"
             entry = f"{datetime.now().strftime('%H:%M:%S')} - {text}"
             with Path(self.file_path).open('a') as file:
                 file.write(entry + "\n")
