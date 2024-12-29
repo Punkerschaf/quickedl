@@ -1,9 +1,8 @@
 import yaml
 from pathlib import Path
 import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
-from datetime import datetime
-from tkinter import filedialog, StringVar, BooleanVar
+from ttkbootstrap.constants import *  # noqa: F403
+from tkinter import BooleanVar
 
 #######################
 ### SETTINGS FOLDER ###
@@ -76,4 +75,4 @@ def show_settings_window(app):
     confirmation_frame.pack(pady=5)
     close_button = ttk.Button(confirmation_frame, text="Close")
     close_button.pack(side=RIGHT, padx=5)
-    close_button.bind("<Button-1>", lambda event: settings_window.destroy())
+    close_button.bind("<Button-1>", lambda: settings_window.destroy())
