@@ -57,7 +57,7 @@ class QuickEDLApp:
 
         app_menu = ttk.Menu(menu_bar, tearoff=0)
         app_menu.add_command(label="Settings", command=lambda: settings.show_settings_window(self))
-        app_menu.add_command(label="About", command=lambda: show_about(self, version=version))
+        app_menu.add_command(label="About", command=lambda: show_about(self, version))
         app_menu.add_separator()
         app_menu.add_command(label="Exit", command=self.root.quit)
         menu_bar.add_cascade(label="App", menu=app_menu)

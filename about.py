@@ -6,10 +6,10 @@ from PIL import Image, ImageTk
 def callback(url):
     webbrowser.open_new(url)
 
-def show_about(app_instance, version):
+def show_about(app, version):
     aboutscreen = ttk.Toplevel()
     aboutscreen.title("About QuickEDL")
-    aboutscreen.geometry("400x400")
+    aboutscreen.geometry("400x350")
     aboutscreen.resizable(False, False)
 
     def leave_about(self, event = None):
@@ -22,7 +22,6 @@ def show_about(app_instance, version):
     logo = Image.open(image_path)
     logo = logo.resize((150, 150))
     photo = ImageTk.PhotoImage(logo)
-
     logo_label = ttk.Label(aboutscreen, image=photo)
     logo_label.image = photo  # Keep a reference to avoid garbage collection
     logo_label.pack(pady=20)
