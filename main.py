@@ -18,7 +18,7 @@ import settings
 import utils
 
 # version number
-version = "2.0.0-dev"
+version = "2.0-dev"
 
 class QuickEDLApp:
     def __init__(self, root):
