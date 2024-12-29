@@ -15,6 +15,7 @@ from pathlib import Path
 from about import show_about
 from random_entry import random_entry
 import settings
+import utils
 
 # version number
 version = "2.0.0-dev"
@@ -69,7 +70,7 @@ class QuickEDLApp:
 
         texts_menu = ttk.Menu(menu_bar, tearoff=0)
         texts_menu.add_command(label="Save Texts", command=self.save_texts)
-        texts_menu.add_command(label="Load Texts", command=self.load_texts)
+        texts_menu.add_command(label="Load Texts", command=self.open_texts)
         menu_bar.add_cascade(label="Texts", menu=texts_menu)
 
         export_menu = ttk.Menu(menu_bar, tearoff=0)
@@ -237,7 +238,7 @@ class QuickEDLApp:
             save_path = Path(save_path)
             save_path.write_text("\n".join(entry.get() for entry in self.text_entries) + "\n")
 
-    def load_texts(self):
+    def open_texts(self):
         load_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
         self.import_texts(load_path)
 
@@ -248,6 +249,7 @@ class QuickEDLApp:
             for i, line in enumerate(lines[:9]):
                 self.text_entries[i].delete(0, END)
                 self.text_entries[i].insert(0, line.strip())
+            utils.debug(self.debug, f"Importet texts from {load_path}")
     
     def load_settings(self):
         self.settings_folder = settings.get_settings_folder()
@@ -256,9 +258,9 @@ class QuickEDLApp:
             load_path = self.settings_folder / "texts.txt"
             if load_path.exists():
                 self.import_texts(load_path)
-                print("Loaded texts from settings folder.")
                 settings.load_yaml(self)
                 self.toast("Found and loaded settings.")
+                utils.debug(self.debug, f"Imported texts and settings from {load_path}")
             else:
                 return
         else:
