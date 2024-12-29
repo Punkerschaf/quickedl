@@ -32,10 +32,10 @@ def show_about(app, version):
     label2 = ttk.Label(aboutscreen, text="© 2024, Eric Kirchheim")
     label2.pack()
 
-    urlQuickedl = "https://www.github.com/punkerschaf/quickedl"
+    urlgithub = "https://www.github.com/punkerschaf/quickedl"
     label3 = ttk.Label(aboutscreen, text=urlQuickedl, cursor="hand2")
     label3.pack()
-    label3.bind("<Button-1>", lambda e: callback(urlQuickedl))
+    label3.bind("<Button-1>", lambda e: callback(urlgithub))
 
     sep4 = ttk.Separator(aboutscreen)
     sep4.pack(fill="x", padx=10, pady=10)
