@@ -18,7 +18,7 @@ def show_about(app_instance, version):
     aboutscreen.bind("<Button-1>", leave_about)
     aboutscreen.bind("<Escape>", leave_about)
     
-    image_path = "resources/quickedl_icon_1.png"
+    image_path = "resources/icon_unix.png"
     logo = Image.open(image_path)
     logo = logo.resize((150, 150))
     photo = ImageTk.PhotoImage(logo)
