@@ -39,7 +39,7 @@ def load_yaml(app):
 def show_settings_window(app):
     settings_window = ttk.Toplevel(app.root)
     settings_window.title("QuickEDL: Settings")
-    settings_window.geometry("400x500")
+    settings_window.geometry("400x250")
 
     def update_folder_indicator(app, folder_indicator):
         if app.settings_folder.exists():
