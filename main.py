@@ -2,12 +2,13 @@
 # 2024 / Eric Kirchheim (punkerschaf)
 
 import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
+from ttkbootstrap.constants import LEFT, RIGHT
 from ttkbootstrap.dialogs import Messagebox
 from ttkbootstrap.toast import ToastNotification
 
 from datetime import datetime
 from tkinter import filedialog, StringVar
+from tkinter import END
 from pathlib import Path
 
 # from export_cmx import export_cmx
@@ -136,6 +137,7 @@ class QuickEDLApp:
         last_entries_label.pack(pady=5)
 
     def check_window_focus(self):
+        """Check if the window is focused and update hotkey status."""
         try:
             focused_widget = self.root.focus_displayof()
             widget_name = str(focused_widget) if focused_widget else ""
@@ -151,8 +153,8 @@ class QuickEDLApp:
     def defocus_text(self, event):
     # Check if click is in root
         if event.widget not in self.text_entries:
-            self.root.focus_set()  # Remove focus from any widget
-    
+            self.root.focus_set()
+
     def defocus_text_by_key(self, event):
         if self.window_focused and self.entry_focused:
             self.root.focus_set()
