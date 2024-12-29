@@ -33,7 +33,7 @@ def show_about(app, version):
     label2.pack()
 
     urlgithub = "https://www.github.com/punkerschaf/quickedl"
-    label3 = ttk.Label(aboutscreen, text=urlQuickedl, cursor="hand2")
+    label3 = ttk.Label(aboutscreen, text=urlgithub, cursor="hand2")
     label3.pack()
     label3.bind("<Button-1>", lambda e: callback(urlgithub))
 
