@@ -88,18 +88,18 @@ class QuickEDLApp:
 
         # File label
         self.file_labelframe = ttk.Labelframe(self.root, bootstyle="warning", text=" loaded File ")
-        self.file_labelframe.pack(fill="x", padx=10, pady=10)
+        self.file_labelframe.pack(fill="x", padx=10)
         self.file_label = ttk.Label(self.file_labelframe, text="No EDL file loaded.")
         self.file_label.pack(anchor="w", padx=5, pady=5)
 
         # Time display
-        self.time_label = ttk.Label(self.root, text="", font=("Courier New", 30))
-        self.time_label.pack(pady=5)
+        self.time_label = ttk.Label(self.root, text="", font=("Courier New", 26))
+        self.time_label.pack()
         self.update_time()
 
         # Hotkey status label
-        self.hotkey_status = ttk.Label(self.root, text="Hotkeys Active", font=("Courier New", 20), bootstyle="success")
-        self.hotkey_status.pack(pady=5)
+        self.hotkey_status = ttk.Label(self.root, text="Hotkeys Active", font=("Courier New", 14), bootstyle="success")
+        self.hotkey_status.pack()
 
         # Text entry fields
         self.text_entries = []
@@ -114,7 +114,6 @@ class QuickEDLApp:
             # Bind focus events to update hotkey status
             entry.bind("<FocusIn>", lambda e: self.set_entry_focus(True))
             entry.bind("<FocusOut>", lambda e: self.set_entry_focus(False))
-
 
             button = ttk.Button(frame, text=f"{i + 1}", command=lambda i=i: self.add_to_file(i))
             button.pack(side=RIGHT)
