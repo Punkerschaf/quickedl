@@ -232,7 +232,7 @@ class QuickEDLApp:
             with open(self.file_path, 'r') as file:
                 lines = file.readlines()
                 for line in lines:
-                    self.update_last_entries(line)
+                    self.update_last_entries(line, nl=False)
 
     def save_texts(self):
         save_path = filedialog.asksaveasfilename(
@@ -339,11 +339,15 @@ class QuickEDLApp:
         else:
             self.entry_error()
 
-    def update_last_entries(self, new_entry):
+    def update_last_entries(self, new_entry, **kwargs):
+        nl = kwargs.get('nl', True)
         self.last_entries.append(new_entry)
         if len(self.last_entries) > 5:
             self.last_entries.pop(0)
-        self.last_entries_text.set("\n".join(self.last_entries))
+        if nl:
+            self.last_entries_text.set("\n".join(self.last_entries))
+        else:
+            self.last_entries_text.set("".join(self.last_entries))
 
 ### EXPORT ###
 ##############
