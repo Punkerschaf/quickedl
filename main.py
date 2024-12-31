@@ -187,8 +187,13 @@ class QuickEDLApp:
                     self.add_separator()  # Separator for key '0'
                 elif 1 <= key_num <= 9:
                     self.add_to_file(key_num - 1)  # Corresponding button for keys 1-9
+                    self.flash_button(key_num - 1)
             elif event.keysym == "space":
                 self.add_with_popup()  # Trigger the pop-up entry for spacebar
+    
+    def flash_button(self, index):
+        self.text_entries[index].config(bootstyle="danger")
+        self.root.after(500, lambda: self.text_entries[index].config(bootstyle="default"))
     
     def toast(self, message):
         toast = ToastNotification(
