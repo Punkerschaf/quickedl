@@ -84,7 +84,8 @@ class QuickEDLApp:
     def create_widgets(self):
         self.root.bind("<Button-1>", self.defocus_text)
         self.root.bind("<Return>", self.defocus_text_by_key)
-        self.root.bind("<KeyPress>", self.on_key_press) #TODO: Add hotkey for delete
+        self.root.bind("<BackSpace>", self.delete_last_entry)
+        self.root.bind("<KeyPress>", self.on_key_press)
 
         # File label
         self.file_labelframe = ttk.Labelframe(self.root, bootstyle="warning", text=" loaded File ")
@@ -305,6 +306,7 @@ class QuickEDLApp:
                     with Path(self.file_path).open('a') as file:
                         file.write(entry_popup + "\n")
                     self.update_last_entries(entry_popup)
+
             def cancel_popup(event = None):
                 popup.destroy()
             
@@ -333,7 +335,7 @@ class QuickEDLApp:
         else:
             self.entry_error()
 
-    def delete_last_entry(self): #BUG: deletes max 5 entries while binded to last_entries_label
+    def delete_last_entry(self, event): #BUG: deletes max 5 entries while binded to last_entries_label      
         if self.file_path and self.last_entries:
             # Read all lines from the file
             with Path(self.file_path).open('r') as file:
