@@ -9,6 +9,9 @@ from tkinter import BooleanVar
 #######################
 
 def get_settings_folder():
+    """Returns the path of the settings folder in the user'S home directory.
+    Does NOT generating the folder if it don'T exist.
+    Returns: Path object or None"""
     try:
         home_dir = Path.home()
         settings_folder = home_dir  / "quickedl"
@@ -18,6 +21,8 @@ def get_settings_folder():
         print("Error: Could not find settings folder")
 
 def load_yaml(app):
+    """Searchs for settings.yaml in the settings folder and loads them into the app.
+    Returns: Nothing. Updates variables of the app object."""
     settings_file = app.settings_folder / "settings.yaml"
     if settings_file.exists():
         with settings_file.open('r') as file:
@@ -36,6 +41,7 @@ def load_yaml(app):
 ### Settings WINDOW ###
 #######################
 def show_settings_window(app):
+    """Shows the settings window of the app object."""
     settings_window = ttk.Toplevel(app.root)
     settings_window.title("QuickEDL: Settings")
     settings_window.geometry("400x250")
