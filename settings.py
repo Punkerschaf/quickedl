@@ -40,6 +40,7 @@ def load_yaml(app):
 #######################
 ### Settings WINDOW ###
 #######################
+
 def show_settings_window(app):
     """Shows the settings window of the app object."""
     settings_window = ttk.Toplevel(app.root)

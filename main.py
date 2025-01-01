@@ -128,7 +128,7 @@ class QuickEDLApp:
         popup_button = ttk.Button(specialbuttons, text="Popup (Space)", command=self.add_with_popup)
         popup_button.pack(side="left", padx=5, pady=5)
 
-        delete_button = ttk.Button(specialbuttons, text="Delete", command=self.delete_last_entry)
+        delete_button = ttk.Button(specialbuttons, text="Delete", bootstyle="danger-outline", command=self.delete_last_entry)
         delete_button.pack(side="left", padx=5, pady=5)
 
         # Last entries display
