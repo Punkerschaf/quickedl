@@ -84,7 +84,7 @@ class QuickEDLApp:
     def create_widgets(self):
         self.root.bind("<Button-1>", self.defocus_text)
         self.root.bind("<Return>", self.defocus_text_by_key)
-        self.root.bind("<KeyPress>", self.on_key_press)
+        self.root.bind("<KeyPress>", self.on_key_press) #TODO: Add hotkey for delete
 
         # File label
         self.file_labelframe = ttk.Labelframe(self.root, bootstyle="warning", text=" loaded File ")
@@ -333,7 +333,7 @@ class QuickEDLApp:
         else:
             self.entry_error()
 
-    def delete_last_entry(self):
+    def delete_last_entry(self): #BUG: deletes max 5 entries while binded to last_entries_label
         if self.file_path and self.last_entries:
             # Read all lines from the file
             with Path(self.file_path).open('r') as file:
@@ -372,11 +372,11 @@ class QuickEDLApp:
 ### EXPORT ###
 ##############
 
-    def export_cmx(self):
+    def export_cmx(self): #TODO: Implement CMX export
         # Placeholder for CMX export
         Messagebox.show_info("Export CMX functionality is not implemented yet.")
 
-    def export_fcp7(self):
+    def export_fcp7(self): #TODO: Impliment FCP7export
         # Placeholder for FCP7 export
         Messagebox.show_info("Export FCP7 XML functionality is not implemented yet.")
 
