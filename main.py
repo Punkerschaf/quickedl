@@ -123,10 +123,13 @@ class QuickEDLApp:
         specialbuttons.pack(pady=5)
 
         separator_button = ttk.Button(specialbuttons, text="Separator (0)", command=self.add_separator)
-        separator_button.pack(side=LEFT, pady=5)
+        separator_button.pack(side="left", padx=5, pady=5)
 
         popup_button = ttk.Button(specialbuttons, text="Popup (Space)", command=self.add_with_popup)
-        popup_button.pack(side=RIGHT, padx=10, pady=5)
+        popup_button.pack(side="left", padx=5, pady=5)
+
+        delete_button = ttk.Button(specialbuttons, text="Delete", command=self.delete_last_entry)
+        delete_button.pack(side="left", padx=5, pady=5)
 
         # Last entries display
         self.entries_labelframe = ttk.Labelframe(self.root, bootstyle="primary", text=" last marker ")
@@ -327,6 +330,23 @@ class QuickEDLApp:
             popup.transient(self.root)
             self.root.wait_window(popup)
         
+        else:
+            self.entry_error()
+
+    def delete_last_entry(self):
+        if self.file_path and self.last_entries:
+            # Read all lines from the file
+            with Path(self.file_path).open('r') as file:
+                lines = file.readlines()        
+            # Remove the last line
+            if lines:
+                lines = lines[:-1]
+                # Write the remaining lines back to the file
+                with Path(self.file_path).open('w') as file:
+                    file.writelines(lines)            
+            # Update last_entries list and label
+            self.last_entries.pop()
+            self.last_entries_text.set("\n".join(self.last_entries))
         else:
             self.entry_error()
 
