@@ -157,6 +157,3 @@ cython_debug/
 
 # MacOS
 .DS_Store
-
-# local todo list
-todo.md
