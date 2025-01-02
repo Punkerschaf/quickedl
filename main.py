@@ -48,6 +48,7 @@ class QuickEDLApp:
         # create window
         self.create_menu()
         self.create_widgets()
+        self.adjust_window_height()
         self.check_window_focus()
 
 #####################
@@ -134,10 +135,18 @@ class QuickEDLApp:
 
         # Last entries display
         self.entries_labelframe = ttk.Labelframe(self.root, bootstyle="primary", text=" last marker ")
-        self.entries_labelframe.pack(fill="x", padx=10, pady=10)
+        self.entries_labelframe.pack(fill="x", padx=10, pady=5)
         self.last_entries_text = ttk.StringVar(value="No entries yet.")
         last_entries_label = ttk.Label(self.entries_labelframe, textvariable=self.last_entries_text, justify=LEFT)
         last_entries_label.pack(pady=5)
+
+    def adjust_window_height(self):
+        """
+        Adjust the height of the root window to fit all widgets.
+        """
+        self.root.update_idletasks()  # Update "requested size" from geometry manager
+        height = self.root.winfo_reqheight()
+        self.root.geometry(f"400x{height}")
 
     def check_window_focus(self):
         """Check if the window is focused and update hotkey status."""
