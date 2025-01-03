@@ -363,7 +363,7 @@ class QuickEDLApp:
 
     def add_separator(self):
         if self.hotkeys_active and self.file_path:
-            separator = "-" * 40
+            separator = "-" * 20
             with open(self.file_path, 'a') as file:
                 file.write(separator + "\n")
             self.update_last_entries(separator)        

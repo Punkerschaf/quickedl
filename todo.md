@@ -11,7 +11,10 @@
 # v2.x
 [ ] feat: setting for lines in last_entries
 [ ] docstrings
+[ ] time offset
 [ ] Implement CMX export
 [ ] Impliment FCP7export
 
 # vx
+[ ] LTC timecode support
+[ ] Blackmagic timecode support
