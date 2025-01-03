@@ -1,11 +1,17 @@
+# v2.0
 [ ] make default edl path working
+[ ] create example settings folder
+[ ] rename "last entries" to "history"
+[ ] update documentation
 
-[ ] implement os specific icon in build-workflow
-
+# build release
+[ ] implement os-specific icon in build-workflow
 [ ] push build-workflow to github
 
-[ ] feat: EDL list window
-
-[ ] create example settings folder
-
+# v2.x
 [ ] feat: setting for lines in last_entries
+[ ] docstrings
+[ ] Implement CMX export
+[ ] Impliment FCP7export
+
+# vx

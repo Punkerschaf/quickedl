@@ -48,7 +48,7 @@ class QuickEDLApp:
         # create window
         self.create_menu()
         self.create_widgets()
-        self.adjust_window_height()
+        # self.adjust_window_height() # XXX:remove when finally unused
         self.check_window_focus()
 
 #####################
@@ -84,7 +84,7 @@ class QuickEDLApp:
 
     def create_widgets(self):
         self.root.bind("<Button-1>", self.defocus_text)
-        self.root.bind("<Return>", self.defocus_text_by_key)
+        self.root.bind("<Return>", self.defocus_text_by_key) #TODO combine with defocus_text
         self.root.bind("<BackSpace>", self.delete_last_entry)
         self.root.bind("<KeyPress>", self.on_key_press)
 
@@ -135,10 +135,10 @@ class QuickEDLApp:
 
         # Last entries display
         self.entries_labelframe = ttk.Labelframe(self.root, bootstyle="primary", text=" last marker ")
-        self.entries_labelframe.pack(fill="x", padx=10, pady=5)
+        self.entries_labelframe.pack(fill="both", expand=True, padx=10, pady=5)
         self.last_entries_text = ttk.StringVar(value="No entries yet.")
         last_entries_label = ttk.Label(self.entries_labelframe, textvariable=self.last_entries_text, justify=LEFT)
-        last_entries_label.pack(pady=5)
+        last_entries_label.pack(pady=5, fill="both", expand=True)
 
     def adjust_window_height(self):
         """
@@ -344,7 +344,7 @@ class QuickEDLApp:
         else:
             self.entry_error()
 
-    def delete_last_entry(self, event): #BUG: deletes max 5 entries while binded to last_entries_label      
+    def delete_last_entry(self, event): #BUG deletes max 5 entries while binded to last_entries_label      
         if self.file_path and self.last_entries:
             # Read all lines from the file
             with Path(self.file_path).open('r') as file:
@@ -383,11 +383,11 @@ class QuickEDLApp:
 ### EXPORT ###
 ##############
 
-    def export_cmx(self): #TODO: Implement CMX export
+    def export_cmx(self):
         # Placeholder for CMX export
         Messagebox.show_info("Export CMX functionality is not implemented yet.")
 
-    def export_fcp7(self): #TODO: Impliment FCP7export
+    def export_fcp7(self):
         # Placeholder for FCP7 export
         Messagebox.show_info("Export FCP7 XML functionality is not implemented yet.")
 
