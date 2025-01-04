@@ -34,7 +34,7 @@ class QuickEDLApp:
         self.settings_folder = None
         self.settings_folder_str = StringVar(value=str(self.settings_folder))
 
-        # settings variables
+        # settings
         self.debug = False
         self.funny = False
         self.default_edl_path = None
@@ -226,23 +226,25 @@ class QuickEDLApp:
 #####################
 
     def create_new_file(self):
-        self.file_path = filedialog.asksaveasfilename(
+        file_path = filedialog.asksaveasfilename(
             defaultextension=".txt",
             initialfile=f"EDL_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt",
             filetypes=[("Text files", "*.txt")]
         )
-        if self.file_path:
-            with open(self.file_path, 'w') as file:
+        if file_path:
+            self.file_path = Path(file_path)
+            with self.file_path.open('w') as file:
                 file.write("File created on " + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
             self.file_label.config(text=f"CREATED: {self.file_path}")
             self.file_labelframe.config(bootstyle="success")
 
     def load_file(self):
-        self.file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
-        if self.file_path:
+        file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
+        if file_path:
+            self.file_path = Path(file_path)
             self.file_label.config(text=f"{self.file_path}")
             self.file_labelframe.config(bootstyle="success")
-            with open(self.file_path, 'r') as file:
+            with self.file_path.open('r') as file:
                 lines = file.readlines()
                 for line in lines:
                     self.update_last_entries(line, nl=False)
