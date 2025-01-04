@@ -30,6 +30,7 @@ class QuickEDLApp:
 
         # File path for current EDL
         self.file_path = None
+        self.current_dir = None
         self.last_entries = []
         self.settings_folder = None
         self.settings_folder_str = StringVar(value=str(self.settings_folder))
@@ -37,7 +38,7 @@ class QuickEDLApp:
         # settings
         self.debug = False
         self.funny = False
-        self.default_edl_path = None
+        self.default_dir = None
 
         # Hotkey status
         self.hotkeys_active = True
@@ -229,10 +230,10 @@ class QuickEDLApp:
         file_path = filedialog.asksaveasfilename(
             defaultextension=".txt",
             initialfile=f"EDL_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt",
-            filetypes=[("Text files", "*.txt")]
-        )
+            filetypes=[("Text files", "*.txt")])
         if file_path:
             self.file_path = Path(file_path)
+            self.current_dir = self.file_path.parent
             with self.file_path.open('w') as file:
                 file.write("File created on " + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
             self.file_label.config(text=f"CREATED: {self.file_path}")
@@ -242,6 +243,7 @@ class QuickEDLApp:
         file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
         if file_path:
             self.file_path = Path(file_path)
+            self.current_dir = self.file_path.parent
             self.file_label.config(text=f"{self.file_path}")
             self.file_labelframe.config(bootstyle="success")
             with self.file_path.open('r') as file:
@@ -251,6 +253,7 @@ class QuickEDLApp:
 
     def save_texts(self):
         save_path = filedialog.asksaveasfilename(
+            initialdir=self.current_dir,
             defaultextension=".txt",
             initialfile=f"TextFields_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt",
             filetypes=[("Text files", "*.txt")]
@@ -260,7 +263,8 @@ class QuickEDLApp:
             save_path.write_text("\n".join(entry.get() for entry in self.text_entries) + "\n")
 
     def open_texts(self):
-        load_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
+        load_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")],
+                                               initialdir=self.current_dir)
         self.import_texts(load_path)
 
     def import_texts(self, load_path):    
@@ -287,8 +291,12 @@ class QuickEDLApp:
         else:
             print("No texts loaded.")
 
-### CORE FUNCTIONS ###
-######################
+# core functions
+####  ####  ###   ####
+#     #  #  #  #  #
+#     #  #  ###   ###
+#     #  #  #  #  #
+####  ####  #  #  ####
 
     def add_to_file(self, index):
         if self.hotkeys_active and self.file_path:

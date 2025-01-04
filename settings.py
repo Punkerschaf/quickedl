@@ -31,8 +31,8 @@ def load_yaml(app):
             print("debug: ", app.debug)
             app.funny = settings_data.get('funny', app.funny)
             print("funny: ", app.funny)
-            app.default_edl_path = settings_data.get('default_edl_path', app.default_edl_path)
-            print("default_edl_path: ", app.default_edl_path)
+            app.default_dir = settings_data.get('default_dir', app.default_dir)
+            print("default_dir: ", app.default_dir)
     else:
         print("Error: Could not find settings file")
         return
@@ -64,9 +64,9 @@ def show_settings_window(app):
 
 
 # default edl path
-    default_edl_frame = ttk.LabelFrame(settings_window, text=" default EDL path ")
+    default_edl_frame = ttk.LabelFrame(settings_window, text=" default directory ")
     default_edl_frame.pack(padx=10, pady=5, fill='x')
-    default_path_label = ttk.Label(default_edl_frame, text="not implemented yet", bootstyle="warning")
+    default_path_label = ttk.Label(default_edl_frame, text=app.default_dir, bootstyle="warning")
     default_path_label.pack(pady=5)
 
 # misc settings
