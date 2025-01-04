@@ -84,7 +84,7 @@ class QuickEDLApp:
 
     def create_widgets(self):
         self.root.bind("<Button-1>", self.defocus_text)
-        self.root.bind("<Return>", self.defocus_text_by_key) #TODO combine with defocus_text
+        self.root.bind("<Return>", self.defocus_text)
         self.root.bind("<BackSpace>", self.delete_last_entry)
         self.root.bind("<KeyPress>", self.on_key_press)
 
@@ -163,13 +163,13 @@ class QuickEDLApp:
         self.root.after(100, self.check_window_focus)
     
     def defocus_text(self, event):
-    # Check if click is in root
-        if event.widget not in self.text_entries:
-            self.root.focus_set()
-
-    def defocus_text_by_key(self, event):
-        if self.window_focused and self.entry_focused:
-            self.root.focus_set()
+        # Check if click is in root
+        if event.type == "2":  # KeyPress event
+            if self.window_focused and self.entry_focused:
+                self.root.focus_set()
+        else:
+            if event.widget not in self.text_entries:
+                self.root.focus_set()
 
     def update_time(self):
         current_time = datetime.now().strftime("%H:%M:%S")
@@ -245,7 +245,7 @@ class QuickEDLApp:
             self.file_label.config(text=f"{self.file_path}")
             self.file_labelframe.config(bootstyle="success")
             with self.file_path.open('r') as file:
-                lines = file.readlines()
+                lines = file.readlines() #BUG blank lines in last_Entries
                 for line in lines:
                     self.update_last_entries(line, nl=False)
 
