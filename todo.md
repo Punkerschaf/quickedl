@@ -6,8 +6,8 @@
 [ ] update documentation
 
 # build release
-[ ] implement os-specific icon in build-workflow
-[ ] push build-workflow to github
+[x] implement os-specific icon in build-workflow
+[x] push build-workflow to github
 
 # v2.x
 [ ] make default edl path working
