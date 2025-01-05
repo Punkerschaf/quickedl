@@ -52,6 +52,29 @@ jobs:
         with:
           name: QuickEDL-macOS-${{ matrix.arch }}
           path: dist/QuickEDL
+          
+  build-macos-universal:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: pip install -r dependencies.txt
+
+      - name: Build universal executable
+        run: pyinstaller --noconfirm --onefile --noconsole --universal2 --name QuickEDL --icon ./resources/icon_mac.icns main.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: QuickEDL-macOS-universal
+          path: dist/QuickEDL
 
   build-linux:
     runs-on: ubuntu-latest
