@@ -2,7 +2,7 @@
 [x] use path object on every path handling
 [x] set path of edl file as initialdir for other opensavedialogs
 [x] create example settings folder
-[ ] rename "last entries" to "history"
+[x] rename "last entries" to "history"
 [ ] update documentation
 
 # build release

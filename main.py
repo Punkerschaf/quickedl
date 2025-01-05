@@ -138,7 +138,7 @@ class QuickEDLApp:
         delete_button.pack(side="left", padx=5, pady=5)
 
         # Last entries display
-        self.entries_labelframe = ttk.Labelframe(self.root, bootstyle="primary", text=" last marker ")
+        self.entries_labelframe = ttk.Labelframe(self.root, bootstyle="primary", text=" History ")
         self.entries_labelframe.pack(fill="both", expand=True, padx=10, pady=5)
         self.last_entries_text = ttk.StringVar(value="No entries yet.")
         last_entries_label = ttk.Label(self.entries_labelframe, textvariable=self.last_entries_text, justify=LEFT)
