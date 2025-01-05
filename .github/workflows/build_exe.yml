@@ -1,0 +1,77 @@
+name: Build QuickEDL Executables
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: pip install -r dependencies.txt
+
+      - name: Build executable
+        run: pyinstaller --noconfirm --onefile --noconsole --name QuickEDL --icon ./resources/icon_win.ico main.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: QuickEDL-Windows
+          path: dist/QuickEDL.exe
+
+  build-macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        arch: [x86_64, arm64]  # Intel-Chip und Apple Silicon
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: pip install -r dependencies.txt
+
+      - name: Build executable
+        run: |
+          arch -${{ matrix.arch }} pyinstaller --noconfirm --onefile --noconsole --name QuickEDL --icon ./resources/icon_mac.icns main.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: QuickEDL-macOS-${{ matrix.arch }}
+          path: dist/QuickEDL
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: pip install -r dependencies.txt
+
+      - name: Build executable
+        run: pyinstaller --noconfirm --onefile --noconsole --name QuickEDL --icon ./resources/icon_unix.png main.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: QuickEDL-Linux
+          path: dist/QuickEDL
