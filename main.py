@@ -52,9 +52,12 @@ class QuickEDLApp:
         # self.adjust_window_height() # XXX:remove when finally unused
         self.check_window_focus()
 
-#####################
-### GUI FUNCTIONS ###
-#####################
+# GUI
+####  #  #  ###
+#     #  #   #
+####  #  #   #
+#  #  #  #   #
+ ###  ####  ###
 
     def create_menu(self):
         menu_bar = ttk.Menu(self.root)
@@ -141,6 +144,10 @@ class QuickEDLApp:
         last_entries_label = ttk.Label(self.entries_labelframe, textvariable=self.last_entries_text, justify=LEFT)
         last_entries_label.pack(pady=5, fill="both", expand=True)
 
+#####################
+### GUI FUNCTIONS ###
+#####################
+
     def adjust_window_height(self):
         """
         Adjust the height of the root window to fit all widgets.
@@ -223,8 +230,12 @@ class QuickEDLApp:
 ### APP FUNCTIONS ###
 #####################
 
-### FILE HANDLING ###
-#####################
+# file handling
+####  ###   #     ####
+#      #    #     #
+###    #    #     ###
+#      #    #     #
+#     ###   ####  ####
 
     def create_new_file(self):
         file_path = filedialog.asksaveasfilename(
@@ -291,12 +302,12 @@ class QuickEDLApp:
         else:
             print("No texts loaded.")
 
-# core functions
-####  ####  ###   ####
-#     #  #  #  #  #
-#     #  #  ###   ###
-#     #  #  #  #  #
-####  ####  #  #  ####
+# entries
+####  #  #  ####  ###   ###   ####   ###
+#     ## #   #    #  #   #    #     #
+###   # ##   #    ####   #    ###   ####
+#     # ##   #    # #    #    #        #
+####  #  #   #    #  #  ###   ####  ###
 
     def add_to_file(self, index):
         if self.hotkeys_active and self.file_path:
@@ -408,9 +419,12 @@ class QuickEDLApp:
         else:
             Messagebox.show_error("No EDL file has been created. Please create a file first.")
 
-################
-### APP CALL ###
-################
+
+# MAIN APP CALL
+#   #   ##   ###   #  #
+## ##  #  #   #    ## #
+# # #  ####   #    # ##
+#   #  #  #  ###   #  #
 
 if __name__ == "__main__":
     root = ttk.Window(themename="darkly")
