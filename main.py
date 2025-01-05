@@ -247,9 +247,9 @@ class QuickEDLApp:
             self.file_label.config(text=f"{self.file_path}")
             self.file_labelframe.config(bootstyle="success")
             with self.file_path.open('r') as file:
-                lines = file.readlines() #BUG blank lines in last_Entries
+                lines = file.readlines()
                 for line in lines:
-                    self.update_last_entries(line, nl=False)
+                    self.update_last_entries(line)
 
     def save_texts(self):
         save_path = filedialog.asksaveasfilename(
@@ -354,7 +354,7 @@ class QuickEDLApp:
         else:
             self.entry_error()
 
-    def delete_last_entry(self, event): #BUG deletes max 5 entries while binded to last_entries_label      
+    def delete_last_entry(self, event): #BUG deletes max 5 entries while bound to last_entries_label      
         if self.file_path and self.last_entries:
             # Read all lines from the file
             with Path(self.file_path).open('r') as file:
@@ -380,15 +380,13 @@ class QuickEDLApp:
         else:
             self.entry_error()
 
-    def update_last_entries(self, new_entry, **kwargs):
-        nl = kwargs.get('nl', True)
-        self.last_entries.append(new_entry)
+    def update_last_entries(self, new_entry):
+        if new_entry.strip():  # Only add non-empty entries
+            self.last_entries.append(new_entry.strip())
         if len(self.last_entries) > 5:
             self.last_entries.pop(0)
-        if nl:
-            self.last_entries_text.set("\n".join(self.last_entries))
-        else:
-            self.last_entries_text.set("".join(self.last_entries))
+        self.last_entries_text.set("\n".join(self.last_entries))
+
 
 ### EXPORT ###
 ##############
