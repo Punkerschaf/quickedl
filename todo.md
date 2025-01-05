@@ -1,8 +1,7 @@
 # v2.0
 [x] use path object on every path handling
-[ ] set path of edl file as initialdir for other opensavedialogs
-[ ] make default edl path working
-[ ] create example settings folder
+[x] set path of edl file as initialdir for other opensavedialogs
+[x] create example settings folder
 [ ] rename "last entries" to "history"
 [ ] update documentation
 
@@ -11,7 +10,8 @@
 [ ] push build-workflow to github
 
 # v2.x
-[ ] user grid laylout
+[ ] make default edl path working
+[ ] use grid laylout
 [ ] feat: setting for lines in last_entries
 [ ] docstrings
 [ ] time offset
