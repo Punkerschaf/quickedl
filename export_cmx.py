@@ -1,6 +1,5 @@
-from datetime import datetime
-import tkinter.filedialog as filedialog
-import os
+from ttkbootstrap.constants import *
+from tkinter import filedialog
 
 def export_cmx(edl_txt_path):
     """

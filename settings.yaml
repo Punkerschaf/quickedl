@@ -1,0 +1,3 @@
+debug: True # only relevant for development
+funny: True # turns funny mode on
+default_dir: "/home/desktop/edl/" # default path shown in save/load files

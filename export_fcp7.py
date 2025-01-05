@@ -1,7 +1,9 @@
 import xml.etree.ElementTree as ET
 from datetime import datetime
 import os
-from tkinter import messagebox, filedialog
+from ttkbootstrap.constants import *
+from ttkbootstrap.dialogs import Messagebox
+from tkinter import filedialog
 
 # Frame rate constant for calculating frame timecodes
 FRAME_RATE = 50
@@ -49,7 +51,7 @@ def export_xml(file_path, output_path):
 
     print(f"XML export completed and saved to {output_path}")
     try:
-        messagebox.showinfo("Export", f"FCP7-XML exportiert nach {output_path}.")
+        Messagebox.showinfo("Export", f"FCP7-XML exportiert nach {output_path}.")
 
     except RuntimeError:
         print("Messagebox failed: FCP7-Export successful.}")
@@ -145,7 +147,7 @@ def export_to_xml_with_static(file_path):
         """
         )
     try:
-        messagebox.showinfo("Export", f"FCP7-XML exportiert nach {output_path}.")
+        Messagebox.showinfo("Export", f"FCP7-XML exportiert nach {output_path}.")
 
     except RuntimeError:
         print("Messagebox failed: FCP7-Export successful.}")
