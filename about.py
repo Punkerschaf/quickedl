@@ -1,5 +1,5 @@
 import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
+from ttkbootstrap.constants import *  # noqa: F403
 import webbrowser
 from PIL import Image, ImageTk
 

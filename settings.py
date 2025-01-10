@@ -16,9 +16,8 @@ def get_settings_folder():
         home_dir = Path.home()
         settings_folder = home_dir  / "quickedl"
         return settings_folder
-    except: 
-        return None
-        print("Error: Could not find settings folder")
+    except Exception as e:
+        print(f"Error: Could not find settings folder. ({e})")
 
 def load_yaml(app):
     """Searchs for settings.yaml in the settings folder and loads them into the app.
@@ -53,15 +52,19 @@ def show_settings_window(app):
         else:
             return
 
+    def close_settings_window(self, event = None):
+        settings_window.destroy()
+
+    settings_window.bind("<Escape>", close_settings_window)
+
 # settings folder
     settings_folder_frame = ttk.LabelFrame(settings_window, text=" settings folder")
     settings_folder_frame.pack(padx= 10, pady=5, fill='x',)
-    folder_label = ttk.Label(settings_folder_frame, textvariable=app.settings_folder_str, justify=LEFT)
+    folder_label = ttk.Label(settings_folder_frame, textvariable=app.settings_folder_str, justify="left")
     folder_label.pack(padx=5)
     folder_indicator = ttk.Label(settings_folder_frame, text="not found", bootstyle="warning")
     folder_indicator.pack()
     update_folder_indicator(app, folder_indicator)
-
 
 # default edl path
     default_edl_frame = ttk.LabelFrame(settings_window, text=" default directory ")
@@ -80,6 +83,5 @@ def show_settings_window(app):
 # close Button
     confirmation_frame = ttk.Frame(settings_window)
     confirmation_frame.pack(pady=5)
-    close_button = ttk.Button(confirmation_frame, text="Close")
-    close_button.pack(side=RIGHT, padx=5)
-    close_button.bind("<Button-1>", lambda: settings_window.destroy())
+    close_button = ttk.Button(confirmation_frame, text="Close", command=settings_window.destroy)
+    close_button.pack(side="right", padx=5)
