@@ -18,7 +18,7 @@ jobs:
         run: pip install -r dependencies.txt
 
       - name: Build executable
-        run: pyinstaller --noconfirm --onefile --noconsole --name QuickEDL --icon ./resources/icon_win.ico main.py
+        run: pyinstaller --noconfirm --onefile --noconsole --name QuickEDL --icon ./resources/icon_win.ico --add-data "resources;resources" main.py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -45,7 +45,7 @@ jobs:
 
       - name: Build executable
         run: |
-          arch -${{ matrix.arch }} pyinstaller --noconfirm --onefile --noconsole --name QuickEDL --icon ./resources/icon_mac.icns main.py
+          arch -${{ matrix.arch }} pyinstaller --noconfirm --windowed --noconsole --name QuickEDL --icon ./resources/icon_mac.icns --add-data "resources:resources" main.py
           mv dist/QuickEDL dist/QuickEDL.app
           chmod +x dist/QuickEDL.app
 
@@ -71,7 +71,7 @@ jobs:
 
       - name: Build executable
         run: |
-          pyinstaller --noconfirm --onefile --noconsole --name QuickEDL --icon ./resources/icon_unix.png main.py
+          pyinstaller --noconfirm --onefile --noconsole --name QuickEDL --icon ./resources/icon_unix.png --add-data "resources:resources" main.py
           mv dist/QuickEDL dist/QuickEDL.sh
           chmod +x dist/QuickEDL.sh
 
