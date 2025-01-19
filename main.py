@@ -92,11 +92,6 @@ class QuickEDLApp:
         texts_menu.add_command(label="Load Texts", command=self.open_texts)
         menu_bar.add_cascade(label="Texts", menu=texts_menu)
 
-        export_menu = ttk.Menu(menu_bar, tearoff=0)
-        export_menu.add_command(label="Export CMX", command=self.export_cmx)
-        export_menu.add_command(label="Export FCP7", command=self.export_fcp7)
-        menu_bar.add_cascade(label="Export", menu=export_menu)
-
         self.root.config(menu=menu_bar)
 
     def create_widgets(self):
