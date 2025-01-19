@@ -15,8 +15,8 @@
 [ ] feat: setting for lines in last_entries
 [ ] docstrings
 [ ] time offset
-[ ] Implement CMX export
-[ ] Impliment FCP7export
+[ ] JSX export
+[ ] JSX direct execution in Premiere Pro
 
 # vx
 [ ] LTC timecode support

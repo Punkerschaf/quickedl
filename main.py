@@ -375,7 +375,7 @@ class QuickEDLApp:
         if event.widget not in self.text_entries:
             self.delete_last_entry(self)
 
-    def delete_last_entry(self, event): #BUG deletes max 5 entries while bound to last_entries_label      
+    def delete_last_entry(self, event): #TODO deletes max 5 entries while bound to last_entries_label      
         if self.file_path and self.last_entries:
             # Read all lines from the file
             with Path(self.file_path).open('r') as file:
