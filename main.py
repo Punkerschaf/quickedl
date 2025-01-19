@@ -20,6 +20,7 @@ import utils
 
 # version number
 version = "2.0"
+# backspace in textfields
 
 class QuickEDLApp:
     def __init__(self, root):
@@ -81,7 +82,7 @@ class QuickEDLApp:
 
         export_menu = ttk.Menu(menu_bar, tearoff=0)
         export_menu.add_command(label="Export CMX", command=self.export_cmx)
-        export_menu.add_command(label="Export FCP7 XML", command=self.export_fcp7)
+        export_menu.add_command(label="Export FCP7", command=self.export_fcp7)
         menu_bar.add_cascade(label="Export", menu=export_menu)
 
         self.root.config(menu=menu_bar)
@@ -89,7 +90,7 @@ class QuickEDLApp:
     def create_widgets(self):
         self.root.bind("<Button-1>", self.defocus_text)
         self.root.bind("<Return>", self.defocus_text)
-        self.root.bind("<BackSpace>", self.delete_last_entry)
+        self.root.bind("<BackSpace>", self.handle_backspace)
         self.root.bind("<KeyPress>", self.on_key_press)
 
         # File label
@@ -117,12 +118,10 @@ class QuickEDLApp:
             entry.pack(side=LEFT, padx=10)
             self.text_entries.append(entry)
 
-            # Bind focus events to update hotkey status
-            entry.bind("<FocusIn>", lambda e: self.set_entry_focus(True))
-            entry.bind("<FocusOut>", lambda e: self.set_entry_focus(False))
-
             button = ttk.Button(frame, text=f"{i + 1}", command=lambda i=i: self.add_to_file(i))
             button.pack(side=RIGHT)
+
+        self.bind_text_entries()
 
         # Special entries
         specialbuttons = ttk.Frame(self.root)
@@ -143,6 +142,11 @@ class QuickEDLApp:
         self.last_entries_text = ttk.StringVar(value="No entries yet.")
         last_entries_label = ttk.Label(self.entries_labelframe, textvariable=self.last_entries_text, justify=LEFT)
         last_entries_label.pack(pady=5, fill="both", expand=True)
+
+    def bind_text_entries(self):
+        for entry in self.text_entries:
+            entry.bind("<FocusIn>", lambda e: self.set_entry_focus(True))
+            entry.bind("<FocusOut>", lambda e: self.set_entry_focus(False))
 
 #####################
 ### GUI FUNCTIONS ###
@@ -178,6 +182,8 @@ class QuickEDLApp:
         else:
             if event.widget not in self.text_entries:
                 self.root.focus_set()
+            else:
+                event.widget.focus_set()
 
     def update_time(self):
         current_time = datetime.now().strftime("%H:%M:%S")
@@ -364,6 +370,10 @@ class QuickEDLApp:
         
         else:
             self.entry_error()
+
+    def handle_backspace(self, event):
+        if event.widget not in self.text_entries:
+            self.delete_last_entry(self)
 
     def delete_last_entry(self, event): #BUG deletes max 5 entries while bound to last_entries_label      
         if self.file_path and self.last_entries:
