@@ -10,6 +10,7 @@ from datetime import datetime
 from tkinter import filedialog, StringVar
 from tkinter import END
 from pathlib import Path
+import logging
 
 # from export_cmx import export_cmx
 # from export_fcp7 import export_to_xml_with_static
@@ -20,10 +21,12 @@ import utils
 
 # version number
 version = "2.0"
-# backspace in textfields
+# + backspace in textfields
+# + basic logging
 
 class QuickEDLApp:
     def __init__(self, root):
+        self.setup_logging()
         self.root = root
         self.root.title(f"QuickEDL {version}")
         self.root.geometry("400x700")
@@ -52,6 +55,15 @@ class QuickEDLApp:
         self.create_widgets()
         # self.adjust_window_height() # XXX:remove when finally unused
         self.check_window_focus()
+
+    def setup_logging(self):
+        log_file = Path(__file__).parent / "quickedl.log"
+        logging.basicConfig(
+            filename=log_file,
+            level=logging.INFO,
+            format="%(asctime)s - %(levelname)s - %(message)s",
+            filemode='w'  # 'w' mode will truncate the file
+        )
 
 # GUI
 ####  #  #  ###
@@ -244,17 +256,21 @@ class QuickEDLApp:
 #     ###   ####  ####
 
     def create_new_file(self):
-        file_path = filedialog.asksaveasfilename(
-            defaultextension=".txt",
-            initialfile=f"EDL_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt",
-            filetypes=[("Text files", "*.txt")])
-        if file_path:
-            self.file_path = Path(file_path)
-            self.current_dir = self.file_path.parent
-            with self.file_path.open('w') as file:
-                file.write("File created on " + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
-            self.file_label.config(text=f"CREATED: {self.file_path}")
-            self.file_labelframe.config(bootstyle="success")
+        try:
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".txt",
+                initialfile=f"EDL_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt",
+                filetypes=[("Text files", "*.txt")])
+            if file_path:
+                self.file_path = Path(file_path)
+                self.current_dir = self.file_path.parent
+                with self.file_path.open('w') as file:
+                    file.write("File created on " + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                self.file_label.config(text=f"CREATED: {self.file_path}")
+                self.file_labelframe.config(bootstyle="success")
+                logging.info(f"New file created: {self.file_path}")
+        except Exception as e:
+            logging.error(f"An error occurred while creating a new file: {e}", exc_info=True)
 
     def load_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
@@ -437,7 +453,25 @@ class QuickEDLApp:
 #   #  #  #  ###   #  #
 
 if __name__ == "__main__":
-    root = ttk.Window(themename="darkly")
-    app = QuickEDLApp(root)
-    app.load_settings()
-    root.mainloop()
+    try:
+        root = ttk.Window(themename="darkly")
+        app = QuickEDLApp(root)
+        app.load_settings()
+        root.mainloop()
+## ##  #  #   #    ## #
+    except Exception as e:
+        logging.error(f"An error occurred: {e}", exc_info=True)
+        raise
+
+# # #  ####   #    # ##
+#   #  #  #  ###   #  #
+
+if __name__ == "__main__":
+    try:
+        root = ttk.Window(themename="darkly")
+        app = QuickEDLApp(root)
+        app.load_settings()
+        root.mainloop()
+    except Exception as e:
+        logging.error(f"An error occurred: {e}", exc_info=True)
+        raise
