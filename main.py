@@ -16,6 +16,7 @@ import logging
 # from export_fcp7 import export_to_xml_with_static
 from about import show_about
 from random_entry import random_entry
+from export_jsx import JSXExportWindow
 import settings
 import utils
 
@@ -85,6 +86,8 @@ class QuickEDLApp:
         edl_menu = ttk.Menu(menu_bar, tearoff=0)
         edl_menu.add_command(label="New EDL", command=self.create_new_file)
         edl_menu.add_command(label="Open EDL", command=self.load_file)
+        edl_menu.add_separator()
+        edl_menu.add_command(label="Export JSX", command=lambda: JSXExportWindow(self.root, self.file_path))
         menu_bar.add_cascade(label="EDL", menu=edl_menu)
 
         texts_menu = ttk.Menu(menu_bar, tearoff=0)
@@ -444,20 +447,6 @@ class QuickEDLApp:
 # MAIN APP CALL
 #   #   ##   ###   #  #
 ## ##  #  #   #    ## #
-# # #  ####   #    # ##
-#   #  #  #  ###   #  #
-
-if __name__ == "__main__":
-    try:
-        root = ttk.Window(themename="darkly")
-        app = QuickEDLApp(root)
-        app.load_settings()
-        root.mainloop()
-## ##  #  #   #    ## #
-    except Exception as e:
-        logging.error(f"An error occurred: {e}", exc_info=True)
-        raise
-
 # # #  ####   #    # ##
 #   #  #  #  ###   #  #
 
