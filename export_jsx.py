@@ -1,5 +1,7 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.dialogs import Messagebox
+from ttkbootstrap.tooltip import ToolTip
+from ttkbootstrap.validation import add_regex_validation
 from pathlib import Path
 import logging
 import re
@@ -34,7 +36,7 @@ class JSXExportWindow:
         label.grid(row=0, column=0, columnspan=2, padx=10, pady=10, sticky="n")
 
         fps_label = ttk.Label(export_window, text="Frames per second (FPS):")
-        fps_label.grid(row=1, column=0, padx=10, pady=10, sticky="w")
+        fps_label.grid(row=1, column=0, padx=10, pady=10, sticky="e")
 
         fps_spinbox = ttk.Spinbox(export_window, from_=24, to=120, increment=1, textvariable=ttk.IntVar(value=self.fps), width=5)
         fps_spinbox.grid(row=1, column=1, padx=10, pady=10, sticky="e")
@@ -44,18 +46,25 @@ class JSXExportWindow:
         fps_spinbox.bind("<FocusOut>", lambda e: update_fps())
 
         timeline_label = ttk.Label(export_window, text="Start Timeline (HH:mm:ss):")
-        timeline_label.grid(row=2, column=0, sticky="w")
+        timeline_label.grid(row=2, column=0, sticky="e")
 
         self.timeline_start_var = ttk.StringVar(value=self.timeline_start)
-        timeline_entry = ttk.Entry(export_window, text="Timeline", textvariable=self.timeline_start_var, width=10)
+        timeline_entry = ttk.Entry(export_window, text="Timeline", textvariable=self.timeline_start_var, width=10, bootstyle="success")
         timeline_entry.grid(row=2, column=1, padx=10, pady=10, sticky="e")
+        add_regex_validation(timeline_entry, r'^\d{2}:\d{2}:\d{2}$', when='focus')
+        timeline_entry.bind("<Return>", lambda event: event.widget.focus_set())
         timeline_entry.bind("<FocusOut>", lambda e: update_timeline_start())
 
-        generate_button = ttk.Button(export_window, text="Generate JSX", command=lambda: self.generate_jsx_script())
-        generate_button.grid(row=3, column=1, padx=10, pady=10, sticky="e")
+        ToolTip(timeline_entry, delay=500, text="""
+Timecode start of your sequence. While markers are created in seconds relativ to this point, this is a bit of important.
+This function is dumb as f***. Please enter as HH:mm:ss
+""")
 
         close_button = ttk.Button(export_window, text="Close", bootstyle="danger-outline", command=export_window.destroy)
-        close_button.grid(row=4, column=0, padx=10, pady=10, sticky="se")
+        close_button.grid(row=3, column=0, padx=10, pady=10, sticky="sw")
+
+        self.generate_button = ttk.Button(export_window, text="Generate JSX", command=lambda: self.generate_jsx_script())
+        self.generate_button.grid(row=3, column=1, padx=10, pady=10, sticky="se")
 
         def val_timeline_entry(*args):
             try:
@@ -70,7 +79,7 @@ class JSXExportWindow:
                 self.calc_timeline_offset()
             else:
                 logging.error("Invalid time format for timeline start.")
-                Messagebox.show_error("Invalid time format for timeline start.")
+#                Messagebox.show_error("Invalid time format for timeline start.")
 
         def update_fps():
             try:
@@ -79,13 +88,16 @@ class JSXExportWindow:
             except ValueError:
                 logging.error("Invalid FPS value entered.")
 
+    def export_success(self):
+        self.generate_button.config(bootstyle="success-outline", text="Done.", command=None)
+
     def calc_timeline_offset(self):
         try:
             hours, minutes, seconds = map(int, self.timeline_start.split(":"))
             self.timeline_offset = hours * 3600 + minutes * 60 + seconds
             print(f"timeline offset: {self.timeline_offset} frames.")
         except ValueError: 
-            
+
             logging.error("calc_timeline_offset failed")
 
     def get_edl_entries(self):
@@ -95,8 +107,8 @@ class JSXExportWindow:
                 self.entries_count = len(self.entries)
             logging.info(f"{self.entries_count} EDL entries loaded from {self.file_path}")
         except Exception as e:
-            logging.error(f"An error occurred while reading the EDL file: {e}", exc_info=True)
-    
+            logging.error(f"An error occurred while reading the EDL file: {e}", exc_info=True)   
+
     def generate_jsx_script(self):
         self.calc_timeline_offset()
         try:
@@ -127,6 +139,7 @@ if (sequence) {
                 jsx_file.write(jsx_content)
             logging.info(f"JSX script generated at {output_path}")
             print(f"JSX generated at{output_path}")
+            self.export_success()
             
         except Exception as e:
             logging.error(f"An error occurred while generating the JSX script: {e}", exc_info=True)
