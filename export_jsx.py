@@ -6,6 +6,8 @@ from pathlib import Path
 import logging
 import re
 
+from utils import open_directory
+
 class JSXExportWindow:
     def __init__(self, root, file_path):
         self.root = root
@@ -123,6 +125,8 @@ if (sequence) {
 
     def export_success(self):
         self.generate_button.config(bootstyle="success-outline", text="Done.", command=None)
+        open_directory(self.file_path.parent)
+
 """
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
