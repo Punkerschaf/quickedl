@@ -23,7 +23,7 @@ class JSXExportWindow:
     def create_window(self):
         export_window = ttk.Toplevel(self)
         export_window.title("QuickEDL: Export for Premiere Pro")
-        export_window.geometry("400x300")
+        export_window.geometry("400x250")
 
         export_window.bind("<Button-1>", lambda event: event.widget.focus_set())
 
@@ -41,6 +41,7 @@ class JSXExportWindow:
         fps_spinbox = ttk.Spinbox(export_window, from_=24, to=120, increment=1, textvariable=ttk.IntVar(value=self.fps), width=5)
         fps_spinbox.grid(row=1, column=1, padx=10, pady=10, sticky="e")
         fps_spinbox.set(self.fps)
+        fps_spinbox.bind("Return", lambda e: export_window.focus_set())
         fps_spinbox.bind("<<Increment>>", lambda e: update_fps())
         fps_spinbox.bind("<<Decrement>>", lambda e: update_fps())
         fps_spinbox.bind("<FocusOut>", lambda e: update_fps())
@@ -52,26 +53,25 @@ class JSXExportWindow:
         timeline_entry = ttk.Entry(export_window, text="Timeline", textvariable=self.timeline_start_var, width=10, bootstyle="success")
         timeline_entry.grid(row=2, column=1, padx=10, pady=10, sticky="e")
         add_regex_validation(timeline_entry, r'^\d{2}:\d{2}:\d{2}$', when='focus')
-        timeline_entry.bind("<Return>", lambda event: event.widget.focus_set())
+        timeline_entry.bind("<Return>", lambda event: export_window.focus_set())
         timeline_entry.bind("<FocusOut>", lambda e: update_timeline_start())
 
         ToolTip(timeline_entry, delay=500, text="""
 Timecode start of your sequence. While markers are created in seconds relativ to this point, this is a bit of important.
 This function is dumb as f***. Please enter as HH:mm:ss
 """)
+        self.timeline_offset_var = ttk.StringVar(value=str(self.timeline_offset))
+        offset_label = ttk.Label(export_window, text="Timeline Offset (seconds):")
+        offset_label.grid(row=3, column=0, sticky="e")
+
+        offset_value_label = ttk.Label(export_window, textvariable=self.timeline_offset_var)
+        offset_value_label.grid(row=3, column=1, padx=10, pady=10, sticky="e")
 
         close_button = ttk.Button(export_window, text="Close", bootstyle="danger-outline", command=export_window.destroy)
-        close_button.grid(row=3, column=0, padx=10, pady=10, sticky="sw")
+        close_button.grid(row=4, column=0, padx=10, pady=10, sticky="sw")
 
         self.generate_button = ttk.Button(export_window, text="Generate JSX", command=lambda: self.generate_jsx_script())
-        self.generate_button.grid(row=3, column=1, padx=10, pady=10, sticky="se")
-
-        def val_timeline_entry(*args):
-            try:
-                hours, minutes, seconds = map(int, self.timeline_start_var.get().split(":"))
-                timeline_entry.config(bootstyle="success")
-            except ValueError:
-                timeline_entry.config(bootstyle="danger")
+        self.generate_button.grid(row=4, column=1, padx=10, pady=10, sticky="se")
 
         def update_timeline_start():
             self.timeline_start = timeline_entry.get()
@@ -79,7 +79,6 @@ This function is dumb as f***. Please enter as HH:mm:ss
                 self.calc_timeline_offset()
             else:
                 logging.error("Invalid time format for timeline start.")
-#                Messagebox.show_error("Invalid time format for timeline start.")
 
         def update_fps():
             try:
@@ -96,6 +95,7 @@ This function is dumb as f***. Please enter as HH:mm:ss
             hours, minutes, seconds = map(int, self.timeline_start.split(":"))
             self.timeline_offset = hours * 3600 + minutes * 60 + seconds
             print(f"timeline offset: {self.timeline_offset} frames.")
+            self.timeline_offset_var.set(str(self.timeline_offset))
         except ValueError: 
 
             logging.error("calc_timeline_offset failed")
@@ -110,7 +110,6 @@ This function is dumb as f***. Please enter as HH:mm:ss
             logging.error(f"An error occurred while reading the EDL file: {e}", exc_info=True)   
 
     def generate_jsx_script(self):
-        self.calc_timeline_offset()
         try:
             output_path = self.file_path.parent / "output_script.jsx"
             print(output_path)
