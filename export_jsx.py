@@ -9,7 +9,6 @@ import re
 class JSXExportWindow:
     def __init__(self, root, file_path):
         self.root = root
-        self.fps = 50
         self.timeline_start = "00:00:00" # HH:mm:ss
         self.timeline_offset = 0 # in seconds
 
@@ -34,17 +33,6 @@ class JSXExportWindow:
         # Widgets
         label = ttk.Label(export_window, text="Export settings for Premiere Pro")
         label.grid(row=0, column=0, columnspan=2, padx=10, pady=10, sticky="n")
-
-        fps_label = ttk.Label(export_window, text="Frames per second (FPS):")
-        fps_label.grid(row=1, column=0, padx=10, pady=10, sticky="e")
-
-        fps_spinbox = ttk.Spinbox(export_window, from_=24, to=120, increment=1, textvariable=ttk.IntVar(value=self.fps), width=5)
-        fps_spinbox.grid(row=1, column=1, padx=10, pady=10, sticky="e")
-        fps_spinbox.set(self.fps)
-        fps_spinbox.bind("Return", lambda e: export_window.focus_set())
-        fps_spinbox.bind("<<Increment>>", lambda e: update_fps())
-        fps_spinbox.bind("<<Decrement>>", lambda e: update_fps())
-        fps_spinbox.bind("<FocusOut>", lambda e: update_fps())
 
         timeline_label = ttk.Label(export_window, text="Start Timeline (HH:mm:ss):")
         timeline_label.grid(row=2, column=0, sticky="e")
@@ -79,16 +67,6 @@ This function is dumb as f***. Please enter as HH:mm:ss
                 self.calc_timeline_offset()
             else:
                 logging.error("Invalid time format for timeline start.")
-
-        def update_fps():
-            try:
-                self.fps = int(fps_spinbox.get())
-                logging.info(f"FPS updated to {self.fps}")
-            except ValueError:
-                logging.error("Invalid FPS value entered.")
-
-    def export_success(self):
-        self.generate_button.config(bootstyle="success-outline", text="Done.", command=None)
 
     def calc_timeline_offset(self):
         try:
@@ -141,7 +119,10 @@ if (sequence) {
             self.export_success()
             
         except Exception as e:
-            logging.error(f"An error occurred while generating the JSX script: {e}", exc_info=True)
+            logging.error(f"An error occurred while generating the JSX script: {e}", exc_info=True) 
+
+    def export_success(self):
+        self.generate_button.config(bootstyle="success-outline", text="Done.", command=None)
 """
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
