@@ -87,7 +87,7 @@ class QuickEDLApp:
         edl_menu.add_command(label="New EDL", command=self.create_new_file)
         edl_menu.add_command(label="Open EDL", command=self.load_file)
         edl_menu.add_separator()
-        edl_menu.add_command(label="Export JSX", command=lambda: JSXExportWindow(self, self.file_path))
+        edl_menu.add_command(label="Export JSX", command=lambda: JSXExportWindow(self.root, self.file_path))
         menu_bar.add_cascade(label="EDL", menu=edl_menu)
 
         texts_menu = ttk.Menu(menu_bar, tearoff=0)
