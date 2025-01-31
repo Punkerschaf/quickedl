@@ -14,6 +14,7 @@ class JSXExportWindow:
         self.root = root
         self.timeline_start = "00:00:00" # HH:mm:ss
         self.timeline_offset = 0 # in seconds
+        self.output_name = "output_script"
 
         if file_path is not None:
             self.file_path = Path(file_path)
@@ -36,6 +37,15 @@ class JSXExportWindow:
         # Widgets
         label = ttk.Label(self.export_window, text="Export settings for Premiere Pro")
         label.grid(row=0, column=0, columnspan=2, padx=10, pady=10, sticky="n")
+
+        name_label = ttk.Label(self.export_window, text="Filename:")
+        name_label.grid(row=1, column=0,padx=5, pady=5,sticky="e")
+
+        self.name_entry_var = ttk.StringVar(value=self.output_name)
+        name_entry = ttk.Entry(self.export_window, textvariable=self.name_entry_var, width=15)
+        name_entry.grid(row=1, column=1, sticky="e")
+        name_entry.bind("<Return>", lambda event: update_output_name())
+        name_entry.bind("<FocusOut>", lambda event: update_output_name())
 
         timeline_label = ttk.Label(self.export_window, text="Start Timeline (HH:mm:ss):")
         timeline_label.grid(row=2, column=0, sticky="e")
@@ -70,6 +80,9 @@ This function is dumb as f***. Please enter as HH:mm:ss
                 self.calc_timeline_offset()
             else:
                 logging.error("Invalid time format for timeline start.")
+        
+        def update_output_name():
+            self.output_name = name_entry.get()
 
     def calc_timeline_offset(self):
         try:
@@ -91,8 +104,8 @@ This function is dumb as f***. Please enter as HH:mm:ss
 
     def generate_jsx_script(self):
         try:
-            output_path = self.file_path.parent / "output_script.jsx"
-            print(output_path)
+            self.output_path = self.file_path.parent / f"{self.output_name}.jsx"
+            print(self.output_path)
             jsx_content = """
 var project = app.project;
 var sequence = project.activeSequence;
@@ -114,10 +127,10 @@ if (sequence) {
     alert("No active sequence found.");
 }
 """
-            with open(output_path, 'w') as jsx_file:
+            with open(self.output_path, 'w') as jsx_file:
                 jsx_file.write(jsx_content)
-            logging.info(f"JSX script generated at {output_path}")
-            print(f"JSX generated at{output_path}")
+            logging.info(f"JSX script generated at {self.output_path}")
+            print(f"JSX generated at{self.output_path}")
             self.export_success()
             
         except Exception as e:
@@ -129,4 +142,4 @@ if (sequence) {
             show_confetti(window=self.export_window)
         except Exception:
             logging.error("Confetti gun is empty.", exc_info=True)  
-        self.export_window.after(1000, lambda: open_directory(self.file_path.parent))
+        self.export_window.after(1000, lambda: open_directory(self.output_path))
