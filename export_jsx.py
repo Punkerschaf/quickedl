@@ -59,10 +59,10 @@ This function is dumb as f***. Please enter as HH:mm:ss
         offset_value_label.grid(row=3, column=1, padx=10, pady=10, sticky="e")
 
         close_button = ttk.Button(self.export_window, text="Close", bootstyle="danger-outline", command=self.export_window.destroy)
-        close_button.grid(row=4, column=0, padx=10, pady=10, sticky="sw")
+        close_button.grid(row=4, column=0, padx=10, pady=10, sticky="s")
 
         self.generate_button = ttk.Button(self.export_window, text="Generate JSX", command=lambda: self.generate_jsx_script())
-        self.generate_button.grid(row=4, column=1, padx=10, pady=10, sticky="se")
+        self.generate_button.grid(row=4, column=1, padx=10, pady=10, sticky="s")
 
         def update_timeline_start():
             self.timeline_start = timeline_entry.get()
@@ -130,14 +130,3 @@ if (sequence) {
         except Exception:
             logging.error("Confetti gun is empty.", exc_info=True)  
         self.export_window.after(1000, lambda: open_directory(self.file_path.parent))
-
-"""
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    edl_file = "path/to/your/edl_file.txt"
-    output_jsx = "path/to/your/output_script.jsx"
-    exporter = jsx_export(edl_file)
-    exporter.open_export_window()
-    exporter.generate_jsx_script(output_jsx)
-    print(f"JSX script generated at {output_jsx}")
-"""
