@@ -14,17 +14,26 @@ def open_directory(path):
         path: path to open
     """
     try:
-        directory = Path(path)
-        if not directory.exists():
-            logging.error(f"Directory does not exist: {directory}")
+        path = Path(path)
+        if not path.exists():
+            logging.error(f"PAth does not exist: {path}")
             return
-        if not directory.is_dir():
-            logging.error(f"Path is not a directory: {directory}")
-            return
-        if os.name == 'nt':
-            subprocess.run(['explorer', str(directory)])
-        elif os.name == 'posix':
-            subprocess.run(['open', str(directory)])
+        if path.is_dir():
+            directory = path
+        else:
+            directory = path.parent
+        
+        if os.name == 'nt': # Windows
+            if path.is_dir():
+                subprocess.run(['explorer', str(directory)])
+            else:
+                subprocess.run(['explorer', '/select,', str(path)])
+
+        elif os.name == 'posix': # Unix
+            if path.is_dir():
+                subprocess.run(['open', str(directory)])
+            else:
+                subprocess.run(['open', '-R', str(path)])
         else:
             logging.error("Unsupported OS")
     except Exception as e:
