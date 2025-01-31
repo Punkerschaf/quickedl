@@ -16,7 +16,7 @@ def open_directory(path):
     try:
         path = Path(path)
         if not path.exists():
-            logging.error(f"PAth does not exist: {path}")
+            logging.error(f"Path does not exist: {path}")
             return
         if path.is_dir():
             directory = path
