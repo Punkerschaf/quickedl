@@ -3,10 +3,6 @@ from pathlib import Path
 import os
 import logging
 
-def debug(debug, msg):
-    if debug:
-        print(msg)
-
 def open_directory(path):
     """
     Opens a path in a explorer/finder window.

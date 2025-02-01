@@ -18,12 +18,12 @@ from about import show_about
 from random_entry import random_entry
 from export_jsx import JSXExportWindow
 import settings
-import utils
 
 # version number
 version = "2.0"
 # + backspace in textfields
 # + basic logging
+# + JSX Export
 
 class QuickEDLApp:
     def __init__(self, root):
@@ -308,7 +308,7 @@ class QuickEDLApp:
             for i, line in enumerate(lines[:9]):
                 self.text_entries[i].delete(0, END)
                 self.text_entries[i].insert(0, line.strip())
-            utils.debug(self.debug, f"Importet texts from {load_path}")
+            logging.info(f"Importet texts from {load_path}")
     
     def load_settings(self):
         self.settings_folder = settings.get_settings_folder()
@@ -319,7 +319,7 @@ class QuickEDLApp:
                 self.import_texts(load_path)
                 settings.load_yaml(self)
                 self.toast("Found and loaded settings.")
-                utils.debug(self.debug, f"Imported texts and settings from {load_path}")
+                logging.info(f"Imported texts and settings from {load_path}")
             else:
                 return
         else:
