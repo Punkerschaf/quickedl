@@ -15,11 +15,13 @@ class JSXExportWindow:
         self.timeline_start = "00:00:00" # HH:mm:ss
         self.timeline_offset = 0 # in seconds
         self.output_name = "output_script"
+        self.done = False
 
         if file_path is not None:
             self.file_path = Path(file_path)
             self.get_edl_entries()
             self.create_window()
+            logging.debug("JSXExportWindow init DONE.")
         else:
             Messagebox.show_error("No EDL file has been loaded.")
 
@@ -38,36 +40,33 @@ class JSXExportWindow:
         label = ttk.Label(self.export_window, text="Export settings for Premiere Pro")
         label.grid(row=0, column=0, columnspan=2, padx=10, pady=10, sticky="n")
 
-        name_label = ttk.Label(self.export_window, text="Filename:")
+        ## FILE NAME
+        name_label = ttk.Label(self.export_window, text="Filename:", anchor="e")
         name_label.grid(row=1, column=0,padx=5, pady=5,sticky="e")
 
         self.name_entry_var = ttk.StringVar(value=self.output_name)
         name_entry = ttk.Entry(self.export_window, textvariable=self.name_entry_var, width=15)
-        name_entry.grid(row=1, column=1, sticky="e")
+        name_entry.grid(row=1, column=1, padx=10, pady=10, sticky="w")
         name_entry.bind("<Return>", lambda event: update_output_name())
         name_entry.bind("<FocusOut>", lambda event: update_output_name())
 
-        timeline_label = ttk.Label(self.export_window, text="Start Timeline (HH:mm:ss):")
+        ## TIMELINE START
+        timeline_label = ttk.Label(self.export_window, text="Start Timeline (HH:mm:ss):", anchor="e")
         timeline_label.grid(row=2, column=0, sticky="e")
 
         self.timeline_start_var = ttk.StringVar(value=self.timeline_start)
         timeline_entry = ttk.Entry(self.export_window, text="Timeline", textvariable=self.timeline_start_var, width=10, bootstyle="success")
-        timeline_entry.grid(row=2, column=1, padx=10, pady=10, sticky="e")
+        timeline_entry.grid(row=2, column=1, padx=10, pady=10, sticky="w")
         add_regex_validation(timeline_entry, r'^\d{2}:\d{2}:\d{2}$', when='focus')
         timeline_entry.bind("<Return>", lambda event: self.export_window.focus_set())
-        timeline_entry.bind("<FocusOut>", lambda e: update_timeline_start())
+        timeline_entry.bind("<FocusOut>", lambda event: update_timeline_start())
 
         ToolTip(timeline_entry, delay=500, text="""
 Timecode start of your sequence. While markers are created in seconds relativ to this point, this is a bit of important.
 This function is dumb as f***. Please enter as HH:mm:ss
 """)
-        self.timeline_offset_var = ttk.StringVar(value=str(self.timeline_offset))
-        offset_label = ttk.Label(self.export_window, text="Timeline Offset (seconds):")
-        offset_label.grid(row=3, column=0, sticky="e")
 
-        offset_value_label = ttk.Label(self.export_window, textvariable=self.timeline_offset_var)
-        offset_value_label.grid(row=3, column=1, padx=10, pady=10, sticky="e")
-
+        ## BUTTONS
         close_button = ttk.Button(self.export_window, text="Close", bootstyle="danger-outline", command=self.export_window.destroy)
         close_button.grid(row=4, column=0, padx=10, pady=10, sticky="s")
 
@@ -88,8 +87,7 @@ This function is dumb as f***. Please enter as HH:mm:ss
         try:
             hours, minutes, seconds = map(int, self.timeline_start.split(":"))
             self.timeline_offset = hours * 3600 + minutes * 60 + seconds
-            print(f"timeline offset: {self.timeline_offset} frames.")
-            self.timeline_offset_var.set(str(self.timeline_offset))
+            logging.info(f"timeline offset: {self.timeline_offset} frames.")
         except ValueError: 
             logging.error("calc_timeline_offset failed")
 
@@ -103,41 +101,42 @@ This function is dumb as f***. Please enter as HH:mm:ss
             logging.error(f"An error occurred while reading the EDL file: {e}", exc_info=True)   
 
     def generate_jsx_script(self):
-        try:
-            self.output_path = self.file_path.parent / f"{self.output_name}.jsx"
-            print(self.output_path)
-            jsx_content = """
+        if not self.done:
+            try:
+                self.output_path = self.file_path.parent / f"{self.output_name}.jsx"
+                logging.debug(f"Generating JSX at{self.output_path}.")
+                jsx_content = """
 var project = app.project;
 var sequence = project.activeSequence;
 if (sequence) {
     var markers = sequence.markers;
     var fps = 50; // Frames per second
 """
-            for entry in self.entries:
-                time_str, text = entry.split(" - ", 1)
-                hours, minutes, seconds = map(int, time_str.split(":"))
-                marker_seconds = (hours * 3600 + minutes * 60 + seconds) - self.timeline_offset
-                jsx_content += f"""
+                for entry in self.entries:
+                    time_str, text = entry.split(" - ", 1)
+                    hours, minutes, seconds = map(int, time_str.split(":"))
+                    marker_seconds = (hours * 3600 + minutes * 60 + seconds) - self.timeline_offset
+                    jsx_content += f"""
     var newMarker = markers.createMarker({marker_seconds});
     newMarker.name = "{text}";
 """
-                print(f"entry converted: {text} at {marker_seconds} seconds.")
-            jsx_content += """
+                    logging.debug(f"entry converted: {text} at {marker_seconds} seconds.")
+                jsx_content += """
 } else {
     alert("No active sequence found.");
 }
 """
-            with open(self.output_path, 'w') as jsx_file:
-                jsx_file.write(jsx_content)
-            logging.info(f"JSX script generated at {self.output_path}")
-            print(f"JSX generated at{self.output_path}")
-            self.export_success()
-            
-        except Exception as e:
-            logging.error(f"An error occurred while generating the JSX script: {e}", exc_info=True) 
+                with open(self.output_path, 'w') as jsx_file:
+                    jsx_file.write(jsx_content)
+                logging.info(f"JSX script generated at {self.output_path}")
+                self.export_success()
+                    
+            except Exception as e:
+                logging.error(f"An error occurred while generating the JSX script: {e}", exc_info=True) 
 
     def export_success(self):
         self.generate_button.config(bootstyle="success-outline", text="Done.", command=None)
+        self.done = True
         try:
             show_confetti(window=self.export_window)
         except Exception:
