@@ -60,11 +60,14 @@ class QuickEDLApp:
     def setup_logging(self):
         log_file = Path(__file__).parent / "quickedl.log"
         logging.basicConfig(
-            filename=log_file,
             level=logging.INFO,
             format="%(asctime)s - %(levelname)s - %(message)s",
-            filemode='w'  # 'w' mode will truncate the file
-        )
+            handlers=[
+                logging.FileHandler(log_file, mode='w'),
+                logging.StreamHandler()
+            ])
+        logging.info("Logging initialized.")
+
 
 # GUI
 ####  #  #  ###
