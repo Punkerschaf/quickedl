@@ -1,3 +1,4 @@
 log_level: "DEBUG" # DEBUG, INFO, ERROR
 funny: True # if you want to have fun at work
 default_dir: "/home/desktop/edl/" # default path shown in save/load files
+delete_key: True

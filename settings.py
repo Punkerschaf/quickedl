@@ -36,9 +36,14 @@ def load_yaml(app):
 
             # Funny mode
             app.funny = settings_data.get('funny', app.funny)
+            logging.debug(f"Set funny mode by settings to {app.funny}")
 
             # Default directory
             app.default_dir = settings_data.get('default_dir', app.default_dir)
+
+            #Delete Key
+            app.delete_key = settings_data.get('delete_key', app.delete_key)
+            logging.debug(f"Set delete key by settings to {app.delete_key}")
     else:
         print("Error: Could not find settings file")
         return
@@ -83,6 +88,12 @@ def show_settings_window(app):
     folder_indicator.pack()
     update_folder_indicator(app, folder_indicator)
 
+# default edl path
+    default_edl_frame = ttk.LabelFrame(settings_window, text=" default directory ")
+    default_edl_frame.pack(padx=10, pady=5, fill='x')
+    default_path_label = ttk.Label(default_edl_frame, text=app.default_dir, bootstyle="warning")
+    default_path_label.pack(pady=5)
+
 # Logging
     logging_frame = ttk.Labelframe(settings_window, text=" Logging ")
     logging_frame.pack(padx=10, pady=5, fill='x')
@@ -91,19 +102,28 @@ def show_settings_window(app):
     log_file_button = ttk.Button(logging_frame, text="show log file", command=open_log_file)
     log_file_button.pack(pady=5)
 
-# default edl path
-    default_edl_frame = ttk.LabelFrame(settings_window, text=" default directory ")
-    default_edl_frame.pack(padx=10, pady=5, fill='x')
-    default_path_label = ttk.Label(default_edl_frame, text=app.default_dir, bootstyle="warning")
-    default_path_label.pack(pady=5)
+# Shortcuts
+    shortcut_frame = ttk.Labelframe(settings_window, text=" Shortcuts ")
+    shortcut_frame.pack(padx=10, pady=5, fill='x')
+    delete_key_var = BooleanVar(value=app.delete_key)
+    delete_key_toggle = ttk.Checkbutton(shortcut_frame,
+                                        bootstyle="success-square-toggle",
+                                        text="Delete last entry by shortcut (backspace):",
+                                        variable=delete_key_var,
+                                        command=lambda: setattr(app, 'delete_key', delete_key_var.get()))
+    delete_key_toggle.pack(padx=10, pady=5, side="left")
+
 
 # misc settings
     misc_frame = ttk.LabelFrame(settings_window, text=" misc ")
     misc_frame.pack(padx=10, pady=5, fill='x')
     funny_var = BooleanVar(value=app.funny)
-    funny_toggle = ttk.Checkbutton(misc_frame, text="funny mode", bootstyle="success-square-toggle",
-                                   variable=funny_var, command=lambda: setattr(app, 'funny', funny_var.get()))
-    funny_toggle.pack(pady=5)
+    funny_toggle = ttk.Checkbutton(misc_frame,
+                                   text="funny mode",
+                                   bootstyle="success-square-toggle",
+                                   variable=funny_var,
+                                   command=lambda: setattr(app, 'funny', funny_var.get()))
+    funny_toggle.pack(padx=10, pady=5, side="left")
 
 # close Button
     confirmation_frame = ttk.Frame(settings_window)

@@ -42,6 +42,7 @@ class QuickEDLApp:
         self.log_level = "DEBUG"
         self.funny = False
         self.default_dir = None
+        self.delete_key = False
 
         # Hotkey status
         self.hotkeys_active = True
@@ -387,7 +388,7 @@ class QuickEDLApp:
             self.entry_error()
 
     def handle_backspace(self, event):
-        if event.widget not in self.text_entries:
+        if event.widget not in self.text_entries and self.delete_key:
             self.delete_last_entry(self)
 
     def delete_last_entry(self, event): #TODO deletes max 5 entries while bound to last_entries_label      
