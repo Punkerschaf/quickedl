@@ -1,8 +1,11 @@
 import yaml
+import logging
 from pathlib import Path
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *  # noqa: F403
 from tkinter import BooleanVar
+
+from utils import open_directory
 
 #######################
 ### SETTINGS FOLDER ###
@@ -26,15 +29,24 @@ def load_yaml(app):
     if settings_file.exists():
         with settings_file.open('r') as file:
             settings_data = yaml.safe_load(file)
-            app.debug = settings_data.get('debug', app.debug)
-            print("debug: ", app.debug)
+
+            # Log Level
+            app.log_level = settings_data.get('log_level', app.log_level)
+            set_log_level(app.log_level)
+
+            # Funny mode
             app.funny = settings_data.get('funny', app.funny)
-            print("funny: ", app.funny)
+
+            # Default directory
             app.default_dir = settings_data.get('default_dir', app.default_dir)
-            print("default_dir: ", app.default_dir)
     else:
         print("Error: Could not find settings file")
         return
+
+def set_log_level(level):
+        logging.getLogger().setLevel(level)
+        logging.info(f"Logging level set to {level}")
+
 
 #######################
 ### Settings WINDOW ###
@@ -44,7 +56,7 @@ def show_settings_window(app):
     """Shows the settings window of the app object."""
     settings_window = ttk.Toplevel(app.root)
     settings_window.title("QuickEDL: Settings")
-    settings_window.geometry("400x250")
+    settings_window.geometry("400x350")
 
     def update_folder_indicator(app, folder_indicator):
         if app.settings_folder.exists():
@@ -54,6 +66,11 @@ def show_settings_window(app):
 
     def close_settings_window(self, event = None):
         settings_window.destroy()
+    
+    def open_log_file(event = None):
+        log_file = Path.home() / "quickedl.log"
+        if log_file.exists():
+            open_directory(log_file)
 
     settings_window.bind("<Escape>", close_settings_window)
 
@@ -65,6 +82,14 @@ def show_settings_window(app):
     folder_indicator = ttk.Label(settings_folder_frame, text="not found", bootstyle="warning")
     folder_indicator.pack()
     update_folder_indicator(app, folder_indicator)
+
+# Logging
+    logging_frame = ttk.Labelframe(settings_window, text=" Logging ")
+    logging_frame.pack(padx=10, pady=5, fill='x')
+    log_level_label = ttk.Label(logging_frame, text=f"Log level: {app.log_level}")
+    log_level_label.pack(pady=5)
+    log_file_button = ttk.Button(logging_frame, text="show log file", command=open_log_file)
+    log_file_button.pack(pady=5)
 
 # default edl path
     default_edl_frame = ttk.LabelFrame(settings_window, text=" default directory ")

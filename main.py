@@ -12,8 +12,6 @@ from tkinter import END
 from pathlib import Path
 import logging
 
-# from export_cmx import export_cmx
-# from export_fcp7 import export_to_xml_with_static
 from about import show_about
 from random_entry import random_entry
 from export_jsx import JSXExportWindow
@@ -41,7 +39,7 @@ class QuickEDLApp:
         self.settings_folder_str = StringVar(value=str(self.settings_folder))
 
         # settings
-        self.debug = False
+        self.log_level = "DEBUG"
         self.funny = False
         self.default_dir = None
 
@@ -58,7 +56,8 @@ class QuickEDLApp:
         self.check_window_focus()
 
     def setup_logging(self):
-        log_file = Path(__file__).parent / "quickedl.log"
+        home_dir = Path.home()
+        log_file = home_dir / "quickedl.log"
         logging.basicConfig(
             level=logging.INFO,
             format="%(asctime)s - %(levelname)s - %(message)s",
@@ -66,8 +65,7 @@ class QuickEDLApp:
                 logging.FileHandler(log_file, mode='w'),
                 logging.StreamHandler()
             ])
-        logging.info("Logging initialized.")
-
+        logging.info(f"Logging initialized at {log_file}.")
 
 # GUI
 ####  #  #  ###
