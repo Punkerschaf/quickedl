@@ -15,6 +15,7 @@ import logging
 from about import show_about
 from random_entry import random_entry
 from export_jsx import JSXExportWindow
+from utils import open_directory
 import settings
 
 # version number
@@ -107,6 +108,7 @@ class QuickEDLApp:
         self.file_labelframe.pack(fill="x", padx=10)
         self.file_label = ttk.Label(self.file_labelframe, text="No EDL file loaded.")
         self.file_label.pack(anchor="w", padx=5, pady=5)
+        self.file_label.bind("<Double-Button-1>", lambda e:open_directory(self.file_path))
 
         # Time display
         self.time_label = ttk.Label(self.root, text="", font=("Courier New", 26))
