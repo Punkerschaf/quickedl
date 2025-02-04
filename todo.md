@@ -3,7 +3,7 @@
 [x] set path of edl file as initialdir for other opensavedialogs
 [x] create example settings folder
 [x] rename "last entries" to "history"
-[ ] update documentation
+[x] update documentation
 
 # build release
 [x] implement os-specific icon in build-workflow
@@ -15,8 +15,7 @@
 [ ] feat: setting for lines in last_entries
 [ ] docstrings
 [ ] time offset
-[ ] JSX export
-[ ] JSX direct execution in Premiere Pro
+[x] JSX export
 
 # vx
 [ ] LTC timecode support
