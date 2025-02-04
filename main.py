@@ -53,7 +53,6 @@ class QuickEDLApp:
         # create window
         self.create_menu()
         self.create_widgets()
-        # self.adjust_window_height() # XXX:remove when finally unused
         self.check_window_focus()
 
     def setup_logging(self):
@@ -391,7 +390,7 @@ class QuickEDLApp:
         if event.widget not in self.text_entries and self.delete_key:
             self.delete_last_entry(self)
 
-    def delete_last_entry(self, event): #TODO deletes max 5 entries while bound to last_entries_label      
+    def delete_last_entry(self, event):  
         if self.file_path and self.last_entries:
             # Read all lines from the file
             with Path(self.file_path).open('r') as file:
