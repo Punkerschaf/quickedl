@@ -1,5 +1,5 @@
 # QuickEDL
-# 2024 / Eric Kirchheim (punkerschaf)
+# 2024-2025 / Eric Kirchheim (punkerschaf)
 
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import LEFT, RIGHT
@@ -318,7 +318,7 @@ class QuickEDLApp:
             else:
                 return
         else:
-            print("No texts loaded.")
+            logging.info("No texts loaded.")
 
 # entries
 ####  #  #  ####  ###   ###   ####   ###
