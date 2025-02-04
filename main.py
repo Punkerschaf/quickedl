@@ -18,10 +18,7 @@ from export_jsx import JSXExportWindow
 import settings
 
 # version number
-version = "2.0"
-# + backspace in textfields
-# + basic logging
-# + JSX Export
+version = "2.1"
 
 class QuickEDLApp:
     def __init__(self, root):
