@@ -61,7 +61,7 @@ def show_settings_window(app):
     """Shows the settings window of the app object."""
     settings_window = ttk.Toplevel(app.root)
     settings_window.title("QuickEDL: Settings")
-    settings_window.geometry("400x350")
+    settings_window.geometry("400x450")
 
     def update_folder_indicator(app, folder_indicator):
         if app.settings_folder.exists():

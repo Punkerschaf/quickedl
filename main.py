@@ -89,8 +89,9 @@ class QuickEDLApp:
         menu_bar.add_cascade(label="EDL", menu=edl_menu)
 
         texts_menu = ttk.Menu(menu_bar, tearoff=0)
-        texts_menu.add_command(label="Save Texts", command=self.save_texts)
-        texts_menu.add_command(label="Load Texts", command=self.open_texts)
+        texts_menu.add_command(label="Save texts", command=self.save_texts)
+        texts_menu.add_command(label="Load texts", command=self.open_texts)
+        texts_menu.add_command(label="Load default texts", command=self.load_default_texts)
         menu_bar.add_cascade(label="Texts", menu=texts_menu)
 
         self.root.config(menu=menu_bar)
@@ -319,6 +320,21 @@ class QuickEDLApp:
                 return
         else:
             logging.info("No texts loaded.")
+    
+    def load_default_texts(self):
+        if self.settings_folder.exists():
+            load_path = self.settings_folder / "texts.txt"
+            if load_path.exists():
+                self.import_texts(load_path)
+                logging.info(f"Imported texts and settings from {load_path}")
+            else:
+                Messagebox.show_error("Default text file doesn't exist.")
+                logging.error("Default text file doesn't exist.")
+                return
+        else:
+            Messagebox.show_error("Settingsfolder not found.")
+            logging.error("Settingsfolder not found.")
+
 
 # entries
 ####  #  #  ####  ###   ###   ####   ###
