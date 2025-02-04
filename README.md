@@ -1,10 +1,10 @@
 # QuickEDL
-![logo](resources/icon_win.ico | width=128px)
+![logo](resources/icon_win.ico | width=128)
 
 Simple application used at live video production to create a list with timestamps and comments similar to an *Edit Decision List (EDL)*.
 Prefilled comments are chosen by button or hotkey and safed with timestamp in a txt-file.
 
-![screensshot mainwindow](assets/main-window-2.0.png | width=400px)
+![screensshot mainwindow](assets/main-window-2.0.png | width=400)
 
 # How it works
 
