@@ -19,7 +19,7 @@ from utils import open_directory
 import settings
 
 # version number
-version = "2.1"
+version = "2.1-beta"
 
 class QuickEDLApp:
     def __init__(self, root):
