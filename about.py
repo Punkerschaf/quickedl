@@ -2,6 +2,8 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *  # noqa: F403
 import webbrowser
 from PIL import Image, ImageTk
+import io
+from logo import bin_logo
 
 def callback(url):
     webbrowser.open_new(url)
@@ -17,9 +19,9 @@ def show_about(app, version):
 
     aboutscreen.bind("<Button-1>", leave_about)
     aboutscreen.bind("<Escape>", leave_about)
-    
-    image_path = "resources/icon_unix.png"
-    logo = Image.open(image_path)
+
+    image_stream = io.BytesIO(bin_logo)
+    logo = Image.open(image_stream)
     logo = logo.resize((150, 150))
     photo = ImageTk.PhotoImage(logo)
     logo_label = ttk.Label(aboutscreen, image=photo)
