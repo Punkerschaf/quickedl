@@ -14,12 +14,12 @@ jobs:
         with:
           python-version: 3.11
 
+      - name: Install dependencies
+        run: pip install -r dependencies.txt
+
       - name: Extract version
         id: get_version
         run: echo "VERSION=$(python -c 'import main; print(main.version)')" >> $GITHUB_ENV
-
-      - name: Install dependencies
-        run: pip install -r dependencies.txt
 
       - name: Build executable
         run: pyinstaller --noconfirm --onefile --noconsole --name QuickEDL-${{ env.VERSION }} --icon ./resources/icon_win.ico --add-data "resources/*;." main.py
@@ -44,12 +44,12 @@ jobs:
         with:
           python-version: 3.11
 
+      - name: Install dependencies
+        run: arch -${{ matrix.arch }} pip install -r dependencies.txt
+
       - name: Extract version
         id: get_version
         run: echo "VERSION=$(python -c 'import main; print(main.version)')" >> $GITHUB_ENV
-
-      - name: Install dependencies
-        run: arch -${{ matrix.arch }} pip install -r dependencies.txt
 
       - name: Build executable
         run: |
@@ -73,12 +73,12 @@ jobs:
         with:
           python-version: 3.11
 
+      - name: Install dependencies
+        run: pip install -r dependencies.txt
+
       - name: Extract version
         id: get_version
         run: echo "VERSION=$(python -c 'import main; print(main.version)')" >> $GITHUB_ENV
-
-      - name: Install dependencies
-        run: pip install -r dependencies.txt
 
       - name: Build executable
         run: |
