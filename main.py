@@ -1,5 +1,5 @@
 # QuickEDL
-# 2024 / Eric Kirchheim (punkerschaf)
+# 2024-2025 / Eric Kirchheim (punkerschaf)
 
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import LEFT, RIGHT
@@ -15,13 +15,11 @@ import logging
 from about import show_about
 from random_entry import random_entry
 from export_jsx import JSXExportWindow
+from utils import open_directory
 import settings
 
 # version number
-version = "2.0"
-# + backspace in textfields
-# + basic logging
-# + JSX Export
+version = "2.1-beta"
 
 class QuickEDLApp:
     def __init__(self, root):
@@ -92,8 +90,9 @@ class QuickEDLApp:
         menu_bar.add_cascade(label="EDL", menu=edl_menu)
 
         texts_menu = ttk.Menu(menu_bar, tearoff=0)
-        texts_menu.add_command(label="Save Texts", command=self.save_texts)
-        texts_menu.add_command(label="Load Texts", command=self.open_texts)
+        texts_menu.add_command(label="Save texts", command=self.save_texts)
+        texts_menu.add_command(label="Load texts", command=self.open_texts)
+        texts_menu.add_command(label="Load default texts", command=self.load_default_texts)
         menu_bar.add_cascade(label="Texts", menu=texts_menu)
 
         self.root.config(menu=menu_bar)
@@ -109,6 +108,7 @@ class QuickEDLApp:
         self.file_labelframe.pack(fill="x", padx=10)
         self.file_label = ttk.Label(self.file_labelframe, text="No EDL file loaded.")
         self.file_label.pack(anchor="w", padx=5, pady=5)
+        self.file_label.bind("<Double-Button-1>", lambda e:open_directory(self.file_path))
 
         # Time display
         self.time_label = ttk.Label(self.root, text="", font=("Courier New", 26))
@@ -321,7 +321,22 @@ class QuickEDLApp:
             else:
                 return
         else:
-            print("No texts loaded.")
+            logging.info("No texts loaded.")
+    
+    def load_default_texts(self):
+        if self.settings_folder.exists():
+            load_path = self.settings_folder / "texts.txt"
+            if load_path.exists():
+                self.import_texts(load_path)
+                logging.info(f"Imported texts and settings from {load_path}")
+            else:
+                Messagebox.show_error("Default text file doesn't exist.")
+                logging.error("Default text file doesn't exist.")
+                return
+        else:
+            Messagebox.show_error("Settingsfolder not found.")
+            logging.error("Settingsfolder not found.")
+
 
 # entries
 ####  #  #  ####  ###   ###   ####   ###

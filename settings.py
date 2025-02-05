@@ -20,7 +20,7 @@ def get_settings_folder():
         settings_folder = home_dir  / "quickedl"
         return settings_folder
     except Exception as e:
-        print(f"Error: Could not find settings folder. ({e})")
+        logging.warning(f"Could not find settings folder. ({e})")
 
 def load_yaml(app):
     """Searchs for settings.yaml in the settings folder and loads them into the app.
@@ -45,7 +45,7 @@ def load_yaml(app):
             app.delete_key = settings_data.get('delete_key', app.delete_key)
             logging.debug(f"Set delete key by settings to {app.delete_key}")
     else:
-        print("Error: Could not find settings file")
+        logging.error("Could not find settings file.")
         return
 
 def set_log_level(level):
@@ -61,7 +61,7 @@ def show_settings_window(app):
     """Shows the settings window of the app object."""
     settings_window = ttk.Toplevel(app.root)
     settings_window.title("QuickEDL: Settings")
-    settings_window.geometry("400x350")
+    settings_window.geometry("400x450")
 
     def update_folder_indicator(app, folder_indicator):
         if app.settings_folder.exists():

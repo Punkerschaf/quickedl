@@ -2,6 +2,8 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *  # noqa: F403
 import webbrowser
 from PIL import Image, ImageTk
+import io
+from logo import bin_logo
 
 def callback(url):
     webbrowser.open_new(url)
@@ -17,9 +19,9 @@ def show_about(app, version):
 
     aboutscreen.bind("<Button-1>", leave_about)
     aboutscreen.bind("<Escape>", leave_about)
-    
-    image_path = "resources/icon_unix.png"
-    logo = Image.open(image_path)
+
+    image_stream = io.BytesIO(bin_logo)
+    logo = Image.open(image_stream)
     logo = logo.resize((150, 150))
     photo = ImageTk.PhotoImage(logo)
     logo_label = ttk.Label(aboutscreen, image=photo)
@@ -27,14 +29,15 @@ def show_about(app, version):
     logo_label.pack(pady=20)
 
     label1 = ttk.Label(aboutscreen, text=f"QuickEDL {version}", font=("Courier New", 14))
-    label1.pack(padx=10)
+    label1.pack(padx=10, pady=10)
 
-    label2 = ttk.Label(aboutscreen, text="© 2024, Eric Kirchheim")
+    label2 = ttk.Label(aboutscreen, text="© 2024-2025, Eric Kirchheim")
     label2.pack()
 
     urlgithub = "https://www.github.com/punkerschaf/quickedl"
-    label3 = ttk.Label(aboutscreen, text=urlgithub, cursor="hand2")
-    label3.pack()
+    label3 = ttk.Label(aboutscreen, text=urlgithub, bootstyle="info")
+    label3.configure(underline=True)
+    label3.pack(padx=10, pady=10)
     label3.bind("<Button-1>", lambda e: callback(urlgithub))
 
     sep4 = ttk.Separator(aboutscreen)
