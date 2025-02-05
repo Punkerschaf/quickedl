@@ -19,7 +19,9 @@ jobs:
 
       - name: Extract version
         id: get_version
-        run: echo "VERSION=$(python -c 'import main; print(main.version)')" >> $GITHUB_ENV
+        run: |
+          echo "VERSION=$(python -c 'import main; print(main.version)')" >> $GITHUB_ENV
+          echo "Extracted version: ${{ env.VERSION }}"
 
       - name: Build executable
         run: pyinstaller --noconfirm --onefile --noconsole --name QuickEDL-${{ env.VERSION }} --icon ./resources/icon_win.ico --add-data "resources/*;." main.py
@@ -27,7 +29,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: QuickEDL-Windows-${{ env.VERSION }}
+          name: QuickEDL-Windows-${{ env.VERSION }}-${{ matrix.arch }}
           path: dist/QuickEDL-${{ env.VERSION }}.exe
 
   build-macos:
@@ -49,17 +51,19 @@ jobs:
 
       - name: Extract version
         id: get_version
-        run: echo "VERSION=$(python -c 'import main; print(main.version)')" >> $GITHUB_ENV
+        run: |
+          echo "VERSION=$(python -c 'import main; print(main.version)')" >> $GITHUB_ENV
+          echo "Extracted version: ${{ env.VERSION }}"
 
       - name: Build executable
         run: |
           arch -${{ matrix.arch }} pyinstaller --noconfirm --windowed --noconsole --name QuickEDL-${{ env.VERSION }} --icon ./resources/icon_mac.icns --add-data "resources/*:." main.py
-          mv dist/QuickEDL-${{ env.VERSION }} dist/QuickEDL-${{ env.VERSION }}.app
+          mv dist/QuickEDL dist/QuickEDL-${{ env.VERSION }}.app
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: QuickEDL-macOS-${{ matrix.arch }}-${{ env.VERSION }}
+          name: QuickEDL-${{ env.VERSION }}-macOS_${{ matrix.arch }}
           path: dist/QuickEDL-${{ env.VERSION }}.app
 
   build-linux:
@@ -78,7 +82,9 @@ jobs:
 
       - name: Extract version
         id: get_version
-        run: echo "VERSION=$(python -c 'import main; print(main.version)')" >> $GITHUB_ENV
+        run: |
+          echo "VERSION=$(python -c 'import main; print(main.version)')" >> $GITHUB_ENV
+          echo "Extracted version: ${{ env.VERSION }}"
 
       - name: Build executable
         run: |
