@@ -29,7 +29,7 @@ def show_about(app, version):
     logo_label.pack(pady=20)
 
     label1 = ttk.Label(aboutscreen, text=f"QuickEDL {version}", font=("Courier New", 14))
-    label1.pack(padx=10)
+    label1.pack(padx=10, pady=10)
 
     label2 = ttk.Label(aboutscreen, text="© 2024-2025, Eric Kirchheim")
     label2.pack()
@@ -37,7 +37,7 @@ def show_about(app, version):
     urlgithub = "https://www.github.com/punkerschaf/quickedl"
     label3 = ttk.Label(aboutscreen, text=urlgithub, bootstyle="info")
     label3.configure(underline=True)
-    label3.pack()
+    label3.pack(padx=10, pady=10)
     label3.bind("<Button-1>", lambda e: callback(urlgithub))
 
     sep4 = ttk.Separator(aboutscreen)
