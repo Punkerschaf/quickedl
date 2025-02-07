@@ -134,6 +134,18 @@ class QuickEDLApp:
 
         self.bind_text_entries()
 
+        # Playlist entry dummy
+        playlist_text_dummy = "This is a test Playlist"
+
+        playlist_frame = ttk.Frame(self.root)
+        playlist_frame.grid(column=2, columnspan=5, row=13, padx=10, sticky="EW")
+
+        playlist_selector = ttk.Spinbox(playlist_frame, textvariable=playlist_text_dummy, from_=0, to=100, bootstyle="warning", width=29)
+        playlist_selector.pack(side=LEFT, padx=10, pady=5)
+
+        playlist_button = ttk.Button(playlist_frame, text="Plst", width=3, command=lambda e: self.add_to_file(playlist_text_dummy))
+        playlist_button.pack(side=RIGHT, pady=5)
+
         # Special entries
         separator_button = ttk.Button(root, text="Separator (0)", command=self.add_separator)
         separator_button.grid(column=3, row= 14, padx=5, pady=5, sticky="E")
