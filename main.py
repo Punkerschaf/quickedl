@@ -105,54 +105,56 @@ class QuickEDLApp:
 
         # File label
         self.file_labelframe = ttk.Labelframe(self.root, bootstyle="warning", text=" loaded File ")
-        self.file_labelframe.pack(fill="x", padx=10)
+        self.file_labelframe.grid(column=1, columnspan=6, row=1, padx=10, sticky="EW")
         self.file_label = ttk.Label(self.file_labelframe, text="No EDL file loaded.")
         self.file_label.pack(anchor="w", padx=5, pady=5)
         self.file_label.bind("<Double-Button-1>", lambda e:open_directory(self.file_path))
 
         # Time display
         self.time_label = ttk.Label(self.root, text="", font=("Courier New", 26))
-        self.time_label.pack()
+        self.time_label.grid(column=2, columnspan=3, row=2)
         self.update_time()
 
         # Hotkey status label
         self.hotkey_status = ttk.Label(self.root, text="Hotkeys Active", font=("Courier New", 14), bootstyle="success")
-        self.hotkey_status.pack()
+        self.hotkey_status.grid(column=2, columnspan=3, row=3)
 
         # Text entry fields
         self.text_entries = []
         for i in range(9):
             frame = ttk.Frame(self.root)
-            frame.pack(pady=5)
+            frame.grid(column=2, columnspan=5, row=i+4, padx=10, sticky="EW")
 
             entry = ttk.Entry(frame, width=30)
-            entry.pack(side=LEFT, padx=10)
+            entry.pack(side=LEFT, padx=10, pady=5)
             self.text_entries.append(entry)
 
-            button = ttk.Button(frame, text=f"{i + 1}", command=lambda i=i: self.add_to_file(i))
-            button.pack(side=RIGHT)
+            button = ttk.Button(frame, text=f"{i + 1}", command=lambda i=i: self.add_to_file(i), width=2)
+            button.pack(side=RIGHT, pady=5)
 
         self.bind_text_entries()
 
         # Special entries
-        specialbuttons = ttk.Frame(self.root)
-        specialbuttons.pack(pady=5)
+        separator_button = ttk.Button(root, text="Separator (0)", command=self.add_separator)
+        separator_button.grid(column=3, row= 14, padx=5, pady=5, sticky="E")
 
-        separator_button = ttk.Button(specialbuttons, text="Separator (0)", command=self.add_separator)
-        separator_button.pack(side="left", padx=5, pady=5)
+        popup_button = ttk.Button(root, text="Popup (Space)", command=self.add_with_popup)
+        popup_button.grid(column=4, row= 14, padx=5, pady=5, sticky="E")
 
-        popup_button = ttk.Button(specialbuttons, text="Popup (Space)", command=self.add_with_popup)
-        popup_button.pack(side="left", padx=5, pady=5)
-
-        delete_button = ttk.Button(specialbuttons, text="Delete", bootstyle="danger-outline", command=self.delete_last_entry)
-        delete_button.pack(side="left", padx=5, pady=5)
+        delete_button = ttk.Button(root, text="Delete", bootstyle="danger-outline", command=self.delete_last_entry)
+        delete_button.grid(column=5, row= 14, padx=5, pady=5, sticky="E")
 
         # Last entries display
         self.entries_labelframe = ttk.Labelframe(self.root, bootstyle="primary", text=" History ")
-        self.entries_labelframe.pack(fill="both", expand=True, padx=10, pady=5)
+        self.entries_labelframe.grid(column=1, columnspan=6, row=16, sticky="NSEW", padx=10, pady=5)
         self.last_entries_text = ttk.StringVar(value="No entries yet.")
         last_entries_label = ttk.Label(self.entries_labelframe, textvariable=self.last_entries_text, justify=LEFT)
         last_entries_label.pack(pady=5, fill="both", expand=True)
+
+        root.rowconfigure(16, weight=1)
+        root.columnconfigure(1, weight=1, minsize=10)
+        root.columnconfigure(2, weight=1)
+        root.columnconfigure(6, weight=0, minsize=10)
 
     def bind_text_entries(self):
         for entry in self.text_entries:
