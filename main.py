@@ -17,6 +17,7 @@ from random_entry import random_entry
 from export_jsx import JSXExportWindow
 from utils import open_directory
 import settings
+from playlist import Playlist
 
 # version number
 version = "2.1"
@@ -47,6 +48,9 @@ class QuickEDLApp:
         self.entry_focused = False
         self.window_focused = True
         self.hotkey_status = None # init-Placeholder for label widget
+
+        # Playlist
+        self.playlist = Playlist()
 
         # create window
         self.create_menu()
@@ -93,6 +97,8 @@ class QuickEDLApp:
         texts_menu.add_command(label="Save texts", command=self.save_texts)
         texts_menu.add_command(label="Load texts", command=self.open_texts)
         texts_menu.add_command(label="Load default texts", command=self.load_default_texts)
+        texts_menu.add_separator()
+        texts_menu.add_command(label="Edit playlist", command=self.playlist.playlist_edit_window)
         menu_bar.add_cascade(label="Texts", menu=texts_menu)
 
         self.root.config(menu=menu_bar)
@@ -134,16 +140,24 @@ class QuickEDLApp:
 
         self.bind_text_entries()
 
-        # Playlist entry dummy
-        playlist_text_dummy = "This is a test Playlist"
-
+        # Playlist
         playlist_frame = ttk.Frame(self.root)
         playlist_frame.grid(column=2, columnspan=5, row=13, padx=10, sticky="EW")
 
-        playlist_selector = ttk.Spinbox(playlist_frame, textvariable=playlist_text_dummy, from_=0, to=100, bootstyle="warning", width=29)
-        playlist_selector.pack(side=LEFT, padx=10, pady=5)
+        playlist_label = ttk.Entry(playlist_frame, 
+                                   textvariable=self.playlist.playhead_text, 
+                                   bootstyle="readonly", 
+                                   state="readonly", 
+                                   width=20)
+        playlist_label.pack(side=LEFT, padx=10, pady=5)
+        
+        self.plst_dec_button = ttk.Button(playlist_frame, text="<", bootstyle="primary", command= self.playlist.dec_playhead)
+        self.plst_dec_button.pack(side=LEFT)
 
-        playlist_button = ttk.Button(playlist_frame, text="Plst", width=3, command=lambda e: self.add_to_file(playlist_text_dummy))
+        self.plst_inc_button = ttk.Button(playlist_frame, text=">", bootstyle="primary", command= self.playlist.inc_playhead)
+        self.plst_inc_button.pack(side=LEFT)
+ 
+        playlist_button = ttk.Button(playlist_frame, text="Plst", width=3, command=lambda event: self.add_to_file(self.playlist.playhead_stringvar))
         playlist_button.pack(side=RIGHT, pady=5)
 
         # Special entries
@@ -186,7 +200,9 @@ class QuickEDLApp:
         self.root.geometry(f"400x{height}")
 
     def check_window_focus(self):
-        """Check if the window is focused and update hotkey status."""
+        """
+        Check if the window is focused and update hotkey status.
+        """
         try:
             focused_widget = self.root.focus_displayof()
             widget_name = str(focused_widget) if focused_widget else ""
@@ -247,7 +263,7 @@ class QuickEDLApp:
         self.text_entries[index].config(bootstyle="danger")
         self.root.after(500, lambda: self.text_entries[index].config(bootstyle="default"))
     
-    def toast(self, message):
+    def toast(self, message): #TODO Remove Toast and Toast call at start
         toast = ToastNotification(
             title="QuickEDL",
             message=message,
@@ -256,6 +272,9 @@ class QuickEDLApp:
             icon=""
         )
         toast.show_toast()
+    
+    def update_playlist_selector(self, lenght, *args):
+        self.playlist_selector.configure(to=lenght)
 
 #####################
 ### APP FUNCTIONS ###
@@ -359,7 +378,7 @@ class QuickEDLApp:
 #     # ##   #    # #    #    #        #
 ####  #  #   #    #  #  ###   ####  ###
 
-    def add_to_file(self, index):
+    def add_to_file(self, index, *args):
         if self.hotkeys_active and self.file_path:
             text = self.text_entries[index].get()
             if not text and self.funny:
@@ -456,11 +475,11 @@ class QuickEDLApp:
 ### EXPORT ###
 ##############
 
-    def export_cmx(self):
+    def export_cmx(self): #XXX
         # Placeholder for CMX export
         Messagebox.show_info("Export CMX functionality is not implemented yet.")
 
-    def export_fcp7(self):
+    def export_fcp7(self): #XXX
         # Placeholder for FCP7 export
         Messagebox.show_info("Export FCP7 XML functionality is not implemented yet.")
 

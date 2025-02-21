@@ -7,9 +7,32 @@ import logging
 
 class Playlist():
     def __init__(self, **kwargs):
+        """
+        Creates an playlist instance.
+
+        Objects:
+            playhead: ttk.IntVar
+                Used by Widget as index to point at list
+            
+            playhead_text: ttk.StrVar
+                Usef by Widget as text from list
+            
+            data_len: ttk.IntVar
+                Used by spinbox widget as dynamic list lenght.
+        
+        Functions:
+            playlist_edit_window(): Shows the playlist editor
+            change_playhead(new_value): change playhead position
+            playlist_entry(): returns current playlist text as String and increments playhead after that.
+        """
         self.data = ["No Items"]
-        self.playhead = 0
-        self.playhead_stringvar = StringVar(value=str(self.data[self.playhead]))
+        self.data_len = ttk.IntVar(value=len(self.data))
+
+        self.playhead = ttk.IntVar(value=0) # Index variable for selector
+        self.playhead.trace_add("write", self.on_playhead_update)
+        
+        self.playhead_text = StringVar(value=self.data[self.playhead.get()])
+
         self.edit_window = None
         self.directory = kwargs.get('directory', Path.home())
         logging.debug("Playlist initialized.")
@@ -57,6 +80,8 @@ class Playlist():
 
         self.populate_list()
 
+    # GUI
+
     def close_window(self):
         self.edit_window.destroy()
         self.edit_window = None
@@ -71,6 +96,7 @@ class Playlist():
         new_entry = f"Eintrag {len(self.data) + 1}"
         self.data.append(new_entry)
         self.populate_list()
+        self.update_data_len()
 
     def remove_item(self):
         selected = self.tree.selection()
@@ -78,6 +104,7 @@ class Playlist():
             index = self.tree.index(selected[0])
             del self.data[index]
             self.populate_list()
+            self.update_data_len()
 
     def move_up(self):
         selected = self.tree.selection()
@@ -130,11 +157,67 @@ class Playlist():
             self.tree.selection_set(self.tree.get_children()[next_index])
             self.edit_item(None)
     
-    def get_current_item(self):
-        """Returns the current list item."""
-        if 0 <= self.playhead < len(self.data):
-            return self.data[self.playhead]
-        return None
+    def update_data_len(self):
+        self.data_len.set(len(self.data))
+        logging.debug(f"updated data_len to {self.data_len.get()}")
+
+    # CORE
+    
+    def inc_playhead(self):
+        """
+        Increments the playhead.
+        """
+        current = int(self.playhead.get())
+        lenght = len(self.data)
+        if 0 <= current < lenght:
+            self.playhead.set(current +1)
+            logging.debug(f"Playlist: Incrementing playhead to {self.playhead.get()}")
+
+    def dec_playhead(self):
+        """
+        Decrements the playhead.
+        """
+        current = int(self.playhead.get())
+        lenght = len(self.data)
+        if 0 <= current < lenght:
+            self.playhead.set(current -1)
+            logging.debug(f"Playlist: Decrementing playhead to {self.playhead.get()}")
+
+    def on_playhead_update(self, *args):
+        index = self.playhead.get()
+        if 0 <= index < len(self.data):
+            self.playhead_text.set(self.data[index])
+    
+    def playlist_entry(self, *args):
+        """
+        Returns current playlist entry as string and increments playhead after that.
+        
+        Return:
+            playlist_entry: str
+        """
+        index = self.playhead.get()
+        if 0 <= index < len(self.data):
+            string = self.playhead_text.get(self.data[index])
+            self.playhead.set(self.playhead.get()+1)
+            return string
+        else:
+            logging.ERROR("Playlist: Index out of range.")
+
+    # def update_playhead_stringvar(self, *args):
+    #     index = self.playhead
+    #     if 0 <= int(self.playhead.get()) < self.data_len:
+    #         self.playhead_stringvar.set(self.data[index])
+
+    # def update_playhead(self, new_value):
+    #     try:
+    #         new_index = int(new_value)
+    #         if 0 <= new_index < self.data_len:
+    #             self.playhead.set(new_index)
+    #             self.update_playhead_stringvar()
+    #     except ValueError:
+    #         pass
+
+    # FILE HANDLING
 
     def safe_playlist(self):
         save_path = filedialog.asksaveasfilename(
@@ -153,9 +236,10 @@ class Playlist():
         if load_path:
             load_path = Path(load_path)
             self.data = load_path.read_text().splitlines()
+            self.update_data_len()
             self.populate_list()
 
-
+# EXEC
 if __name__ == "__main__":
     root = ttk.Window(themename="darkly")
     playlist = Playlist()
