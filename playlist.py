@@ -179,7 +179,7 @@ class Playlist():
         """
         current = int(self.playhead.get())
         lenght = len(self.data)
-        if 0 <= current < lenght:
+        if 0 < current < lenght:
             self.playhead.set(current -1)
             logging.debug(f"Playlist: Decrementing playhead to {self.playhead.get()}")
 
