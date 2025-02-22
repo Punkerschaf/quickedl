@@ -144,21 +144,23 @@ class QuickEDLApp:
         playlist_frame = ttk.Frame(self.root)
         playlist_frame.grid(column=2, columnspan=5, row=13, padx=10, sticky="EW")
 
-        playlist_label = ttk.Entry(playlist_frame, 
+        playlist_label = ttk.Label(playlist_frame, 
                                    textvariable=self.playlist.playhead_text, 
-                                   bootstyle="readonly", 
-                                   state="readonly", 
-                                   width=20)
-        playlist_label.pack(side=LEFT, padx=10, pady=5)
+                                   bootstyle="primary")
+        playlist_label.grid(column=1, row=0, sticky="EW")
+        playlist_frame.columnconfigure(1, weight=1)
         
         self.plst_dec_button = ttk.Button(playlist_frame, text="<", bootstyle="primary", command= self.playlist.dec_playhead)
-        self.plst_dec_button.pack(side=LEFT)
+        self.plst_dec_button.grid(column=2, row=0, sticky="E")
+        playlist_frame.columnconfigure(2, weight=0)
 
         self.plst_inc_button = ttk.Button(playlist_frame, text=">", bootstyle="primary", command= self.playlist.inc_playhead)
-        self.plst_inc_button.pack(side=LEFT)
+        self.plst_inc_button.grid(column=3, row=0, sticky="E", padx=5)
+        playlist_frame.columnconfigure(3, weight=0)
  
         playlist_button = ttk.Button(playlist_frame, text="Plst", width=3, command=lambda event: self.add_to_file(self.playlist.playhead_stringvar))
-        playlist_button.pack(side=RIGHT, pady=5)
+        playlist_button.grid(column=4, row=0, sticky="E")
+        playlist_frame.columnconfigure(4, weight=0)
 
         # Special entries
         separator_button = ttk.Button(root, text="Separator (0)", command=self.add_separator)
