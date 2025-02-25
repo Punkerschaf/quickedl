@@ -44,7 +44,7 @@ class QuickEDLApp:
         self.delete_key = False
 
         # Hotkey status
-        self.hotkeys_active = True
+        self.hotkeys_active = False
         self.entry_focused = False
         self.window_focused = True
         self.hotkey_status = None # init-Placeholder for label widget
@@ -104,10 +104,12 @@ class QuickEDLApp:
         self.root.config(menu=menu_bar)
 
     def create_widgets(self):
-        self.root.bind("<Button-1>", self.defocus_text)
+    #    self.root.bind("<Button-1>", self.defocus_text)
         self.root.bind("<Return>", self.defocus_text)
         self.root.bind("<BackSpace>", self.handle_backspace)
         self.root.bind("<KeyPress>", self.on_key_press)
+        self.root.bind_all("<FocusIn>", self.check_entry_focus)
+        self.root.bind_all("<Button-1>", self.defocus_text)
 
         # File label
         self.file_labelframe = ttk.Labelframe(self.root, bootstyle="warning", text=" loaded File ")
@@ -138,7 +140,7 @@ class QuickEDLApp:
             button = ttk.Button(frame, text=f"{i + 1}", command=lambda i=i: self.add_to_file(i), width=2)
             button.pack(side=RIGHT, pady=5)
 
-        self.bind_text_entries()
+#        self.bind_text_entries() #XXX
 
         # Playlist
         playlist_frame = ttk.Frame(self.root)
@@ -184,10 +186,10 @@ class QuickEDLApp:
         root.columnconfigure(2, weight=1)
         root.columnconfigure(6, weight=0, minsize=10)
 
-    def bind_text_entries(self):
-        for entry in self.text_entries:
-            entry.bind("<FocusIn>", lambda e: self.set_entry_focus(True))
-            entry.bind("<FocusOut>", lambda e: self.set_entry_focus(False))
+    # def bind_text_entries(self): #XXX
+    #     for entry in self.text_entries:
+    #         entry.bind("<FocusIn>", lambda e: self.set_entry_focus(True))
+    #         entry.bind("<FocusOut>", lambda e: self.set_entry_focus(False))
 
 #####################
 ### GUI FUNCTIONS ###
@@ -200,6 +202,14 @@ class QuickEDLApp:
         self.root.update_idletasks()  # Update "requested size" from geometry manager
         height = self.root.winfo_reqheight()
         self.root.geometry(f"400x{height}")
+    
+    def update_time(self):
+        current_time = datetime.now().strftime("%H:%M:%S")
+        self.time_label.config(text=current_time)
+        self.root.after(1000, self.update_time)
+
+    # Focus Control
+    ###############
 
     def check_window_focus(self):
         """
@@ -216,7 +226,20 @@ class QuickEDLApp:
             self.window_focused = False
         self.update_hotkey_status()
         self.root.after(100, self.check_window_focus)
-    
+
+    def check_entry_focus(self, event):
+        """
+        Checks, if the focused widget is an entry field and handles the hotkey status.
+        """
+        if isinstance(event.widget, ttk.Entry):
+            logging.info("Ein ttk.Entry hat Fokus.")
+            self.entry_focused = True
+            self.update_hotkey_status()
+        else:
+            logging.info("Fokus auf einem anderen Widget.")
+            self.entry_focused = False
+            self.update_hotkey_status()
+
     def defocus_text(self, event):
         # Check if click is in root
         if event.type == "2":  # KeyPress event
@@ -227,11 +250,6 @@ class QuickEDLApp:
                 self.root.focus_set()
             else:
                 event.widget.focus_set()
-
-    def update_time(self):
-        current_time = datetime.now().strftime("%H:%M:%S")
-        self.time_label.config(text=current_time)
-        self.root.after(1000, self.update_time)
 
     def set_entry_focus(self, focused):
     # Set the entry focus status and update hotkey status.
@@ -247,6 +265,8 @@ class QuickEDLApp:
             self.hotkeys_active = False
             self.hotkey_status.config(text="Hotkeys Inactive", bootstyle="inverse-danger")
     
+    # Others GUI functions
+
     def on_key_press(self, event):
     # Check if any text field has focus
         if self.root.focus_get() not in self.text_entries:
