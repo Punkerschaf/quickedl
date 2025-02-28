@@ -287,6 +287,8 @@ class QuickEDLApp:
                 elif 1 <= key_num <= 9:
                     self.add_to_file(key_num - 1)  # Corresponding button for keys 1-9
                     self.flash_button(key_num - 1)
+            elif event.keysym == "p":
+                self.add_playlist_entry()
             elif event.keysym == "space":
                 self.add_with_popup()  # Trigger the pop-up entry for spacebar
     
