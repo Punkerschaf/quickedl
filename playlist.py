@@ -80,6 +80,14 @@ class Playlist():
 
         self.populate_list()
 
+        # Fokus-Hilfsvariable
+        self.edit_window_focused = False
+
+        # Binden von Focus-In/Out und Klicks auf das Toplevel
+        self.edit_window.bind("<FocusIn>", self.on_edit_window_focus_in)
+        self.edit_window.bind("<FocusOut>", self.on_edit_window_focus_out)
+        self.edit_window.bind("<Button-1>", self.on_edit_window_click)
+
     # GUI
 
     def close_window(self):
@@ -201,7 +209,7 @@ class Playlist():
             self.playhead.set(self.playhead.get()+1)
             return string
         else:
-            logging.ERROR("Playlist: Index out of range.")
+            logging.error("Playlist: Index out of range.")
 
     # def update_playhead_stringvar(self, *args):
     #     index = self.playhead
@@ -238,6 +246,17 @@ class Playlist():
             self.data = load_path.read_text().splitlines()
             self.update_data_len()
             self.populate_list()
+
+    def on_edit_window_focus_in(self, event):
+        self.edit_window_focused = True
+
+    def on_edit_window_focus_out(self, event):
+        self.edit_window_focused = False
+
+    def on_edit_window_click(self, event):
+        # Nur Fokus zurückgeben, wenn nicht auf Buttons / Tree geklickt wird
+        if not isinstance(event.widget, ttk.Button) and "Treeview" not in str(event.widget):
+            self.edit_window.focus_set()
 
 # EXEC
 if __name__ == "__main__":

@@ -104,12 +104,11 @@ class QuickEDLApp:
         self.root.config(menu=menu_bar)
 
     def create_widgets(self):
-    #    self.root.bind("<Button-1>", self.defocus_text)
         self.root.bind("<Return>", self.defocus_text)
         self.root.bind("<BackSpace>", self.handle_backspace)
         self.root.bind("<KeyPress>", self.on_key_press)
         self.root.bind_all("<FocusIn>", self.check_entry_focus)
-        self.root.bind_all("<Button-1>", self.defocus_text)
+        self.root.bind("<Button-1>", self.on_root_click)
 
         # File label
         self.file_labelframe = ttk.Labelframe(self.root, bootstyle="warning", text=" loaded File ")
@@ -135,6 +134,7 @@ class QuickEDLApp:
 
             entry = ttk.Entry(frame, width=30)
             entry.pack(side=LEFT, padx=10, pady=5)
+            entry.bind("<Button-1>", self.on_entry_click, add="+")
             self.text_entries.append(entry)
 
             button = ttk.Button(frame, text=f"{i + 1}", command=lambda i=i: self.add_to_file(i), width=2)
@@ -160,7 +160,7 @@ class QuickEDLApp:
         self.plst_inc_button.grid(column=3, row=0, sticky="E", padx=5)
         playlist_frame.columnconfigure(3, weight=0)
  
-        playlist_button = ttk.Button(playlist_frame, text="Plst", width=3, command=lambda event: self.add_to_file(self.playlist.playhead_stringvar))
+        playlist_button = ttk.Button(playlist_frame, text="Plst", width=3, command=lambda: self.add_to_file(self.playlist.playlist_entry))
         playlist_button.grid(column=4, row=0, sticky="E")
         playlist_frame.columnconfigure(4, weight=0)
 
@@ -232,24 +232,33 @@ class QuickEDLApp:
         Checks, if the focused widget is an entry field and handles the hotkey status.
         """
         if isinstance(event.widget, ttk.Entry):
-            logging.info("Ein ttk.Entry hat Fokus.")
+        #    logging.info("Ein ttk.Entry hat Fokus.")
             self.entry_focused = True
             self.update_hotkey_status()
         else:
-            logging.info("Fokus auf einem anderen Widget.")
+        #    logging.info("Fokus auf einem anderen Widget.")
             self.entry_focused = False
             self.update_hotkey_status()
 
     def defocus_text(self, event):
-        # Check if click is in root
-        if event.type == "2":  # KeyPress event
-            if self.window_focused and self.entry_focused:
-                self.root.focus_set()
-        else:
-            if event.widget not in self.text_entries:
-                self.root.focus_set()
-            else:
-                event.widget.focus_set()
+        # Für Return/Backspace etc. den Fokus an root geben, falls ein Entry fokussiert ist
+        if self.entry_focused:
+            self.root.focus_set()
+            self.entry_focused = False
+            self.update_hotkey_status()
+
+    def on_root_click(self, event):
+        # Nur fokustrueckgabe, wenn auf "leere Fläche" geklickt wird
+        if not isinstance(event.widget, ttk.Entry) and not isinstance(event.widget, ttk.Button):
+            self.root.focus_set()
+            self.entry_focused = False
+            self.update_hotkey_status()
+
+    def on_entry_click(self, event):
+        # Entry erhält Fokus
+        event.widget.focus_set()
+        self.entry_focused = True
+        self.update_hotkey_status()
 
     def set_entry_focus(self, focused):
     # Set the entry focus status and update hotkey status.
