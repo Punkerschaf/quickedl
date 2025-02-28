@@ -160,7 +160,7 @@ class QuickEDLApp:
         self.plst_inc_button.grid(column=3, row=0, sticky="E", padx=5)
         playlist_frame.columnconfigure(3, weight=0)
  
-        playlist_button = ttk.Button(playlist_frame, text="Plst", width=3, command=lambda: self.add_to_file(self.playlist.playlist_entry))
+        playlist_button = ttk.Button(playlist_frame, text="Plst", width=3, command= self.add_playlist_entry)
         playlist_button.grid(column=4, row=0, sticky="E")
         playlist_frame.columnconfigure(4, weight=0)
 
@@ -464,6 +464,16 @@ class QuickEDLApp:
             popup.transient(self.root)
             self.root.wait_window(popup)
         
+        else:
+            self.entry_error()
+
+    def add_playlist_entry(self):
+        if self.hotkeys_active and self.file_path:
+            text = self.playlist.playlist_entry()
+            entry = f"{datetime.now().strftime('%H:%M:%S')} - {text}"
+            with Path(self.file_path).open('a') as file:
+                file.write(entry + "\n")
+            self.update_last_entries(entry)        
         else:
             self.entry_error()
 
