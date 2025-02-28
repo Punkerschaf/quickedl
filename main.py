@@ -44,7 +44,7 @@ class QuickEDLApp:
         self.delete_key = False
 
         # Hotkey status
-        self.hotkeys_active = True
+        self.hotkeys_active = False
         self.entry_focused = False
         self.window_focused = True
         self.hotkey_status = None # init-Placeholder for label widget
@@ -104,10 +104,11 @@ class QuickEDLApp:
         self.root.config(menu=menu_bar)
 
     def create_widgets(self):
-        self.root.bind("<Button-1>", self.defocus_text)
         self.root.bind("<Return>", self.defocus_text)
         self.root.bind("<BackSpace>", self.handle_backspace)
         self.root.bind("<KeyPress>", self.on_key_press)
+        self.root.bind_all("<FocusIn>", self.check_entry_focus)
+        self.root.bind("<Button-1>", self.on_root_click)
 
         # File label
         self.file_labelframe = ttk.Labelframe(self.root, bootstyle="warning", text=" loaded File ")
@@ -133,32 +134,35 @@ class QuickEDLApp:
 
             entry = ttk.Entry(frame, width=30)
             entry.pack(side=LEFT, padx=10, pady=5)
+            entry.bind("<Button-1>", self.on_entry_click, add="+")
             self.text_entries.append(entry)
 
             button = ttk.Button(frame, text=f"{i + 1}", command=lambda i=i: self.add_to_file(i), width=2)
             button.pack(side=RIGHT, pady=5)
 
-        self.bind_text_entries()
+#        self.bind_text_entries() #XXX
 
         # Playlist
         playlist_frame = ttk.Frame(self.root)
         playlist_frame.grid(column=2, columnspan=5, row=13, padx=10, sticky="EW")
 
-        playlist_label = ttk.Entry(playlist_frame, 
+        playlist_label = ttk.Label(playlist_frame, 
                                    textvariable=self.playlist.playhead_text, 
-                                   bootstyle="readonly", 
-                                   state="readonly", 
-                                   width=20)
-        playlist_label.pack(side=LEFT, padx=10, pady=5)
+                                   bootstyle="primary")
+        playlist_label.grid(column=1, row=0, sticky="EW")
+        playlist_frame.columnconfigure(1, weight=1)
         
         self.plst_dec_button = ttk.Button(playlist_frame, text="<", bootstyle="primary", command= self.playlist.dec_playhead)
-        self.plst_dec_button.pack(side=LEFT)
+        self.plst_dec_button.grid(column=2, row=0, sticky="E")
+        playlist_frame.columnconfigure(2, weight=0)
 
         self.plst_inc_button = ttk.Button(playlist_frame, text=">", bootstyle="primary", command= self.playlist.inc_playhead)
-        self.plst_inc_button.pack(side=LEFT)
+        self.plst_inc_button.grid(column=3, row=0, sticky="E", padx=5)
+        playlist_frame.columnconfigure(3, weight=0)
  
-        playlist_button = ttk.Button(playlist_frame, text="Plst", width=3, command=lambda event: self.add_to_file(self.playlist.playhead_stringvar))
-        playlist_button.pack(side=RIGHT, pady=5)
+        playlist_button = ttk.Button(playlist_frame, text="Plst", width=3, command=lambda: self.add_to_file(self.playlist.playlist_entry))
+        playlist_button.grid(column=4, row=0, sticky="E")
+        playlist_frame.columnconfigure(4, weight=0)
 
         # Special entries
         separator_button = ttk.Button(root, text="Separator (0)", command=self.add_separator)
@@ -182,10 +186,10 @@ class QuickEDLApp:
         root.columnconfigure(2, weight=1)
         root.columnconfigure(6, weight=0, minsize=10)
 
-    def bind_text_entries(self):
-        for entry in self.text_entries:
-            entry.bind("<FocusIn>", lambda e: self.set_entry_focus(True))
-            entry.bind("<FocusOut>", lambda e: self.set_entry_focus(False))
+    # def bind_text_entries(self): #XXX
+    #     for entry in self.text_entries:
+    #         entry.bind("<FocusIn>", lambda e: self.set_entry_focus(True))
+    #         entry.bind("<FocusOut>", lambda e: self.set_entry_focus(False))
 
 #####################
 ### GUI FUNCTIONS ###
@@ -198,6 +202,14 @@ class QuickEDLApp:
         self.root.update_idletasks()  # Update "requested size" from geometry manager
         height = self.root.winfo_reqheight()
         self.root.geometry(f"400x{height}")
+    
+    def update_time(self):
+        current_time = datetime.now().strftime("%H:%M:%S")
+        self.time_label.config(text=current_time)
+        self.root.after(1000, self.update_time)
+
+    # Focus Control
+    ###############
 
     def check_window_focus(self):
         """
@@ -214,22 +226,39 @@ class QuickEDLApp:
             self.window_focused = False
         self.update_hotkey_status()
         self.root.after(100, self.check_window_focus)
-    
-    def defocus_text(self, event):
-        # Check if click is in root
-        if event.type == "2":  # KeyPress event
-            if self.window_focused and self.entry_focused:
-                self.root.focus_set()
-        else:
-            if event.widget not in self.text_entries:
-                self.root.focus_set()
-            else:
-                event.widget.focus_set()
 
-    def update_time(self):
-        current_time = datetime.now().strftime("%H:%M:%S")
-        self.time_label.config(text=current_time)
-        self.root.after(1000, self.update_time)
+    def check_entry_focus(self, event):
+        """
+        Checks, if the focused widget is an entry field and handles the hotkey status.
+        """
+        if isinstance(event.widget, ttk.Entry):
+        #    logging.info("Ein ttk.Entry hat Fokus.")
+            self.entry_focused = True
+            self.update_hotkey_status()
+        else:
+        #    logging.info("Fokus auf einem anderen Widget.")
+            self.entry_focused = False
+            self.update_hotkey_status()
+
+    def defocus_text(self, event):
+        # Für Return/Backspace etc. den Fokus an root geben, falls ein Entry fokussiert ist
+        if self.entry_focused:
+            self.root.focus_set()
+            self.entry_focused = False
+            self.update_hotkey_status()
+
+    def on_root_click(self, event):
+        # Nur fokustrueckgabe, wenn auf "leere Fläche" geklickt wird
+        if not isinstance(event.widget, ttk.Entry) and not isinstance(event.widget, ttk.Button):
+            self.root.focus_set()
+            self.entry_focused = False
+            self.update_hotkey_status()
+
+    def on_entry_click(self, event):
+        # Entry erhält Fokus
+        event.widget.focus_set()
+        self.entry_focused = True
+        self.update_hotkey_status()
 
     def set_entry_focus(self, focused):
     # Set the entry focus status and update hotkey status.
@@ -245,6 +274,8 @@ class QuickEDLApp:
             self.hotkeys_active = False
             self.hotkey_status.config(text="Hotkeys Inactive", bootstyle="inverse-danger")
     
+    # Others GUI functions
+
     def on_key_press(self, event):
     # Check if any text field has focus
         if self.root.focus_get() not in self.text_entries:
