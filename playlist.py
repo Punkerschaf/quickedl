@@ -205,7 +205,7 @@ class Playlist():
         """
         index = self.playhead.get()
         if 0 <= index < len(self.data):
-            string = self.playhead_text.get(self.data[index])
+            string = str(self.data[index])
             self.playhead.set(self.playhead.get()+1)
             return string
         else:
