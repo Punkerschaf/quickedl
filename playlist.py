@@ -154,20 +154,8 @@ class Playlist():
             self.edit_item(None)
         entry.destroy()
 
-    # FOCUS HANDLING
     def defocus_item(self, event):
         self.edit_window.focus()
-
-    def on_edit_window_focus_in(self, event):
-        self.edit_window_focused = True
-
-    def on_edit_window_focus_out(self, event):
-        self.edit_window_focused = False
-
-    def on_edit_window_click(self, event):
-        # Nur Fokus zurückgeben, wenn nicht auf Buttons / Tree geklickt wird
-        if not isinstance(event.widget, ttk.Button) and "Treeview" not in str(event.widget):
-            self.edit_window.focus_set()
 
     def focus_next_item(self, event):
         selected = self.tree.selection()
@@ -223,6 +211,22 @@ class Playlist():
         else:
             logging.error("Playlist: Index out of range.")
 
+    # def update_playhead_stringvar(self, *args):
+    #     index = self.playhead
+    #     if 0 <= int(self.playhead.get()) < self.data_len:
+    #         self.playhead_stringvar.set(self.data[index])
+
+    # def update_playhead(self, new_value):
+    #     try:
+    #         new_index = int(new_value)
+    #         if 0 <= new_index < self.data_len:
+    #             self.playhead.set(new_index)
+    #             self.update_playhead_stringvar()
+    #     except ValueError:
+    #         pass
+
+    # FILE HANDLING
+
     def safe_playlist(self):
         save_path = filedialog.asksaveasfilename(
             initialdir=self.directory,
@@ -243,7 +247,16 @@ class Playlist():
             self.update_data_len()
             self.populate_list()
 
+    def on_edit_window_focus_in(self, event):
+        self.edit_window_focused = True
 
+    def on_edit_window_focus_out(self, event):
+        self.edit_window_focused = False
+
+    def on_edit_window_click(self, event):
+        # Nur Fokus zurückgeben, wenn nicht auf Buttons / Tree geklickt wird
+        if not isinstance(event.widget, ttk.Button) and "Treeview" not in str(event.widget):
+            self.edit_window.focus_set()
 
 # EXEC
 if __name__ == "__main__":
