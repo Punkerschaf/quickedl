@@ -152,13 +152,15 @@ class QuickEDLApp:
         playlist_label.grid(column=1, row=0, sticky="EW")
         playlist_frame.columnconfigure(1, weight=1)
         
-        self.plst_dec_button = ttk.Button(playlist_frame, text="<", bootstyle="primary", command= self.playlist.dec_playhead)
+        self.plst_dec_button = ttk.Button(playlist_frame, text="<", bootstyle="primary", command= self.playlist.dec_playhead, state="disabled")
         self.plst_dec_button.grid(column=2, row=0, sticky="E")
         playlist_frame.columnconfigure(2, weight=0)
+        self.playlist.dec_able.trace_add("write", self.update_dec_button)
 
-        self.plst_inc_button = ttk.Button(playlist_frame, text=">", bootstyle="primary", command= self.playlist.inc_playhead)
+        self.plst_inc_button = ttk.Button(playlist_frame, text=">", bootstyle="primary", command= self.playlist.inc_playhead, state="disabled")
         self.plst_inc_button.grid(column=3, row=0, sticky="E", padx=5)
         playlist_frame.columnconfigure(3, weight=0)
+        self.playlist.inc_able.trace_add("write", self.update_inc_button)
  
         playlist_button = ttk.Button(playlist_frame, text="Plst", width=3, command= self.add_playlist_entry)
         playlist_button.grid(column=4, row=0, sticky="E")
@@ -306,8 +308,21 @@ class QuickEDLApp:
         )
         toast.show_toast()
     
-    def update_playlist_selector(self, lenght, *args):
+    # Playlist Control
+    def update_playlist_selector(self, lenght, *args): #XXX
         self.playlist_selector.configure(to=lenght)
+    
+    def update_dec_button(self, *args):
+        if not self.playlist.dec_able.get():
+            self.plst_dec_button.configure(state="disabled")
+        else:
+            self.plst_dec_button.configure(state="")
+    
+    def update_inc_button(self, *args):
+        if not self.playlist.inc_able.get():
+            self.plst_inc_button.configure(state="disabled")
+        else:
+            self.plst_inc_button.configure(state="")
 
 #####################
 ### APP FUNCTIONS ###

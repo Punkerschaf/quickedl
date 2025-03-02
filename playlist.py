@@ -1,6 +1,6 @@
 import ttkbootstrap as ttk
 
-from tkinter import filedialog, StringVar
+from tkinter import filedialog, StringVar, BooleanVar
 from pathlib import Path
 
 import logging
@@ -19,6 +19,9 @@ class Playlist():
             
             data_len: ttk.IntVar
                 Used by spinbox widget as dynamic list lenght.
+            
+            inc_able / dec_able: BooleanVar
+                Are True, when playhead increasable and decreasable.
         
         Functions:
             playlist_edit_window(): Shows the playlist editor
@@ -27,11 +30,16 @@ class Playlist():
         """
         self.data = ["No Items"]
         self.data_len = ttk.IntVar(value=len(self.data))
+        self.data_len.trace_add("write", self.update_decinc_able)
 
-        self.playhead = ttk.IntVar(value=0) # Index variable for selector
+        self.playhead = ttk.IntVar(value=0)
         self.playhead.trace_add("write", self.on_playhead_update)
+        self.playhead.trace_add("write", self.update_decinc_able)
         
         self.playhead_text = StringVar(value=self.data[self.playhead.get()])
+
+        self.inc_able = BooleanVar(value=self.playhead.get() < (self.data_len.get()-1))
+        self.dec_able = BooleanVar(value=self.playhead.get() > 0)
 
         self.edit_window = None
         self.directory = kwargs.get('directory', Path.home())
@@ -89,6 +97,17 @@ class Playlist():
         self.edit_window.bind("<Button-1>", self.on_edit_window_click)
 
     # GUI
+
+    def on_edit_window_focus_in(self, event):
+        self.edit_window_focused = True
+
+    def on_edit_window_focus_out(self, event):
+        self.edit_window_focused = False
+
+    def on_edit_window_click(self, event):
+        # Nur Fokus zurückgeben, wenn nicht auf Buttons / Tree geklickt wird
+        if not isinstance(event.widget, ttk.Button) and "Treeview" not in str(event.widget):
+            self.edit_window.focus_set()
 
     def close_window(self):
         self.edit_window.destroy()
@@ -169,15 +188,23 @@ class Playlist():
         self.data_len.set(len(self.data))
         logging.debug(f"updated data_len to {self.data_len.get()}")
 
-    # CORE
-    
+    def update_decinc_able(self, *args):
+        """
+        Updates the dec_able and inc_able variables based on the current playhead position.
+        """
+        current = self.playhead.get()
+        self.inc_able.set(current < (self.data_len.get() - 1))
+        self.dec_able.set(current > 0)
+        logging.debug(f"Updated inc_able to {self.inc_able.get()} and dec_able to {self.dec_able.get()}")
+
+    # PLAYHEAD CONTROL    
     def inc_playhead(self):
         """
         Increments the playhead.
         """
         current = int(self.playhead.get())
         lenght = len(self.data)
-        if 0 <= current < lenght:
+        if 0 <= current < lenght-1:
             self.playhead.set(current +1)
             logging.debug(f"Playlist: Incrementing playhead to {self.playhead.get()}")
 
@@ -187,7 +214,7 @@ class Playlist():
         """
         current = int(self.playhead.get())
         lenght = len(self.data)
-        if 0 < current < lenght:
+        if 0 < current <= lenght-1:
             self.playhead.set(current -1)
             logging.debug(f"Playlist: Decrementing playhead to {self.playhead.get()}")
 
@@ -204,12 +231,14 @@ class Playlist():
             playlist_entry: str
         """
         index = self.playhead.get()
-        if 0 <= index < len(self.data):
+        lenght = len(self.data)
+        if 0 <= index <= lenght-1:
             string = str(self.data[index])
-            self.playhead.set(self.playhead.get()+1)
+            if not index == lenght-1:
+                self.playhead.set(self.playhead.get()+1)
             return string
         else:
-            logging.error("Playlist: Index out of range.")
+            logging.error(f"Playlist.playlist_entry: Index out of range ({index} from {self.playhead.get()})")
 
     # def update_playhead_stringvar(self, *args):
     #     index = self.playhead
@@ -247,16 +276,6 @@ class Playlist():
             self.update_data_len()
             self.populate_list()
 
-    def on_edit_window_focus_in(self, event):
-        self.edit_window_focused = True
-
-    def on_edit_window_focus_out(self, event):
-        self.edit_window_focused = False
-
-    def on_edit_window_click(self, event):
-        # Nur Fokus zurückgeben, wenn nicht auf Buttons / Tree geklickt wird
-        if not isinstance(event.widget, ttk.Button) and "Treeview" not in str(event.widget):
-            self.edit_window.focus_set()
 
 # EXEC
 if __name__ == "__main__":
