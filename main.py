@@ -140,8 +140,6 @@ class QuickEDLApp:
             button = ttk.Button(frame, text=f"{i + 1}", command=lambda i=i: self.add_to_file(i), width=2)
             button.pack(side=RIGHT, pady=5)
 
-#        self.bind_text_entries() #XXX
-
         # Playlist
         playlist_frame = ttk.Frame(self.root)
         playlist_frame.grid(column=2, columnspan=5, row=13, padx=10, sticky="EW")
@@ -188,10 +186,6 @@ class QuickEDLApp:
         root.columnconfigure(2, weight=1)
         root.columnconfigure(6, weight=0, minsize=10)
 
-    # def bind_text_entries(self): #XXX
-    #     for entry in self.text_entries:
-    #         entry.bind("<FocusIn>", lambda e: self.set_entry_focus(True))
-    #         entry.bind("<FocusOut>", lambda e: self.set_entry_focus(False))
 
 #####################
 ### GUI FUNCTIONS ###
@@ -307,10 +301,6 @@ class QuickEDLApp:
             icon=""
         )
         toast.show_toast()
-    
-    # Playlist Control
-    def update_playlist_selector(self, lenght, *args): #XXX
-        self.playlist_selector.configure(to=lenght)
     
     def update_dec_button(self, *args):
         if not self.playlist.dec_able.get():
@@ -529,17 +519,6 @@ class QuickEDLApp:
             self.last_entries.pop(0)
         self.last_entries_text.set("\n".join(self.last_entries))
 
-
-### EXPORT ###
-##############
-
-    def export_cmx(self): #XXX
-        # Placeholder for CMX export
-        Messagebox.show_info("Export CMX functionality is not implemented yet.")
-
-    def export_fcp7(self): #XXX
-        # Placeholder for FCP7 export
-        Messagebox.show_info("Export FCP7 XML functionality is not implemented yet.")
 
 ### ERRORS ###
 ##############
