@@ -149,12 +149,19 @@ class QuickEDLApp:
         playlist_label.grid(column=1, row=0, sticky="EW")
         playlist_frame.columnconfigure(1, weight=1)
         
-        self.plst_dec_button = ttk.Button(playlist_frame, text="<", bootstyle="primary", command= self.playlist.dec_playhead, state="disabled")
+        self.plst_dec_button = ttk.Button(playlist_frame, 
+                                          text="<", 
+                                          bootstyle="primary", 
+                                          command= self.playlist.dec_playhead, 
+                                          state="disabled")
         self.plst_dec_button.grid(column=2, row=0, sticky="E")
         playlist_frame.columnconfigure(2, weight=0)
         self.playlist.dec_able.trace_add("write", self.update_dec_button)
 
-        self.plst_inc_button = ttk.Button(playlist_frame, text=">", bootstyle="primary", command= self.playlist.inc_playhead, state="disabled")
+        self.plst_inc_button = ttk.Button(playlist_frame, text=">", 
+                                          bootstyle="primary", 
+                                          command= self.playlist.inc_playhead, 
+                                          state="disabled")
         self.plst_inc_button.grid(column=3, row=0, sticky="E", padx=5)
         playlist_frame.columnconfigure(3, weight=0)
         self.playlist.inc_able.trace_add("write", self.update_inc_button)
