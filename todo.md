@@ -1,21 +1,11 @@
-# v2.0
-[x] use path object on every path handling
-[x] set path of edl file as initialdir for other opensavedialogs
-[x] create example settings folder
-[x] rename "last entries" to "history"
-[x] update documentation
+# v2.2
+[x] feat: playlist entry
+[x] delete hotkey optional
 
-# build release
-[x] implement os-specific icon in build-workflow
-[x] push build-workflow to github
-
-# v2.x
+# v2.3
 [ ] make default edl path working
-[ ] use grid laylout
 [ ] feat: setting for lines in last_entries
-[ ] docstrings
 [ ] time offset
-[x] JSX export
 
 # vx
 [ ] LTC timecode support
