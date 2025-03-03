@@ -166,7 +166,7 @@ class QuickEDLApp:
         playlist_frame.columnconfigure(3, weight=0)
         self.playlist.inc_able.trace_add("write", self.update_inc_button)
  
-        playlist_button = ttk.Button(playlist_frame, text="Plst", width=3, command= self.add_playlist_entry)
+        playlist_button = ttk.Button(playlist_frame, text="P", width=2, command= self.add_playlist_entry)
         playlist_button.grid(column=4, row=0, sticky="E")
         playlist_frame.columnconfigure(4, weight=0)
 
