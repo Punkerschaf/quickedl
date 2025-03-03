@@ -118,12 +118,12 @@ class QuickEDLApp:
 
         # Time display
         self.time_label = ttk.Label(self.root, text="", font=("Courier New", 26))
-        self.time_label.grid(column=2, columnspan=3, row=2)
+        self.time_label.grid(column=1, columnspan=6, row=2)
         self.update_time()
 
         # Hotkey status label
         self.hotkey_status = ttk.Label(self.root, text="Hotkeys Active", font=("Courier New", 14), bootstyle="success")
-        self.hotkey_status.grid(column=2, columnspan=3, row=3)
+        self.hotkey_status.grid(column=1, columnspan=6, row=3)
 
         # Text entry fields
         self.text_entries = []
