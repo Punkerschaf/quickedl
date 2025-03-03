@@ -4,7 +4,6 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import LEFT, RIGHT
 from ttkbootstrap.dialogs import Messagebox
-from ttkbootstrap.toast import ToastNotification
 
 from datetime import datetime
 from tkinter import filedialog, StringVar
@@ -283,16 +282,6 @@ class QuickEDLApp:
         self.text_entries[index].config(bootstyle="danger")
         self.root.after(500, lambda: self.text_entries[index].config(bootstyle="default"))
     
-    def toast(self, message): #TODO Remove Toast and Toast call at start
-        toast = ToastNotification(
-            title="QuickEDL",
-            message=message,
-            duration=3000,
-            bootstyle="primary",
-            icon=""
-        )
-        toast.show_toast()
-    
     def update_dec_button(self, *args):
         if not self.playlist.dec_able.get():
             self.plst_dec_button.configure(state="disabled")
@@ -378,7 +367,6 @@ class QuickEDLApp:
             if load_path.exists():
                 self.import_texts(load_path)
                 settings.load_yaml(self)
-                self.toast("Found and loaded settings.")
                 logging.info(f"Imported texts and settings from {load_path}")
             else:
                 return
