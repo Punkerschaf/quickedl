@@ -45,7 +45,13 @@ class Playlist():
         self.directory = kwargs.get('directory', Path.home())
         logging.debug("Playlist initialized.")
     
+
     def playlist_edit_window(self):
+        """
+        Open window to edit the playlist of existing Playlist instance.
+        """
+        self.edit_window_focused = False
+
         if self.edit_window is not None and self.edit_window.winfo_exists():
             self.edit_window.lift()
             return
@@ -87,17 +93,12 @@ class Playlist():
         ttk.Button(self.edit_window, text="Save", command=self.safe_playlist, bootstyle="primary-outline").grid(column=2, row=3, padx=5, pady=5)
 
         self.populate_list()
-
-        # Fokus-Hilfsvariable
-        self.edit_window_focused = False
-
-        # Binden von Focus-In/Out und Klicks auf das Toplevel
         self.edit_window.bind("<FocusIn>", self.on_edit_window_focus_in)
         self.edit_window.bind("<FocusOut>", self.on_edit_window_focus_out)
         self.edit_window.bind("<Button-1>", self.on_edit_window_click)
 
-    # GUI
 
+    # GUI: WINDOW
     def on_edit_window_focus_in(self, event):
         self.edit_window_focused = True
 
@@ -105,7 +106,6 @@ class Playlist():
         self.edit_window_focused = False
 
     def on_edit_window_click(self, event):
-        # Nur Fokus zurückgeben, wenn nicht auf Buttons / Tree geklickt wird
         if not isinstance(event.widget, ttk.Button) and "Treeview" not in str(event.widget):
             self.edit_window.focus_set()
 
@@ -119,6 +119,8 @@ class Playlist():
         for entry in self.data:
             self.tree.insert("", "end", values=(entry,), text=entry)
 
+
+    # ITEM CONTROL
     def add_item(self):
         new_entry = f"Eintrag {len(self.data) + 1}"
         self.data.append(new_entry)
@@ -197,6 +199,7 @@ class Playlist():
         self.dec_able.set(current > 0)
         logging.debug(f"Updated inc_able to {self.inc_able.get()} and dec_able to {self.dec_able.get()}")
 
+
     # PLAYHEAD CONTROL    
     def inc_playhead(self):
         """
@@ -240,22 +243,8 @@ class Playlist():
         else:
             logging.error(f"Playlist.playlist_entry: Index out of range ({index} from {self.playhead.get()})")
 
-    # def update_playhead_stringvar(self, *args):
-    #     index = self.playhead
-    #     if 0 <= int(self.playhead.get()) < self.data_len:
-    #         self.playhead_stringvar.set(self.data[index])
-
-    # def update_playhead(self, new_value):
-    #     try:
-    #         new_index = int(new_value)
-    #         if 0 <= new_index < self.data_len:
-    #             self.playhead.set(new_index)
-    #             self.update_playhead_stringvar()
-    #     except ValueError:
-    #         pass
 
     # FILE HANDLING
-
     def safe_playlist(self):
         save_path = filedialog.asksaveasfilename(
             initialdir=self.directory,

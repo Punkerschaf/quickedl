@@ -228,41 +228,34 @@ class QuickEDLApp:
         Checks, if the focused widget is an entry field and handles the hotkey status.
         """
         if isinstance(event.widget, ttk.Entry):
-        #    logging.info("Ein ttk.Entry hat Fokus.")
             self.entry_focused = True
             self.update_hotkey_status()
         else:
-        #    logging.info("Fokus auf einem anderen Widget.")
             self.entry_focused = False
             self.update_hotkey_status()
 
     def defocus_text(self, event):
-        # Für Return/Backspace etc. den Fokus an root geben, falls ein Entry fokussiert ist
         if self.entry_focused:
             self.root.focus_set()
             self.entry_focused = False
             self.update_hotkey_status()
 
     def on_root_click(self, event):
-        # Nur fokustrueckgabe, wenn auf "leere Fläche" geklickt wird
         if not isinstance(event.widget, ttk.Entry) and not isinstance(event.widget, ttk.Button):
             self.root.focus_set()
             self.entry_focused = False
             self.update_hotkey_status()
 
     def on_entry_click(self, event):
-        # Entry erhält Fokus
         event.widget.focus_set()
         self.entry_focused = True
         self.update_hotkey_status()
 
     def set_entry_focus(self, focused):
-    # Set the entry focus status and update hotkey status.
         self.entry_focused = focused
         self.update_hotkey_status()
 
     def update_hotkey_status(self):
-    # Update the hotkey status based on window and entry focus.
         if self.window_focused and not self.entry_focused:
             self.hotkeys_active = True
             self.hotkey_status.config(text="Hotkeys Active", bootstyle="success")
@@ -271,22 +264,20 @@ class QuickEDLApp:
             self.hotkey_status.config(text="Hotkeys Inactive", bootstyle="inverse-danger")
     
     # Others GUI functions
-
     def on_key_press(self, event):
-    # Check if any text field has focus
         if self.root.focus_get() not in self.text_entries:
             key = event.char
             if key.isdigit():
                 key_num = int(key)
                 if key_num == 0:
-                    self.add_separator()  # Separator for key '0'
-                elif 1 <= key_num <= 9:
-                    self.add_to_file(key_num - 1)  # Corresponding button for keys 1-9
+                    self.add_separator()  # '0' separator
+                elif 1 <= key_num <= 9:  # '1-9' 
+                    self.add_to_file(key_num - 1)
                     self.flash_button(key_num - 1)
-            elif event.keysym == "p":
+            elif event.keysym == "p":  # 'p' playlist entry
                 self.add_playlist_entry()
-            elif event.keysym == "space":
-                self.add_with_popup()  # Trigger the pop-up entry for spacebar
+            elif event.keysym == "space":  # 'space' popup entry
+                self.add_with_popup()
     
     def flash_button(self, index):
         self.text_entries[index].config(bootstyle="danger")
@@ -488,16 +479,12 @@ class QuickEDLApp:
 
     def delete_last_entry(self, event):  
         if self.file_path and self.last_entries:
-            # Read all lines from the file
             with Path(self.file_path).open('r') as file:
-                lines = file.readlines()        
-            # Remove the last line
+                lines = file.readlines()
             if lines:
                 lines = lines[:-1]
-                # Write the remaining lines back to the file
                 with Path(self.file_path).open('w') as file:
-                    file.writelines(lines)            
-            # Update last_entries list and label
+                    file.writelines(lines)
             self.last_entries.pop()
             self.last_entries_text.set("\n".join(self.last_entries))
         else:
