@@ -108,6 +108,8 @@ class QuickEDLApp:
         self.root.bind("<KeyPress>", self.on_key_press)
         self.root.bind_all("<FocusIn>", self.check_entry_focus)
         self.root.bind("<Button-1>", self.on_root_click)
+        self.root.bind("<FocusIn>", lambda event: self.check_window_focus())
+        self.root.bind("<FocusOut>", lambda event: self.check_window_focus())
 
         # File label
         self.file_labelframe = ttk.Labelframe(self.root, bootstyle="warning", text=" loaded File ")
@@ -227,7 +229,6 @@ class QuickEDLApp:
         except KeyError:
             self.window_focused = False
         self.update_hotkey_status()
-        self.root.after(100, self.check_window_focus)
 
     def check_entry_focus(self, event):
         """
