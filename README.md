@@ -45,6 +45,7 @@ Example files are found in the repository. In the settings window the expected p
 
  Unlikely there is still no way to execute them directly in Premiere Pro without useage of (paid) third party software.
  The easiest way is to open the jsx script in VSCode (free and open source) and "ExtendScript Debugger"-extension by Adobe, which can "evaluate" (sending) jsx-script commands to an Adobe target application.
+ [How to](docs/jsx.md)
 
 # Development
 - Simple Python 3.x application for Windows, macOS and Linux
