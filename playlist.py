@@ -84,13 +84,13 @@ class Playlist():
         self.tree.bind("<Tab>", self.focus_next_item)
 
         # Buttons
-        ttk.Button(self.edit_window, text="New", command=self.add_item, bootstyle="success").grid(column=1, row=2, padx=5, pady=5)
-        ttk.Button(self.edit_window, text="Del", command=self.remove_item, bootstyle="danger").grid(column=2, row=2, padx=5, pady=5)
-        ttk.Button(self.edit_window, text="Move Up", command=self.move_up, bootstyle="primary").grid(column=3, row=2, padx=5, pady=5)
-        ttk.Button(self.edit_window, text="Move Down", command=self.move_down, bootstyle="primary").grid(column=4, row=2, padx=5, pady=5)
+        ttk.Button(self.edit_window, text="New", command=self.add_item, bootstyle="success", width=4).grid(column=1, row=2, padx=5, pady=5)
+        ttk.Button(self.edit_window, text="Del", command=self.remove_item, bootstyle="danger", width=4).grid(column=2, row=2, padx=5, pady=5)
+        ttk.Button(self.edit_window, text="Move Up", command=self.move_up, bootstyle="primary", width=6).grid(column=3, row=2, padx=5, pady=5)
+        ttk.Button(self.edit_window, text="Move Down", command=self.move_down, bootstyle="primary", width=6).grid(column=4, row=2, padx=5, pady=5)
 
-        ttk.Button(self.edit_window, text="Load", command=self.load_playlist, bootstyle="primary-outline").grid(column=1, row=3, padx=5, pady=5)
-        ttk.Button(self.edit_window, text="Save", command=self.safe_playlist, bootstyle="primary-outline").grid(column=2, row=3, padx=5, pady=5)
+        ttk.Button(self.edit_window, text="Load", command=self.load_playlist, bootstyle="secondary").grid(column=1, row=3, padx=5, pady=5)
+        ttk.Button(self.edit_window, text="Save", command=self.safe_playlist, bootstyle="secondary").grid(column=2, row=3, padx=5, pady=5)
 
         self.populate_list()
         self.edit_window.bind("<FocusIn>", self.on_edit_window_focus_in)
