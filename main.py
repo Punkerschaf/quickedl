@@ -19,7 +19,7 @@ import settings
 from playlist import Playlist
 
 # version number
-version = "2.1"
+version = "2.2.0"
 
 class QuickEDLApp:
     def __init__(self, root):
