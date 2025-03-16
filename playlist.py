@@ -127,7 +127,7 @@ class Playlist():
         logging.debug(f"Playlist updated from text: { len(self.data) }")
         self.update_data_len()
         self.on_playhead_update()
-        # TODO reposition playhead
+        self.repos_playhead()
 
     def show_text_context_menu(self, event):
         """Show context menu for text field with cut/copy/paste-commands."""
@@ -192,6 +192,13 @@ class Playlist():
         if 0 <= index < len(self.data):
             self.playhead_text.set(self.data[index])
     
+    def repos_playhead(self):
+        current = int(self.playhead.get())
+        lenght = len(self.data)
+        if current > lenght-1:
+            self.playhead.set(lenght-1)
+            logging.debug(f"Playlist: Repositioning playhead to {self.playhead.get()}")
+            self.on_playhead_update
     def playlist_entry(self, *args):
         """
         Returns current playlist entry as string and increments playhead after that.
