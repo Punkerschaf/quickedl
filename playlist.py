@@ -140,59 +140,6 @@ class Playlist():
 
 
     # ITEM CONTROL
-    def add_item(self):
-        new_entry = f"Eintrag {len(self.data) + 1}"
-        self.data.append(new_entry)
-        self.populate_text_area()
-        self.update_data_len()
-
-    def remove_item(self):
-        selected = self.tree.selection()
-        if selected:
-            index = self.tree.index(selected[0])
-            del self.data[index]
-            self.populate_text_area()
-            self.update_data_len()
-
-    def move_up(self):
-        selected = self.tree.selection()
-        if selected:
-            index = self.tree.index(selected[0])
-            if index > 0:
-                self.data[index], self.data[index - 1] = self.data[index - 1], self.data[index]
-                self.populate_text_area()
-                self.tree.selection_set(self.tree.get_children()[index - 1])
-
-    def move_down(self):
-        selected = self.tree.selection()
-        if selected:
-            index = self.tree.index(selected[0])
-            if index < len(self.data) - 1:
-                self.data[index], self.data[index + 1] = self.data[index + 1], self.data[index]
-                self.populate_text_area()
-                self.tree.selection_set(self.tree.get_children()[index + 1])
-
-    def edit_item(self, event):
-        selected = self.tree.selection()
-        if selected:
-            item = self.tree.item(selected[0])
-            entry = ttk.Entry(self.edit_window)
-            entry.insert(0, item['text'])
-            entry.bind("<Return>", lambda e: self.save_item(entry, selected[0]))
-            entry.bind("<Tab>", lambda e: self.save_item(entry, selected[0], focus_next=True))
-            entry.grid(row=self.tree.index(selected[0]) + 1, column=1, columnspan=4, sticky="nsew")
-            entry.focus()
-
-    def save_item(self, entry, item_id, focus_next=False):
-        new_value = entry.get()
-        index = self.tree.index(item_id)
-        self.data[index] = new_value
-        self.populate_text_area()
-        if focus_next:
-            next_index = (index + 1) % len(self.data)
-            self.tree.selection_set(self.tree.get_children()[next_index])
-            self.edit_item(None)
-        entry.destroy()
 
     def defocus_item(self, event):
         self.edit_window.focus()
@@ -284,19 +231,6 @@ class Playlist():
             self.update_data_len()
             self.populate_text_area()
 
-    def show_text_context_menu(self, event):
-        """Zeigt das Kontextmenü für das Textfeld an"""
-        try:
-            # Die Methode tk_popup ist zuverlässiger für Kontextmenüs als post
-            # Der dritte Parameter '0' gibt an, dass das Menü sofort erscheinen soll
-            self.text_ctx_menu.tk_popup(event.x_root, event.y_root, 0)
-            # Wichtig: Das Event hier stoppen, damit es nicht weitergeleitet wird
-            return "break"
-        except Exception as e:
-            logging.error(f"Fehler beim Anzeigen des Kontextmenüs: {e}")
-        finally:
-            # Immer den Grab freigeben
-            self.text_ctx_menu.grab_release()
 
 
 # EXEC
