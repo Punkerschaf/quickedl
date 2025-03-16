@@ -71,23 +71,23 @@ class Playlist():
         self.edit_window.rowconfigure(2, weight=0)
         self.edit_window.rowconfigure(3, weight=0)
 
-        # Mehrzeiliges Textfeld mit Scrollbar:
+        # text field
         self.text_area = ttk.Text(self.edit_window, wrap="none", height=15)
         self.text_area.grid(column=1, columnspan=4, row=1, sticky="NSEW")
-
-        # Kontextmenü für TextArea
-        self.text_ctx_menu = ttk.Menu(self.edit_window, tearoff=False)
-        self.text_ctx_menu.add_command(label="Cut", command=lambda: self.text_area.event_generate("<<Cut>>"))
-        self.text_ctx_menu.add_command(label="Copy", command=lambda: self.text_area.event_generate("<<Copy>>"))
-        self.text_ctx_menu.add_command(label="Paste", command=lambda: self.text_area.event_generate("<<Paste>>"))
-
+        
         self.text_area.bind("<Button-3>", self.show_text_context_menu)
 
         scroll_bar = ttk.Scrollbar(self.edit_window, command=self.text_area.yview)
         scroll_bar.grid(column=5, row=1, sticky="NS")
         self.text_area.configure(yscrollcommand=scroll_bar.set)
 
-        # Buttons für Load, Save und Update
+        # context menu
+        self.text_ctx_menu = ttk.Menu(self.edit_window, tearoff=0)
+        self.text_ctx_menu.add_command(label="Cut", command=lambda: self.text_area.event_generate("<<Cut>>"))
+        self.text_ctx_menu.add_command(label="Copy", command=lambda: self.text_area.event_generate("<<Copy>>"))
+        self.text_ctx_menu.add_command(label="Paste", command=lambda: self.text_area.event_generate("<<Paste>>"))
+
+        # Buttons
         ttk.Button(self.edit_window, text="Update", command=self.update_list).grid(column=1, row=2, padx=5, pady=5)
         ttk.Button(self.edit_window, text="Load", command=self.load_playlist, bootstyle="primary-outline").grid(column=2, row=2, padx=5, pady=5)
         ttk.Button(self.edit_window, text="Save", command=self.safe_playlist, bootstyle="primary-outline").grid(column=3, row=2, padx=5, pady=5)
