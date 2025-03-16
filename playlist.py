@@ -107,8 +107,8 @@ class Playlist():
         self.edit_window_focused = False
 
     def on_edit_window_click(self, event):
-        if event.widget == self.text_area:  # Direkte Referenzprüfung statt String-Vergleich
-            self.text_area.focus_set()  # Explizit Fokus auf das Text-Widget setzen
+        if event.widget == self.text_area:
+            self.text_area.focus_set()
             return
         if not isinstance(event.widget, ttk.Button):
             self.edit_window.focus_set()
@@ -124,7 +124,19 @@ class Playlist():
 
     def update_list(self):
         self.data = self.text_area.get("1.0", "end").splitlines()
-        logging.debug("Playlist updated from text.")
+        logging.debug(f"Playlist updated from text: { len(self.data) }")
+        self.update_data_len()
+        self.on_playhead_update()
+        # TODO reposition playhead
+
+    def show_text_context_menu(self, event):
+        """Show context menu for text field with cut/copy/paste-commands."""
+        self.text_area.focus_set()
+        try:
+            self.text_ctx_menu.tk_popup(event.x_root, event.y_root)
+            return "break"
+        except Exception as e:
+            logging.error(f"show text ctx menu: {e}")
 
 
     # ITEM CONTROL
