@@ -123,8 +123,8 @@ class Playlist():
             self.text_area.insert("end", line + "\n")
 
     def update_list(self):
-        self.data = self.text_area.get("1.0", "end").splitlines()
-        logging.debug(f"Playlist updated from text: { len(self.data) }")
+        lines = self.text_area.get("1.0", "end").splitlines()
+        self.data = [line for line in lines if line.strip()]
         self.update_data_len()
         self.on_playhead_update()
         self.repos_playhead()
