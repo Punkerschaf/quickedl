@@ -93,6 +93,7 @@ class Playlist():
         ttk.Button(self.edit_window, text="Save", command=self.safe_playlist, bootstyle="primary-outline").grid(column=3, row=2, padx=5, pady=5)
 
         self.populate_text_area()
+        self.text_area.focus_set()
 
         self.edit_window.bind("<FocusIn>", self.on_edit_window_focus_in)
         self.edit_window.bind("<FocusOut>", self.on_edit_window_focus_out)
@@ -199,6 +200,7 @@ class Playlist():
             self.playhead.set(lenght-1)
             logging.debug(f"Playlist: Repositioning playhead to {self.playhead.get()}")
             self.on_playhead_update
+
     def playlist_entry(self, *args):
         """
         Returns current playlist entry as string and increments playhead after that.
