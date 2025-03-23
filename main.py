@@ -143,7 +143,7 @@ class QuickEDLApp:
 
         # Playlist
         playlist_frame = ttk.Frame(self.root)
-        playlist_frame.grid(column=2, columnspan=5, row=13, padx=10, sticky="EW")
+        playlist_frame.grid(column=2, columnspan=5, row=13, padx=10, pady=10, sticky="EW")
 
         playlist_label = ttk.Label(playlist_frame, 
                                    textvariable=self.playlist.playhead_text, 
