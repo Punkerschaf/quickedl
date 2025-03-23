@@ -4,6 +4,7 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import LEFT, RIGHT
 from ttkbootstrap.dialogs import Messagebox
+from ttkbootstrap.toast import ToastNotification
 
 from datetime import datetime
 from tkinter import filedialog, StringVar
@@ -17,9 +18,10 @@ from export_jsx import JSXExportWindow
 from utils import open_directory
 import settings
 from playlist import Playlist
+from version import VERSION
 
 # version number
-version = "2.3.0"
+version = VERSION
 
 class QuickEDLApp:
     def __init__(self, root):
@@ -43,7 +45,7 @@ class QuickEDLApp:
         self.delete_key = False
 
         # Hotkey status
-        self.hotkeys_active = False
+        self.hotkeys_active = True
         self.entry_focused = False
         self.window_focused = True
         self.hotkey_status = None # init-Placeholder for label widget
@@ -103,13 +105,10 @@ class QuickEDLApp:
         self.root.config(menu=menu_bar)
 
     def create_widgets(self):
+        self.root.bind("<Button-1>", self.defocus_text)
         self.root.bind("<Return>", self.defocus_text)
         self.root.bind("<BackSpace>", self.handle_backspace)
         self.root.bind("<KeyPress>", self.on_key_press)
-        self.root.bind_all("<FocusIn>", self.check_entry_focus)
-        self.root.bind("<Button-1>", self.on_root_click)
-        self.root.bind("<FocusIn>", lambda event: self.check_window_focus())
-        self.root.bind("<FocusOut>", lambda event: self.check_window_focus())
 
         # File label
         self.file_labelframe = ttk.Labelframe(self.root, bootstyle="warning", text=" loaded File ")
@@ -120,12 +119,12 @@ class QuickEDLApp:
 
         # Time display
         self.time_label = ttk.Label(self.root, text="", font=("Courier New", 26))
-        self.time_label.grid(column=1, columnspan=6, row=2)
+        self.time_label.grid(column=2, columnspan=3, row=2)
         self.update_time()
 
         # Hotkey status label
         self.hotkey_status = ttk.Label(self.root, text="Hotkeys Active", font=("Courier New", 14), bootstyle="success")
-        self.hotkey_status.grid(column=1, columnspan=6, row=3)
+        self.hotkey_status.grid(column=2, columnspan=3, row=3)
 
         # Text entry fields
         self.text_entries = []
@@ -135,15 +134,16 @@ class QuickEDLApp:
 
             entry = ttk.Entry(frame, width=30)
             entry.pack(side=LEFT, padx=10, pady=5)
-            entry.bind("<Button-1>", self.on_entry_click, add="+")
             self.text_entries.append(entry)
 
             button = ttk.Button(frame, text=f"{i + 1}", command=lambda i=i: self.add_to_file(i), width=2)
             button.pack(side=RIGHT, pady=5)
 
+        self.bind_text_entries()
+
         # Playlist
         playlist_frame = ttk.Frame(self.root)
-        playlist_frame.grid(column=2, columnspan=5, row=13, padx=10, pady=10, sticky="EW")
+        playlist_frame.grid(column=2, columnspan=5, row=13, padx=10, sticky="EW")
 
         playlist_label = ttk.Label(playlist_frame, 
                                    textvariable=self.playlist.playhead_text, 
@@ -151,24 +151,15 @@ class QuickEDLApp:
         playlist_label.grid(column=1, row=0, sticky="EW")
         playlist_frame.columnconfigure(1, weight=1)
         
-        self.plst_dec_button = ttk.Button(playlist_frame, 
-                                          text="<", 
-                                          bootstyle="primary", 
-                                          command= self.playlist.dec_playhead, 
-                                          state="disabled")
+        self.plst_dec_button = ttk.Button(playlist_frame, text="<", bootstyle="primary", command= self.playlist.dec_playhead)
         self.plst_dec_button.grid(column=2, row=0, sticky="E")
         playlist_frame.columnconfigure(2, weight=0)
-        self.playlist.dec_able.trace_add("write", self.update_dec_button)
 
-        self.plst_inc_button = ttk.Button(playlist_frame, text=">", 
-                                          bootstyle="primary", 
-                                          command= self.playlist.inc_playhead, 
-                                          state="disabled")
+        self.plst_inc_button = ttk.Button(playlist_frame, text=">", bootstyle="primary", command= self.playlist.inc_playhead)
         self.plst_inc_button.grid(column=3, row=0, sticky="E", padx=5)
         playlist_frame.columnconfigure(3, weight=0)
-        self.playlist.inc_able.trace_add("write", self.update_inc_button)
  
-        playlist_button = ttk.Button(playlist_frame, text="P", width=2, command= self.add_playlist_entry)
+        playlist_button = ttk.Button(playlist_frame, text="Plst", width=3, command=lambda event: self.add_to_file(self.playlist.playhead_stringvar))
         playlist_button.grid(column=4, row=0, sticky="E")
         playlist_frame.columnconfigure(4, weight=0)
 
@@ -184,7 +175,7 @@ class QuickEDLApp:
 
         # Last entries display
         self.entries_labelframe = ttk.Labelframe(self.root, bootstyle="primary", text=" History ")
-        self.entries_labelframe.grid(column=1, columnspan=6, row=16, sticky="NSEW", padx=10, pady=10)
+        self.entries_labelframe.grid(column=1, columnspan=6, row=16, sticky="NSEW", padx=10, pady=5)
         self.last_entries_text = ttk.StringVar(value="No entries yet.")
         last_entries_label = ttk.Label(self.entries_labelframe, textvariable=self.last_entries_text, justify=LEFT)
         last_entries_label.pack(pady=5, fill="both", expand=True)
@@ -194,6 +185,10 @@ class QuickEDLApp:
         root.columnconfigure(2, weight=1)
         root.columnconfigure(6, weight=0, minsize=10)
 
+    def bind_text_entries(self):
+        for entry in self.text_entries:
+            entry.bind("<FocusIn>", lambda e: self.set_entry_focus(True))
+            entry.bind("<FocusOut>", lambda e: self.set_entry_focus(False))
 
 #####################
 ### GUI FUNCTIONS ###
@@ -206,14 +201,6 @@ class QuickEDLApp:
         self.root.update_idletasks()  # Update "requested size" from geometry manager
         height = self.root.winfo_reqheight()
         self.root.geometry(f"400x{height}")
-    
-    def update_time(self):
-        current_time = datetime.now().strftime("%H:%M:%S")
-        self.time_label.config(text=current_time)
-        self.root.after(1000, self.update_time)
-
-    # Focus Control
-    ###############
 
     def check_window_focus(self):
         """
@@ -229,40 +216,31 @@ class QuickEDLApp:
         except KeyError:
             self.window_focused = False
         self.update_hotkey_status()
-
-    def check_entry_focus(self, event):
-        """
-        Checks, if the focused widget is an entry field and handles the hotkey status.
-        """
-        if isinstance(event.widget, ttk.Entry):
-            self.entry_focused = True
-            self.update_hotkey_status()
-        else:
-            self.entry_focused = False
-            self.update_hotkey_status()
-
+        self.root.after(100, self.check_window_focus)
+    
     def defocus_text(self, event):
-        if self.entry_focused:
-            self.root.focus_set()
-            self.entry_focused = False
-            self.update_hotkey_status()
+        # Check if click is in root
+        if event.type == "2":  # KeyPress event
+            if self.window_focused and self.entry_focused:
+                self.root.focus_set()
+        else:
+            if event.widget not in self.text_entries:
+                self.root.focus_set()
+            else:
+                event.widget.focus_set()
 
-    def on_root_click(self, event):
-        if not isinstance(event.widget, ttk.Entry) and not isinstance(event.widget, ttk.Button):
-            self.root.focus_set()
-            self.entry_focused = False
-            self.update_hotkey_status()
-
-    def on_entry_click(self, event):
-        event.widget.focus_set()
-        self.entry_focused = True
-        self.update_hotkey_status()
+    def update_time(self):
+        current_time = datetime.now().strftime("%H:%M:%S")
+        self.time_label.config(text=current_time)
+        self.root.after(1000, self.update_time)
 
     def set_entry_focus(self, focused):
+    # Set the entry focus status and update hotkey status.
         self.entry_focused = focused
         self.update_hotkey_status()
 
     def update_hotkey_status(self):
+    # Update the hotkey status based on window and entry focus.
         if self.window_focused and not self.entry_focused:
             self.hotkeys_active = True
             self.hotkey_status.config(text="Hotkeys Active", bootstyle="success")
@@ -270,37 +248,36 @@ class QuickEDLApp:
             self.hotkeys_active = False
             self.hotkey_status.config(text="Hotkeys Inactive", bootstyle="inverse-danger")
     
-    # Others GUI functions
     def on_key_press(self, event):
+    # Check if any text field has focus
         if self.root.focus_get() not in self.text_entries:
             key = event.char
             if key.isdigit():
                 key_num = int(key)
                 if key_num == 0:
-                    self.add_separator()  # '0' separator
-                elif 1 <= key_num <= 9:  # '1-9' 
-                    self.add_to_file(key_num - 1)
+                    self.add_separator()  # Separator for key '0'
+                elif 1 <= key_num <= 9:
+                    self.add_to_file(key_num - 1)  # Corresponding button for keys 1-9
                     self.flash_button(key_num - 1)
-            elif event.keysym == "p":  # 'p' playlist entry
-                self.add_playlist_entry()
-            elif event.keysym == "space":  # 'space' popup entry
-                self.add_with_popup()
+            elif event.keysym == "space":
+                self.add_with_popup()  # Trigger the pop-up entry for spacebar
     
     def flash_button(self, index):
         self.text_entries[index].config(bootstyle="danger")
         self.root.after(500, lambda: self.text_entries[index].config(bootstyle="default"))
     
-    def update_dec_button(self, *args):
-        if not self.playlist.dec_able.get():
-            self.plst_dec_button.configure(state="disabled")
-        else:
-            self.plst_dec_button.configure(state="")
+    def toast(self, message): #TODO Remove Toast and Toast call at start
+        toast = ToastNotification(
+            title="QuickEDL",
+            message=message,
+            duration=3000,
+            bootstyle="primary",
+            icon=""
+        )
+        toast.show_toast()
     
-    def update_inc_button(self, *args):
-        if not self.playlist.inc_able.get():
-            self.plst_inc_button.configure(state="disabled")
-        else:
-            self.plst_inc_button.configure(state="")
+    def update_playlist_selector(self, lenght, *args):
+        self.playlist_selector.configure(to=lenght)
 
 #####################
 ### APP FUNCTIONS ###
@@ -375,6 +352,7 @@ class QuickEDLApp:
             if load_path.exists():
                 self.import_texts(load_path)
                 settings.load_yaml(self)
+                self.toast("Found and loaded settings.")
                 logging.info(f"Imported texts and settings from {load_path}")
             else:
                 return
@@ -459,28 +437,22 @@ class QuickEDLApp:
         else:
             self.entry_error()
 
-    def add_playlist_entry(self):
-        if self.hotkeys_active and self.file_path:
-            text = self.playlist.playlist_entry()
-            entry = f"{datetime.now().strftime('%H:%M:%S')} - {text}"
-            with Path(self.file_path).open('a') as file:
-                file.write(entry + "\n")
-            self.update_last_entries(entry)        
-        else:
-            self.entry_error()
-
     def handle_backspace(self, event):
         if event.widget not in self.text_entries and self.delete_key:
             self.delete_last_entry(self)
 
     def delete_last_entry(self, event):  
         if self.file_path and self.last_entries:
+            # Read all lines from the file
             with Path(self.file_path).open('r') as file:
-                lines = file.readlines()
+                lines = file.readlines()        
+            # Remove the last line
             if lines:
                 lines = lines[:-1]
+                # Write the remaining lines back to the file
                 with Path(self.file_path).open('w') as file:
-                    file.writelines(lines)
+                    file.writelines(lines)            
+            # Update last_entries list and label
             self.last_entries.pop()
             self.last_entries_text.set("\n".join(self.last_entries))
         else:
@@ -502,6 +474,17 @@ class QuickEDLApp:
             self.last_entries.pop(0)
         self.last_entries_text.set("\n".join(self.last_entries))
 
+
+### EXPORT ###
+##############
+
+    def export_cmx(self): #XXX
+        # Placeholder for CMX export
+        Messagebox.show_info("Export CMX functionality is not implemented yet.")
+
+    def export_fcp7(self): #XXX
+        # Placeholder for FCP7 export
+        Messagebox.show_info("Export FCP7 XML functionality is not implemented yet.")
 
 ### ERRORS ###
 ##############

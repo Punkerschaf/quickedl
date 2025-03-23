@@ -20,7 +20,7 @@ jobs:
       - name: Extract version
         id: get_version
         run: |
-          echo "VERSION=$(python -c 'import main; print(main.version)')" >> $GITHUB_ENV
+          echo "VERSION=$(python -c 'from version import VERSION; print(VERSION)')" >> $GITHUB_ENV
           echo "Extracted version: ${{ env.VERSION }}"
 
       - name: Build executable
@@ -52,7 +52,7 @@ jobs:
       - name: Extract version
         id: get_version
         run: |
-          echo "VERSION=$(python -c 'import main; print(main.version)')" >> $GITHUB_ENV
+          echo "VERSION=$(python -c 'from version import VERSION; print(VERSION)')" >> $GITHUB_ENV
           echo "Extracted version: ${{ env.VERSION }}"
 
       - name: Build executable
@@ -83,7 +83,7 @@ jobs:
       - name: Extract version
         id: get_version
         run: |
-          echo "VERSION=$(python -c 'import main; print(main.version)')" >> $GITHUB_ENV
+          echo "VERSION=$(python -c 'from version import VERSION; print(VERSION)')" >> $GITHUB_ENV
           echo "Extracted version: ${{ env.VERSION }}"
 
       - name: Build executable
