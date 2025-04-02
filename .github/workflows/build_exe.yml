@@ -51,7 +51,7 @@ jobs:
           python3 --version
 
       - name: Install dependencies
-        run: pip install -r dependencies.txt
+        run: python3 -m pip install -r dependencies.txt
 
       - name: Extract version
         id: get_version
