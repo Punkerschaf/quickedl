@@ -34,9 +34,6 @@ jobs:
 
   build-macos:
     runs-on: macos-latest
-    strategy:
-      matrix:
-        arch: [x86_64, arm64]  # Intel-Chip und Apple Silicon
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -44,10 +41,17 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.11
+          python-version: 3.11 # Ensure universal2 Python is installed
+
+      - name: Install universal2 Python
+        run: |
+          mkdir -p ~/python-installer
+          curl -Lo ~/python-installer/python3.pkg https://www.python.org/ftp/python/3.11.5/python-3.11.5-macos11.pkg
+          sudo installer -pkg ~/python-installer/python3.pkg -target /
+          python3 --version
 
       - name: Install dependencies
-        run: arch -${{ matrix.arch }} pip install -r dependencies.txt
+        run: pip install -r dependencies.txt
 
       - name: Extract version
         id: get_version
@@ -57,13 +61,16 @@ jobs:
 
       - name: Build executable
         run: |
-          arch -${{ matrix.arch }} pyinstaller --noconfirm --windowed --noconsole --name QuickEDL-${{ env.VERSION }} --icon ./resources/icon_mac.icns --add-data "resources/*:." main.py
+          pyinstaller --noconfirm --windowed --noconsole \
+          --name QuickEDL-${{ env.VERSION }} \
+          --icon ./resources/icon_mac.icns \
+          --add-data "resources/*:." main.py
           mv dist/QuickEDL-${{ env.VERSION }} dist/QuickEDL-${{ env.VERSION }}.app
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: QuickEDL-${{ env.VERSION }}-macOS_${{ matrix.arch }}
+          name: QuickEDL-${{ env.VERSION }}-macOS
           path: dist/QuickEDL-${{ env.VERSION }}.app
 
   build-linux:
