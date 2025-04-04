@@ -1,0 +1,99 @@
+name: Build QuickEDL Executables
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: pip install -r dependencies.txt
+
+      - name: Extract version
+        id: get_version
+        run: |
+          echo "VERSION=$(python -c 'from version import VERSION; print(VERSION)')" >> $GITHUB_ENV
+          echo "Extracted version: ${{ env.VERSION }}"
+
+      - name: Build executable
+        run: pyinstaller --noconfirm --onefile --noconsole --name QuickEDL-${{ env.VERSION }} --icon ./resources/icon_win.ico --add-data "resources/*;." main.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: QuickEDL-Windows-${{ env.VERSION }}-win
+          path: dist/QuickEDL-${{ env.VERSION }}.exe
+
+  build-macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        arch: [x86_64, arm64]  # Intel-Chip und Apple Silicon
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: arch -${{ matrix.arch }} pip install -r dependencies.txt
+
+      - name: Extract version
+        id: get_version
+        run: |
+          echo "VERSION=$(python -c 'from version import VERSION; print(VERSION)')" >> $GITHUB_ENV
+          echo "Extracted version: ${{ env.VERSION }}"
+
+      - name: Build executable
+        run: |
+          arch -${{ matrix.arch }} pyinstaller --noconfirm --windowed --noconsole --name QuickEDL-${{ env.VERSION }} --icon ./resources/icon_mac.icns --add-data "resources/*:." main.py
+          mv dist/QuickEDL-${{ env.VERSION }} dist/QuickEDL-${{ env.VERSION }}.app
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: QuickEDL-${{ env.VERSION }}-macOS_${{ matrix.arch }}
+          path: dist/QuickEDL-${{ env.VERSION }}.app
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: pip install -r dependencies.txt
+
+      - name: Extract version
+        id: get_version
+        run: |
+          echo "VERSION=$(python -c 'from version import VERSION; print(VERSION)')" >> $GITHUB_ENV
+          echo "Extracted version: ${{ env.VERSION }}"
+
+      - name: Build executable
+        run: |
+          pyinstaller --noconfirm --onefile --noconsole --name QuickEDL-${{ env.VERSION }} --icon ./resources/icon_unix.png --add-data "resources/*:." main.py
+          mv dist/QuickEDL-${{ env.VERSION }} dist/QuickEDL-${{ env.VERSION }}.sh
+          chmod +x dist/QuickEDL-${{ env.VERSION }}.sh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: QuickEDL-Linux-${{ env.VERSION }}
+          path: dist/QuickEDL-${{ env.VERSION }}.sh
