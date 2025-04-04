@@ -1,4 +1,4 @@
-name: Build QuickEDL Executables
+name: Build QuickEDL Executables (Sep Arches)
 on:
   workflow_dispatch:
 
