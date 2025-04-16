@@ -29,8 +29,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: QuickEDL-Windows-${{ env.VERSION }}-win
-          path: dist/QuickEDL-${{ env.VERSION }}.exe
+          name: QuickEDL-${{ env.VERSION }}-Win
+          path: dist/QuickEDL.exe
 
   build-macos:
     runs-on: macos-latest
@@ -58,13 +58,13 @@ jobs:
       - name: Build executable
         run: |
           arch -${{ matrix.arch }} pyinstaller --noconfirm --windowed --noconsole --name QuickEDL-${{ env.VERSION }} --icon ./resources/icon_mac.icns --add-data "resources/*:." main.py
-          mv dist/QuickEDL-${{ env.VERSION }} dist/QuickEDL-${{ env.VERSION }}.app
+          mv dist/QuickEDL-${{ env.VERSION }} dist/QuickEDL.app
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: QuickEDL-${{ env.VERSION }}-macOS_${{ matrix.arch }}
-          path: dist/QuickEDL-${{ env.VERSION }}.app
+          path: dist/QuickEDL.app
 
   build-linux:
     runs-on: ubuntu-latest
@@ -89,11 +89,11 @@ jobs:
       - name: Build executable
         run: |
           pyinstaller --noconfirm --onefile --noconsole --name QuickEDL-${{ env.VERSION }} --icon ./resources/icon_unix.png --add-data "resources/*:." main.py
-          mv dist/QuickEDL-${{ env.VERSION }} dist/QuickEDL-${{ env.VERSION }}.sh
-          chmod +x dist/QuickEDL-${{ env.VERSION }}.sh
+          mv dist/QuickEDL-${{ env.VERSION }} dist/QuickEDL.sh
+          chmod +x dist/QuickEDL.sh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: QuickEDL-Linux-${{ env.VERSION }}
+          name: QuickEDL-${{ env.VERSION }}-Linux
           path: dist/QuickEDL-${{ env.VERSION }}.sh
