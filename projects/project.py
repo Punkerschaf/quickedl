@@ -4,7 +4,7 @@ from pathlib import Path
 
 class Project:
     """
-    creates and handles a QuickEDL-project containing EDL-file, entry-contents and playlist content.
+    Creates and handles a QuickEDL project containing EDL file, entry contents, and playlist content.
     """
     def __init__(self, default_path, **kwargs):
         self.kwargs = kwargs.get
@@ -20,33 +20,33 @@ class Project:
     
     def load_project_files(self, project_path):
             """
-            Lädt die Projektdateien basierend auf dem Projektpfad.
-            Versucht zuerst standardisierte Dateinamen, dann sucht nach Dateien mit passenden Suffixen.
+            Loads the project files based on the project path.
+            First tries standardized filenames, then searches for files with matching suffixes.
             """
             path = Path(project_path)
             self.project_path = path
             self.project_name = path.name
             
-            # Standardisierte Dateinamen basierend auf dem Ordnernamen
+            # Standardized filenames based on the folder name
             expected_files = {
                 'edl': path / f"{self.project_name}_EDL.txt",
                 'texts': path / f"{self.project_name}_TEXTS.txt",
                 'playlist': path / f"{self.project_name}_PLAYLIST.txt"
             }
             
-            # Prüfen, ob die erwarteten Dateien existieren
+            # Check if the expected files exist
             files_found = {key: file_path for key, file_path in expected_files.items() if file_path.exists()}
             
-            # Falls nicht alle Dateien gefunden wurden, suche nach Dateien mit passenden Suffixen
+            # If not all files were found, search for files with matching suffixes
             if len(files_found) < len(expected_files):
                 missing_types = set(expected_files.keys()) - set(files_found.keys())
                 
-                # Alle Dateien im Ordner durchsuchen
+                # Search all files in the folder
                 for file_path in path.iterdir():
                     if file_path.is_file():
                         file_name = file_path.name.upper()
                         
-                        # Nach Suffixen suchen
+                        # Search for suffixes
                         for file_type in missing_types.copy():
                             suffix = f"_{file_type.upper()}.txt".upper()
                             if file_name.endswith(suffix):
@@ -54,17 +54,17 @@ class Project:
                                 missing_types.remove(file_type)
                                 break
             
-            # Gefundene Dateien zuweisen
+            # Assign found files
             self.project_edl_file = files_found.get('edl')
             self.project_texts_file = files_found.get('texts')
             self.project_playlist_file = files_found.get('playlist')
             
-            # Projektgültigkeit prüfen (mindestens EDL-Datei muss vorhanden sein)
+            # Check project validity (at least EDL file must be present)
             self.project_isvalid = self.project_edl_file is not None
             
             if self.project_isvalid:
-                logging.info(f"Projekt '{self.project_name}' erfolgreich geladen")
+                logging.info(f"Project '{self.project_name}' loaded successfully")
             else:
-                logging.error(f"Projekt in '{project_path}' konnte nicht geladen werden: EDL-Datei fehlt")
+                logging.error(f"Project in '{project_path}' could not be loaded: EDL file missing")
                 
             return self.project_isvalid
