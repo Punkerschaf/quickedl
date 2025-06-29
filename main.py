@@ -77,6 +77,33 @@ class QuickEDLApp:
             ])
         logging.info(f"Logging initialized at {log_file}.")
 
+    def load_project_history(self):
+        """
+        Loads the history from the current project's EDL file.
+        """
+        if self.project.project_edl_file and Path(self.project.project_edl_file).exists():
+            # Clear existing history
+            self.last_entries.clear()
+            
+            try:
+                with Path(self.project.project_edl_file).open('r', encoding='utf-8') as file:
+                    lines = file.readlines()
+                    # Get the last 5 lines that are not empty
+                    non_empty_lines = [line.strip() for line in lines if line.strip()]
+                    recent_lines = non_empty_lines[-5:] if len(non_empty_lines) >= 5 else non_empty_lines
+                    
+                    # Add them to history without using update_last_entries to avoid duplication
+                    self.last_entries.extend(recent_lines)
+                    self.last_entries_text.set("\n".join(self.last_entries))
+                    
+                logging.info(f"Loaded {len(recent_lines)} entries from project EDL file: {self.project.project_edl_file}")
+            except Exception as e:
+                logging.error(f"Error loading project history: {e}")
+        else:
+            # Clear history if no valid project file
+            self.last_entries.clear()
+            self.last_entries_text.set("No entries yet.")
+
     def update_project_display(self):
         """
         Updates the project display based on the current project state.
@@ -345,10 +372,16 @@ class QuickEDLApp:
             # Note: This loads a standalone EDL file, not a project
             self.file_label.config(text=f"{self.file_path}")
             self.file_labelframe.config(bootstyle="success")
+            
+            # Load history from file
+            self.last_entries.clear()
             with self.file_path.open('r') as file:
                 lines = file.readlines()
-                for line in lines:
-                    self.update_last_entries(line)
+                # Get the last 5 lines that are not empty
+                non_empty_lines = [line.strip() for line in lines if line.strip()]
+                recent_lines = non_empty_lines[-5:] if len(non_empty_lines) >= 5 else non_empty_lines
+                self.last_entries.extend(recent_lines)
+                self.last_entries_text.set("\n".join(self.last_entries))
 
     def save_texts(self):
         save_path = filedialog.asksaveasfilename(
@@ -472,7 +505,7 @@ class QuickEDLApp:
         if event.widget not in self.text_entries and self.delete_key:
             self.delete_last_entry(self)
 
-    def delete_last_entry(self, event):  
+    def delete_last_entry(self, **kwargs):  
         if self.project.project_edl_file and self.last_entries:
             # Read all lines from the file
             with Path(self.project.project_edl_file).open('r') as file:
