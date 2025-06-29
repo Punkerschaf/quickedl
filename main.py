@@ -21,6 +21,7 @@ from utils import open_directory
 import settings
 from playlist import Playlist
 from projects.project import Project
+from projects.newproject import show_new_project_window
 from version import VERSION
 
 # version number
@@ -99,6 +100,7 @@ class QuickEDLApp:
         menu_bar.add_cascade(label="App", menu=app_menu)
         
         project_menu = ttk.Menu(menu_bar, tearoff=0)
+        project_menu.add_command(label="New Project", command=lambda: show_new_project_window(self.root, self.project))
         project_menu.add_command(label="Load Project", command=self.project.load_project_dialog)
         menu_bar.add_cascade(label="Project", menu=project_menu)
 

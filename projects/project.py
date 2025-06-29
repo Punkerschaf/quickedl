@@ -1,3 +1,6 @@
+"""
+This file is part of QuickEDL.
+"""
 import logging
 from tkinter import filedialog
 from pathlib import Path
@@ -84,6 +87,40 @@ class Project:
             logging.info(f"Project '{self.project_name}' loaded successfully")
         else:
             logging.error(f"Project in '{project_path}' could not be loaded: EDL file missing")
+
+        return self.project_isvalid
+
+    def generate_prj_filenames(self, project_name, project_path):
+        """
+        Generates expected filenames based on the project name and path.
+        """
+        return {
+            'edl': project_path / f"{project_name}_EDL.txt",
+            'texts': project_path / f"{project_name}_TEXTS.txt",
+            'playlist': project_path / f"{project_name}_PLAYLIST.txt"
+        }
+
+    def create_new_project(self, project_name, project_path):
+        """
+        Creates a new project folder and files based on the given name and path.
+        """
+        path = Path(project_path) / project_name
+        path.mkdir(parents=True, exist_ok=True)
+
+        expected_files = self.generate_prj_filenames(project_name, path)
+
+        for file_type, file_path in expected_files.items():
+            file_path.touch()
+            logging.info(f"Created file: {file_path}")
+
+        self.project_path = path
+        self.project_name = project_name
+        self.project_edl_file = expected_files.get('edl')
+        self.project_texts_file = expected_files.get('texts')
+        self.project_playlist_file = expected_files.get('playlist')
+
+        self.project_isvalid = True
+        logging.info(f"New project '{project_name}' created successfully at {project_path}")
 
         return self.project_isvalid
 
