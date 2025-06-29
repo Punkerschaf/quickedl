@@ -13,12 +13,14 @@ from pathlib import Path
 import logging
 import sys
 
+# import internals
 from about import show_about
 from random_entry import random_entry
 from export_jsx import JSXExportWindow
 from utils import open_directory
 import settings
 from playlist import Playlist
+from projects.project import Project
 from version import VERSION
 
 # version number
@@ -50,6 +52,9 @@ class QuickEDLApp:
         self.entry_focused = False
         self.window_focused = True
         self.hotkey_status = None # init-Placeholder for label widget
+
+        # Project
+        self.project = Project()
 
         # Playlist
         self.playlist = Playlist()
@@ -88,10 +93,14 @@ class QuickEDLApp:
             self.root.createcommand("tkAboutDialog", lambda: show_about(self, version))
         else:
             app_menu.add_command(label="About", command=lambda: show_about(self, version))
-        
+
         app_menu.add_separator()
         app_menu.add_command(label="Exit", command=self.root.quit)
         menu_bar.add_cascade(label="App", menu=app_menu)
+        
+        project_menu = ttk.Menu(menu_bar, tearoff=0)
+        project_menu.add_command(label="Load Project", command=self.project.load_project_dialog)
+        menu_bar.add_cascade(label="Project", menu=project_menu)
 
         edl_menu = ttk.Menu(menu_bar, tearoff=0)
         edl_menu.add_command(label="New EDL", command=self.create_new_file)
