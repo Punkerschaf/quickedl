@@ -9,10 +9,11 @@ class Project:
     """
     Creates and handles a QuickEDL project containing EDL file, entry contents, and playlist content.
     """
-    def __init__(self, **kwargs):
+    def __init__(self, update_callback=None, **kwargs):
         self.kwargs = kwargs.get
         
         self.project_isvalid = False
+        self.update_callback = update_callback
 
         self.project_path = None
         self.project_name = None
@@ -88,6 +89,10 @@ class Project:
         else:
             logging.error(f"Project in '{project_path}' could not be loaded: EDL file missing")
 
+        # Call update callback if provided
+        if self.update_callback:
+            self.update_callback()
+
         return self.project_isvalid
 
     def generate_prj_filenames(self, project_name, project_path):
@@ -121,6 +126,10 @@ class Project:
 
         self.project_isvalid = True
         logging.info(f"New project '{project_name}' created successfully at {project_path}")
+
+        # Call update callback if provided
+        if self.update_callback:
+            self.update_callback()
 
         return self.project_isvalid
 

@@ -35,7 +35,7 @@ class QuickEDLApp:
         self.root.geometry("400x700")
         self.style = ttk.Style("darkly")
 
-        # File path for current EDL
+        # Legacy file path for standalone EDL files (not part of project)
         self.file_path = None
         self.current_dir = None
         self.last_entries = []
@@ -55,7 +55,7 @@ class QuickEDLApp:
         self.hotkey_status = None # init-Placeholder for label widget
 
         # Project
-        self.project = Project()
+        self.project = Project(update_callback=self.update_project_display)
 
         # Playlist
         self.playlist = Playlist()
@@ -76,6 +76,18 @@ class QuickEDLApp:
                 logging.StreamHandler()
             ])
         logging.info(f"Logging initialized at {log_file}.")
+
+    def update_project_display(self):
+        """
+        Updates the project display based on the current project state.
+        """
+        if self.project.project_isvalid and self.project.project_name:
+            self.file_label.config(text=f"Project: {self.project.project_name}")
+            self.file_labelframe.config(bootstyle="success")
+            self.load_project_history()
+        else:
+            self.file_label.config(text="No project loaded.")
+            self.file_labelframe.config(bootstyle="warning")
 
 # GUI
 ####  #  #  ###
@@ -108,7 +120,7 @@ class QuickEDLApp:
         edl_menu.add_command(label="New EDL", command=self.create_new_file)
         edl_menu.add_command(label="Open EDL", command=self.load_file)
         edl_menu.add_separator()
-        edl_menu.add_command(label="Export JSX", command=lambda: JSXExportWindow(self.root, self.file_path))
+        edl_menu.add_command(label="Export JSX", command=lambda: JSXExportWindow(self.root, self.project.project_edl_file))
         menu_bar.add_cascade(label="EDL", menu=edl_menu)
 
         texts_menu = ttk.Menu(menu_bar, tearoff=0)
@@ -128,11 +140,11 @@ class QuickEDLApp:
         self.root.bind("<KeyPress>", self.on_key_press)
 
         # File label
-        self.file_labelframe = ttk.Labelframe(self.root, bootstyle="warning", text=" loaded File ")
+        self.file_labelframe = ttk.Labelframe(self.root, bootstyle="warning", text=" Project ")
         self.file_labelframe.grid(column=1, columnspan=6, row=1, padx=10, sticky="EW")
-        self.file_label = ttk.Label(self.file_labelframe, text="No EDL file loaded.")
+        self.file_label = ttk.Label(self.file_labelframe, text="No project loaded.")
         self.file_label.pack(anchor="w", padx=5, pady=5)
-        self.file_label.bind("<Double-Button-1>", lambda e:open_directory(self.file_path))
+        self.file_label.bind("<Double-Button-1>", lambda e:open_directory(self.project.project_edl_file))
 
         # Time display
         self.time_label = ttk.Label(self.root, text="", font=("Courier New", 26))
@@ -318,6 +330,7 @@ class QuickEDLApp:
                 self.current_dir = self.file_path.parent
                 with self.file_path.open('w') as file:
                     file.write("File created on " + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                # Note: This creates a standalone EDL file, not a project
                 self.file_label.config(text=f"CREATED: {self.file_path}")
                 self.file_labelframe.config(bootstyle="success")
                 logging.info(f"New file created: {self.file_path}")
@@ -329,6 +342,7 @@ class QuickEDLApp:
         if file_path:
             self.file_path = Path(file_path)
             self.current_dir = self.file_path.parent
+            # Note: This loads a standalone EDL file, not a project
             self.file_label.config(text=f"{self.file_path}")
             self.file_labelframe.config(bootstyle="success")
             with self.file_path.open('r') as file:
@@ -399,21 +413,21 @@ class QuickEDLApp:
 ####  #  #   #    #  #  ###   ####  ###
 
     def add_to_file(self, index, *args):
-        if self.hotkeys_active and self.file_path:
+        if self.hotkeys_active and self.project.project_edl_file:
             text = self.text_entries[index].get()
             if not text and self.funny:
                 text = random_entry(self)
             elif not text and not self.funny:
                 text = f"Button {index +1}"
             entry = f"{datetime.now().strftime('%H:%M:%S')} - {text}"
-            with Path(self.file_path).open('a') as file:
+            with Path(self.project.project_edl_file).open('a') as file:
                 file.write(entry + "\n")
             self.update_last_entries(entry)        
         else:
             self.entry_error()
 
     def add_with_popup(self):
-        if self.hotkeys_active and self.file_path:
+        if self.hotkeys_active and self.project.project_edl_file:
             timestamp = datetime.now().strftime("%H:%M:%S")
             entry = f"{timestamp} - "
 
@@ -422,7 +436,7 @@ class QuickEDLApp:
                 popup.destroy()
                 if text_input:
                     entry_popup = entry + text_input
-                    with Path(self.file_path).open('a') as file:
+                    with Path(self.project.project_edl_file).open('a') as file:
                         file.write(entry_popup + "\n")
                     self.update_last_entries(entry_popup)
 
@@ -459,15 +473,15 @@ class QuickEDLApp:
             self.delete_last_entry(self)
 
     def delete_last_entry(self, event):  
-        if self.file_path and self.last_entries:
+        if self.project.project_edl_file and self.last_entries:
             # Read all lines from the file
-            with Path(self.file_path).open('r') as file:
+            with Path(self.project.project_edl_file).open('r') as file:
                 lines = file.readlines()        
             # Remove the last line
             if lines:
                 lines = lines[:-1]
                 # Write the remaining lines back to the file
-                with Path(self.file_path).open('w') as file:
+                with Path(self.project.project_edl_file).open('w') as file:
                     file.writelines(lines)            
             # Update last_entries list and label
             self.last_entries.pop()
@@ -476,9 +490,9 @@ class QuickEDLApp:
             self.entry_error()
 
     def add_separator(self):
-        if self.hotkeys_active and self.file_path:
+        if self.hotkeys_active and self.project.project_edl_file:
             separator = "-" * 20
-            with open(self.file_path, 'a') as file:
+            with open(self.project.project_edl_file, 'a') as file:
                 file.write(separator + "\n")
             self.update_last_entries(separator)        
         else:
@@ -510,7 +524,7 @@ class QuickEDLApp:
         if not self.hotkeys_active:
             Messagebox.show_error("Hotkeys are inactive. Please click outside text fields to enable.")
         else:
-            Messagebox.show_error("No EDL file has been created. Please create a file first.")
+            Messagebox.show_error("No project loaded. Please create or load a project first.")
 
 
 # MAIN APP CALL
