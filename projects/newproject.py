@@ -2,11 +2,11 @@
 This file is part of QuickEDL.
 """
 import ttkbootstrap as ttk
+from ttkbootstrap.dialogs import Messagebox
 
-from tkinter import filedialog, StringVar
+from tkinter import filedialog
 from pathlib import Path
 import logging
-import sys
 
 def show_new_project_window(root, project):
     """
@@ -14,38 +14,88 @@ def show_new_project_window(root, project):
     Takes ttk-root and project
     """
     def create_project():
-        project_name = name_entry.get()
-        project_path = location_entry.get()
+        project_name = name_entry.get().strip()
+        project_path_str = location_entry.get().strip()
 
-        if not project_name or not project_path:
+        if not project_name or not project_path_str:
             logging.error("Project name or location is missing.")
             return
 
         try:
-            project.create_new_project(project_name, project_path)
+            # Convert to Path object for platform-independent handling
+            project_path = Path(project_path_str)
+            
+            # Validate that the path exists and is a directory
+            if not project_path.exists():
+                logging.error(f"Selected path does not exist: {project_path}")
+                Messagebox.show_error("Error", f"The selected path does not exist:\n{project_path}")
+                return
+            
+            if not project_path.is_dir():
+                logging.error(f"Selected path is not a directory: {project_path}")
+                Messagebox.show_error("Error", f"The selected path is not a directory:\n{project_path}")
+                return
+            
+            # Check if project folder would already exist
+            new_project_path = project_path / project_name
+            if new_project_path.exists():
+                logging.warning(f"Project folder already exists: {new_project_path}")
+                result = Messagebox.show_question(
+                    "Project Exists", 
+                    f"A folder named '{project_name}' already exists in the selected location.\nDo you want to continue anyway?"
+                )
+                if result != "Yes":
+                    return
+            
+            # Pass the string representation to maintain compatibility with existing code
+            project.create_new_project(project_name, str(project_path))
             logging.info(f"Project '{project_name}' created at '{project_path}'.")
             new_project_window.destroy()
         except Exception as e:
             logging.error(f"Failed to create project: {e}")
+            Messagebox.show_error("Error", f"Failed to create project:\n{str(e)}")
 
     def select_location():
         folder = filedialog.askdirectory(title="Select Project Location")
         if folder:
+            # Convert to Path object for platform-independent handling
+            folder_path = Path(folder)
             location_entry.delete(0, 'end')
-            location_entry.insert(0, folder)
+            # Use the resolved absolute path for consistency
+            location_entry.insert(0, str(folder_path.resolve()))
             validate_inputs()
 
     def validate_inputs(*args):
         """
         Validates the inputs and enables/disables the Create button.
         """
-        project_name = name_entry.get()
-        project_path = location_entry.get()
+        project_name = name_entry.get().strip()
+        project_path_str = location_entry.get().strip()
 
-        if project_name and project_path:
-            create_button.config(state="normal")
-        else:
+        # Basic validation: both fields must be filled
+        if not project_name or not project_path_str:
             create_button.config(state="disabled")
+            return
+
+        # Validate project name (no invalid characters for file/folder names)
+        invalid_chars = ['<', '>', ':', '"', '|', '?', '*']
+        if any(char in project_name for char in invalid_chars):
+            create_button.config(state="disabled")
+            return
+
+        # Validate path exists if it's not empty
+        try:
+            project_path = Path(project_path_str)
+            if project_path_str and not project_path.exists():
+                create_button.config(state="disabled")
+                return
+        except (OSError, ValueError):
+            # Invalid path format
+            create_button.config(state="disabled")
+            return
+
+        # All validations passed
+        create_button.config(state="normal")
 
     new_project_window = ttk.Toplevel(root)
     new_project_window.title("Create New Project")

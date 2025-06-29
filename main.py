@@ -509,7 +509,7 @@ class QuickEDLApp:
         if self.project.project_edl_file and self.last_entries:
             # Read all lines from the file
             with Path(self.project.project_edl_file).open('r') as file:
-                lines = file.readlines()        
+                lines = file.readlines()
             # Remove the last line
             if lines:
                 lines = lines[:-1]
