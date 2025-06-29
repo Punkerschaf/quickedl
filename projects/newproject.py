@@ -33,6 +33,19 @@ def show_new_project_window(root, project):
         if folder:
             location_entry.delete(0, 'end')
             location_entry.insert(0, folder)
+            validate_inputs()
+
+    def validate_inputs(*args):
+        """
+        Validates the inputs and enables/disables the Create button.
+        """
+        project_name = name_entry.get()
+        project_path = location_entry.get()
+
+        if project_name and project_path:
+            create_button.config(state="normal")
+        else:
+            create_button.config(state="disabled")
 
     new_project_window = ttk.Toplevel(root)
     new_project_window.title("Create New Project")
@@ -40,13 +53,16 @@ def show_new_project_window(root, project):
     ttk.Label(new_project_window, text="Project Name:", bootstyle="primary").grid(row=0, column=0, padx=10, pady=10)
     name_entry = ttk.Entry(new_project_window, width=30, bootstyle="info")
     name_entry.grid(row=0, column=1, padx=10, pady=10)
+    name_entry.bind("<KeyRelease>", validate_inputs)
 
     ttk.Label(new_project_window, text="Project Location:", bootstyle="primary").grid(row=1, column=0, padx=10, pady=10)
     location_entry = ttk.Entry(new_project_window, width=30, bootstyle="info")
     location_entry.grid(row=1, column=1, padx=10, pady=10)
+    location_entry.bind("<KeyRelease>", validate_inputs)
 
     ttk.Button(new_project_window, text="Browse", command=select_location, bootstyle="secondary").grid(row=1, column=2, padx=10, pady=10)
-    ttk.Button(new_project_window, text="Create", command=create_project, bootstyle="success").grid(row=2, column=0, columnspan=3, pady=20)
+    create_button = ttk.Button(new_project_window, text="Create", command=create_project, bootstyle="success", state="disabled")
+    create_button.grid(row=2, column=0, columnspan=3, pady=20)
 
     new_project_window.transient(root)
     new_project_window.grab_set()
