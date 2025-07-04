@@ -1,5 +1,6 @@
 """
 This file is part of QuickEDL.
+It provides a class to handle a QuickEDL project.
 """
 import logging
 from tkinter import filedialog
@@ -10,7 +11,7 @@ class Project:
     Creates and handles a QuickEDL project containing EDL file, entry contents, and playlist content.
     """
     def __init__(self, update_callback=None, **kwargs):
-        self.kwargs = kwargs.get
+        self.kwargs = kwargs
         
         self.project_isvalid = False
         self.update_callback = update_callback
@@ -105,9 +106,10 @@ class Project:
             'playlist': project_path / f"{project_name}_PLAYLIST.txt"
         }
 
-    def create_new_project(self, project_name, project_path):
+    def create_new_project(self, project_name, project_path, app_instance=None):
         """
         Creates a new project folder and files based on the given name and path.
+        If app_instance is provided, also saves current markerlabels.
         """
         path = Path(project_path) / project_name
         path.mkdir(parents=True, exist_ok=True)
@@ -127,9 +129,21 @@ class Project:
         self.project_isvalid = True
         logging.info(f"New project '{project_name}' created successfully at {project_path}")
 
+        # Save current markerlabels if app_instance is provided
+        if app_instance and self.project_texts_file:
+            try:
+                # Import here to avoid circular imports
+                from markerlabel import save_markerlabel
+                save_markerlabel(app_instance, self.project_texts_file)
+                logging.info(f"Saved markerlabels to new project: {self.project_texts_file}")
+            except Exception as e:
+                logging.error(f"Failed to save markerlabels to project: {e}")
+
         # Call update callback if provided
         if self.update_callback:
             self.update_callback()
 
         return self.project_isvalid
+
+
 

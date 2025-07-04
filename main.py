@@ -20,6 +20,7 @@ from export_jsx import JSXExportWindow
 from utils import open_directory
 import settings
 from playlist import Playlist
+from markerlabel import save_markerlabel
 from projects.project import Project
 from projects.newproject import show_new_project_window
 from version import VERSION
@@ -139,8 +140,9 @@ class QuickEDLApp:
         menu_bar.add_cascade(label="App", menu=app_menu)
         
         project_menu = ttk.Menu(menu_bar, tearoff=0)
-        project_menu.add_command(label="New Project", command=lambda: show_new_project_window(self.root, self.project))
+        project_menu.add_command(label="New Project", command=lambda: show_new_project_window(self.root, self.project, self))
         project_menu.add_command(label="Load Project", command=self.project.load_project_dialog)
+        project_menu.add_command(label="Save Labels to Project", command= lambda: save_markerlabel(self, save_path=self.project.project_texts_file))
         menu_bar.add_cascade(label="Project", menu=project_menu)
 
         edl_menu = ttk.Menu(menu_bar, tearoff=0)

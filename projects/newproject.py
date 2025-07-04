@@ -1,5 +1,6 @@
 """
 This file is part of QuickEDL.
+It provides a dialog to create a new project.
 """
 import ttkbootstrap as ttk
 from ttkbootstrap.dialogs import Messagebox
@@ -8,10 +9,10 @@ from tkinter import filedialog
 from pathlib import Path
 import logging
 
-def show_new_project_window(root, project):
+def show_new_project_window(root, project, app_instance=None):
     """
     Opens a window to create a new project.
-    Takes ttk-root and project
+    Takes ttk-root, project, and optionally app_instance for saving markerlabels.
     """
     def create_project():
         project_name = name_entry.get().strip()
@@ -44,11 +45,11 @@ def show_new_project_window(root, project):
                     "Project Exists", 
                     f"A folder named '{project_name}' already exists in the selected location.\nDo you want to continue anyway?"
                 )
-                if result != "Yes":
+                if result != "Yes": #INSPECT Was passiert, wenn das Projekt bereits existiert?
                     return
             
-            # Pass the string representation to maintain compatibility with existing code
-            project.create_new_project(project_name, str(project_path))
+            # Pass the string representation and app_instance to maintain compatibility
+            project.create_new_project(project_name, str(project_path), app_instance)
             logging.info(f"Project '{project_name}' created at '{project_path}'.")
             new_project_window.destroy()
         except Exception as e:
