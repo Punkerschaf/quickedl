@@ -37,16 +37,65 @@ def show_new_project_window(root, project, app_instance=None):
                 Messagebox.show_error("Error", f"The selected path is not a directory:\n{project_path}")
                 return
             
-            # Check if project folder would already exist
+            # Check if project folder would already exist and handle conflicts
             new_project_path = project_path / project_name
+            original_project_name = project_name
+            increment = 1
+            
             if new_project_path.exists():
                 logging.warning(f"Project folder already exists: {new_project_path}")
-                result = Messagebox.show_question(
-                    "Project Exists", 
-                    f"A folder named '{project_name}' already exists in the selected location.\nDo you want to continue anyway?"
-                )
-                if result != "Yes": #INSPECT Was passiert, wenn das Projekt bereits existiert?
+                
+                # Create a custom dialog for better control
+                def show_conflict_dialog():
+                    dialog = ttk.Toplevel(new_project_window)
+                    dialog.title("Project Already Exists")
+                    dialog.geometry("400x150")
+                    dialog.resizable(False, False)
+                    dialog.transient(new_project_window)
+                    dialog.grab_set()
+                    
+                    # Center the dialog
+                    dialog.update_idletasks()
+                    x = (dialog.winfo_screenwidth() // 2) - (400 // 2)
+                    y = (dialog.winfo_screenheight() // 2) - (200 // 2)
+                    dialog.geometry(f"400x150+{x}+{y}")
+                    
+                    result = {"value": None}
+                    
+                    # Message
+                    message_text = f"A folder named '{project_name}' already exists\nin the selected location.\n\nDo you want to create '{project_name}_2' instead?"
+                    ttk.Label(dialog, text=message_text, justify="center").pack(pady=20)
+                    
+                    # Buttons
+                    button_frame = ttk.Frame(dialog)
+                    button_frame.pack(pady=10)
+                    
+                    def on_yes():
+                        result["value"] = "Yes"
+                        dialog.destroy()
+                    
+                    def on_no():
+                        result["value"] = "No"
+                        dialog.destroy()
+                    
+                    ttk.Button(button_frame, text="Yes", command=on_yes, bootstyle="success").pack(side="left", padx=10)
+                    ttk.Button(button_frame, text="No", command=on_no, bootstyle="secondary").pack(side="left", padx=10)
+                    
+                    # Wait for dialog to close
+                    dialog.wait_window()
+                    return result["value"]
+                
+                dialog_result = show_conflict_dialog()
+                if dialog_result != "Yes":
                     return
+                
+                # Find the next available increment
+                while new_project_path.exists():
+                    increment += 1
+                    project_name = f"{original_project_name}_{increment}"
+                    new_project_path = project_path / project_name
+                
+                logging.info(f"Using incremented project name: {project_name}")
             
             # Pass the string representation and app_instance to maintain compatibility
             project.create_new_project(project_name, str(project_path), app_instance)
