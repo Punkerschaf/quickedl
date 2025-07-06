@@ -39,7 +39,7 @@ class QuickEDLApp:
         # Legacy file path for standalone EDL files (not part of project)
         self.file_path = None
         self.current_dir = None
-        self.last_entries = []
+        self.last_markers = []
         self.settings_folder = None
         self.settings_folder_str = StringVar(value=str(self.settings_folder))
 
@@ -84,7 +84,7 @@ class QuickEDLApp:
         """
         if self.project.project_edl_file and Path(self.project.project_edl_file).exists():
             # Clear existing history
-            self.last_entries.clear()
+            self.last_markers.clear()
             
             try:
                 with Path(self.project.project_edl_file).open('r', encoding='utf-8') as file:
@@ -93,17 +93,17 @@ class QuickEDLApp:
                     non_empty_lines = [line.strip() for line in lines if line.strip()]
                     recent_lines = non_empty_lines[-5:] if len(non_empty_lines) >= 5 else non_empty_lines
                     
-                    # Add them to history without using update_last_entries to avoid duplication
-                    self.last_entries.extend(recent_lines)
-                    self.last_entries_text.set("\n".join(self.last_entries))
+                    # Add them to history without using update_last_markers to avoid duplication
+                    self.last_markers.extend(recent_lines)
+                    self.last_markers_text.set("\n".join(self.last_markers))
                     
-                logging.info(f"Loaded {len(recent_lines)} entries from project EDL file: {self.project.project_edl_file}")
+                logging.info(f"Loaded {len(recent_lines)} markers from project EDL file: {self.project.project_edl_file}")
             except Exception as e:
                 logging.error(f"Error loading project history: {e}")
         else:
             # Clear history if no valid project file
-            self.last_entries.clear()
-            self.last_entries_text.set("No entries yet.")
+            self.last_markers.clear()
+            self.last_markers_text.set("No markers yet.")
 
     def update_project_display(self):
         """
@@ -153,12 +153,12 @@ class QuickEDLApp:
         menu_bar.add_cascade(label="EDL", menu=edl_menu)
 
         texts_menu = ttk.Menu(menu_bar, tearoff=0)
-        texts_menu.add_command(label="Save texts", command=self.save_texts)
-        texts_menu.add_command(label="Load texts", command=self.open_texts)
-        texts_menu.add_command(label="Load default texts", command=self.load_default_texts)
+        texts_menu.add_command(label="Save markerlabels", command=self.save_texts)
+        texts_menu.add_command(label="Load markerlabels", command=self.open_texts)
+        texts_menu.add_command(label="Load default markerlabels", command=self.load_default_texts)
         texts_menu.add_separator()
         texts_menu.add_command(label="Edit playlist", command=self.playlist.playlist_edit_window)
-        menu_bar.add_cascade(label="Texts", menu=texts_menu)
+        menu_bar.add_cascade(label="Markerlabels", menu=texts_menu)
 
         self.root.config(menu=menu_bar)
 
@@ -228,15 +228,15 @@ class QuickEDLApp:
         popup_button = ttk.Button(root, text="Popup (Space)", command=self.add_with_popup)
         popup_button.grid(column=4, row= 14, padx=5, pady=5, sticky="E")
 
-        delete_button = ttk.Button(root, text="Delete", bootstyle="danger-outline", command=self.delete_last_entry)
+        delete_button = ttk.Button(root, text="Delete", bootstyle="danger-outline", command=self.delete_last_marker)
         delete_button.grid(column=5, row= 14, padx=5, pady=5, sticky="E")
 
-        # Last entries display
-        self.entries_labelframe = ttk.Labelframe(self.root, bootstyle="primary", text=" History ")
-        self.entries_labelframe.grid(column=1, columnspan=6, row=16, sticky="NSEW", padx=10, pady=5)
-        self.last_entries_text = ttk.StringVar(value="No entries yet.")
-        last_entries_label = ttk.Label(self.entries_labelframe, textvariable=self.last_entries_text, justify=LEFT)
-        last_entries_label.pack(pady=5, fill="both", expand=True)
+        # Last markers display
+        self.markers_labelframe = ttk.Labelframe(self.root, bootstyle="primary", text=" History ")
+        self.markers_labelframe.grid(column=1, columnspan=6, row=16, sticky="NSEW", padx=10, pady=5)
+        self.last_markers_text = ttk.StringVar(value="No markers yet.")
+        last_markers_label = ttk.Label(self.markers_labelframe, textvariable=self.last_markers_text, justify=LEFT)
+        last_markers_label.pack(pady=5, fill="both", expand=True)
 
         root.rowconfigure(16, weight=1)
         root.columnconfigure(1, weight=1, minsize=10)
@@ -376,20 +376,20 @@ class QuickEDLApp:
             self.file_labelframe.config(bootstyle="success")
             
             # Load history from file
-            self.last_entries.clear()
+            self.last_markers.clear()
             with self.file_path.open('r') as file:
                 lines = file.readlines()
                 # Get the last 5 lines that are not empty
                 non_empty_lines = [line.strip() for line in lines if line.strip()]
                 recent_lines = non_empty_lines[-5:] if len(non_empty_lines) >= 5 else non_empty_lines
-                self.last_entries.extend(recent_lines)
-                self.last_entries_text.set("\n".join(self.last_entries))
+                self.last_markers.extend(recent_lines)
+                self.last_markers_text.set("\n".join(self.last_markers))
 
     def save_texts(self):
         save_path = filedialog.asksaveasfilename(
             initialdir=self.current_dir,
             defaultextension=".txt",
-            initialfile=f"TextFields_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt",
+            initialfile=f"Markerlabels_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt",
             filetypes=[("Text files", "*.txt")]
         )
         if save_path:
@@ -408,7 +408,7 @@ class QuickEDLApp:
             for i, line in enumerate(lines[:9]):
                 self.text_entries[i].delete(0, END)
                 self.text_entries[i].insert(0, line.strip())
-            logging.info(f"Importet texts from {load_path}")
+            logging.info(f"Imported markerlabels from {load_path}")
     
     def load_settings(self):
         self.settings_folder = settings.get_settings_folder()
@@ -419,28 +419,28 @@ class QuickEDLApp:
                 self.import_texts(load_path)
                 settings.load_yaml(self)
                 self.toast("Found and loaded settings.")
-                logging.info(f"Imported texts and settings from {load_path}")
+                logging.info(f"Imported markerlabels and settings from {load_path}")
             else:
                 return
         else:
-            logging.info("No texts loaded.")
+            logging.info("No markerlabels loaded.")
     
     def load_default_texts(self):
         if self.settings_folder.exists():
             load_path = self.settings_folder / "texts.txt"
             if load_path.exists():
                 self.import_texts(load_path)
-                logging.info(f"Imported texts and settings from {load_path}")
+                logging.info(f"Imported markerlabels and settings from {load_path}")
             else:
-                Messagebox.show_error("Default text file doesn't exist.")
-                logging.error("Default text file doesn't exist.")
+                Messagebox.show_error("Default markerlabel file doesn't exist.")
+                logging.error("Default markerlabel file doesn't exist.")
                 return
         else:
             Messagebox.show_error("Settingsfolder not found.")
             logging.error("Settingsfolder not found.")
 
 
-# entries
+# markers
 ####  #  #  ####  ###   ###   ####   ###
 #     ## #   #    #  #   #    #     #
 ###   # ##   #    ####   #    ###   ####
@@ -454,26 +454,26 @@ class QuickEDLApp:
                 text = random_entry(self)
             elif not text and not self.funny:
                 text = f"Button {index +1}"
-            entry = f"{datetime.now().strftime('%H:%M:%S')} - {text}"
+            marker = f"{datetime.now().strftime('%H:%M:%S')} - {text}"
             with Path(self.project.project_edl_file).open('a') as file:
-                file.write(entry + "\n")
-            self.update_last_entries(entry)        
+                file.write(marker + "\n")
+            self.update_last_markers(marker)        
         else:
             self.entry_error()
 
     def add_with_popup(self):
         if self.hotkeys_active and self.project.project_edl_file:
             timestamp = datetime.now().strftime("%H:%M:%S")
-            entry = f"{timestamp} - "
+            marker = f"{timestamp} - "
 
             def get_input(event=None):
                 text_input = input_var.get()
                 popup.destroy()
                 if text_input:
-                    entry_popup = entry + text_input
+                    marker_popup = marker + text_input
                     with Path(self.project.project_edl_file).open('a') as file:
-                        file.write(entry_popup + "\n")
-                    self.update_last_entries(entry_popup)
+                        file.write(marker_popup + "\n")
+                    self.update_last_markers(marker_popup)
 
             def cancel_popup(event = None):
                 popup.destroy()
@@ -505,10 +505,10 @@ class QuickEDLApp:
 
     def handle_backspace(self, event):
         if event.widget not in self.text_entries and self.delete_key:
-            self.delete_last_entry(self)
+            self.delete_last_marker(self)
 
-    def delete_last_entry(self, **kwargs):  
-        if self.project.project_edl_file and self.last_entries:
+    def delete_last_marker(self, **kwargs):  
+        if self.project.project_edl_file and self.last_markers:
             # Read all lines from the file
             with Path(self.project.project_edl_file).open('r') as file:
                 lines = file.readlines()
@@ -518,9 +518,9 @@ class QuickEDLApp:
                 # Write the remaining lines back to the file
                 with Path(self.project.project_edl_file).open('w') as file:
                     file.writelines(lines)            
-            # Update last_entries list and label
-            self.last_entries.pop()
-            self.last_entries_text.set("\n".join(self.last_entries))
+            # Update last_markers list and label
+            self.last_markers.pop()
+            self.last_markers_text.set("\n".join(self.last_markers))
         else:
             self.entry_error()
 
@@ -529,16 +529,16 @@ class QuickEDLApp:
             separator = "-" * 20
             with open(self.project.project_edl_file, 'a') as file:
                 file.write(separator + "\n")
-            self.update_last_entries(separator)        
+            self.update_last_markers(separator)        
         else:
             self.entry_error()
 
-    def update_last_entries(self, new_entry):
-        if new_entry.strip():  # Only add non-empty entries
-            self.last_entries.append(new_entry.strip())
-        if len(self.last_entries) > 5:
-            self.last_entries.pop(0)
-        self.last_entries_text.set("\n".join(self.last_entries))
+    def update_last_markers(self, new_marker):
+        if new_marker.strip():  # Only add non-empty markers
+            self.last_markers.append(new_marker.strip())
+        if len(self.last_markers) > 5:
+            self.last_markers.pop(0)
+        self.last_markers_text.set("\n".join(self.last_markers))
 
 
 ### EXPORT ###
