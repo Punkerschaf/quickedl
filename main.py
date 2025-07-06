@@ -59,7 +59,7 @@ class QuickEDLApp:
         self.project = Project(update_callback=self.update_project_display)
 
         # Playlist
-        self.playlist = Playlist()
+        self.playlist = Playlist(project=self.project)
 
         # create window
         self.create_menu()
