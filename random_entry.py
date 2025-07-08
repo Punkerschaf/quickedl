@@ -1,6 +1,6 @@
 import random
 
-funny_entries = [
+funny_markerlabels = [
     "Kaffee ist alle",
     "Mein Rechter, Rechter Platz ist frei",
     "Bezahlte Werbung",
@@ -10,15 +10,15 @@ funny_entries = [
     "Zufallseintrag erstellt"
 ]
 
-def random_entry(self):
+def random_markerlabel(self):
     """
-    Select a random entry from the list of funny entries.
+    Select a random markerlabel from the list of funny markerlabels.
 
     Args:
         self: The instance of the class calling this function.
 
     Returns:
-        str: A randomly selected entry from the funny_entries list.
+        str: A randomly selected markerlabel from the funny_markerlabels list.
     """
-    random_entry = random.choice(funny_entries)
-    return random_entry
+    random_markerlabel = random.choice(funny_markerlabels)
+    return random_markerlabel

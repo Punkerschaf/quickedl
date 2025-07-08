@@ -8,7 +8,7 @@ from pathlib import Path
 
 class Project:
     """
-    Creates and handles a QuickEDL project containing EDL file, entry contents, and playlist content.
+    Creates and handles a QuickEDL project containing EDL file, markerlabel contents, and playlist content.
     """
     def __init__(self, update_callback=None, **kwargs):
         self.kwargs = kwargs
@@ -20,7 +20,7 @@ class Project:
         self.project_name = None
         self.project_longname = None
         self.project_edl_file = None
-        self.project_texts_file = None
+        self.project_markerlabel_file = None
         self.project_playlist_file = None
     
     def load_project_dialog(self):
@@ -48,7 +48,7 @@ class Project:
         # Standardized filenames based on the folder name
         expected_files = {
             'edl': path / f"{self.project_name}_EDL.txt",
-            'texts': path / f"{self.project_name}_TEXTS.txt",
+            'markerlabel': path / f"{self.project_name}_MARKERLABEL.txt",
             'playlist': path / f"{self.project_name}_PLAYLIST.txt"
         }
 
@@ -77,7 +77,7 @@ class Project:
 
         # Assign found files
         self.project_edl_file = files_found.get('edl')
-        self.project_texts_file = files_found.get('texts')
+        self.project_markerlabel_file = files_found.get('markerlabel')
         self.project_playlist_file = files_found.get('playlist')
 
         logging.debug(f"Final files found: {files_found}")
@@ -102,7 +102,7 @@ class Project:
         """
         return {
             'edl': project_path / f"{project_name}_EDL.txt",
-            'texts': project_path / f"{project_name}_TEXTS.txt",
+            'markerlabel': project_path / f"{project_name}_MARKERLABEL.txt",
             'playlist': project_path / f"{project_name}_PLAYLIST.txt"
         }
 
@@ -123,19 +123,19 @@ class Project:
         self.project_path = path
         self.project_name = project_name
         self.project_edl_file = expected_files.get('edl')
-        self.project_texts_file = expected_files.get('texts')
+        self.project_markerlabel_file = expected_files.get('markerlabel')
         self.project_playlist_file = expected_files.get('playlist')
 
         self.project_isvalid = True
         logging.info(f"New project '{project_name}' created successfully at {project_path}")
 
         # Save current markerlabels if app_instance is provided
-        if app_instance and self.project_texts_file:
+        if app_instance and self.project_markerlabel_file:
             try:
                 # Import here to avoid circular imports
                 from markerlabel import save_markerlabel
-                save_markerlabel(app_instance, self.project_texts_file)
-                logging.info(f"Saved markerlabels to new project: {self.project_texts_file}")
+                save_markerlabel(app_instance, self.project_markerlabel_file)
+                logging.info(f"Saved markerlabels to new project: {self.project_markerlabel_file}")
             except Exception as e:
                 logging.error(f"Failed to save markerlabels to project: {e}")
 

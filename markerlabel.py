@@ -15,7 +15,7 @@ def save_markerlabel(self, save_path):
     """
     if save_path:
         save_path = Path(save_path)
-        save_path.write_text("\n".join(entry.get() for entry in self.text_entries) + "\n")
+        save_path.write_text("\n".join(entry.get() for entry in self.markerlabel_entries) + "\n")
         logging.info("Saved markerlabels to project.")
     else:
         logging.error("No path to save markerlabels.")
@@ -29,8 +29,8 @@ def load_markerlabel(self, load_path):
         load_path = Path(load_path)
         lines = load_path.read_text().splitlines()
         for i, line in enumerate(lines[:9]):
-            self.text_entries[i].delete(0, END)
-            self.text_entries[i].insert(0, line.strip())
+            self.markerlabel_entries[i].delete(0, END)
+            self.markerlabel_entries[i].insert(0, line.strip())
         logging.debug("Loaded markerlabels from project.")
     else:
         logging.error("No path to load markerlabels.")

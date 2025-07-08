@@ -15,7 +15,7 @@ import sys
 
 # import internals
 from about import show_about
-from random_entry import random_entry
+from random_entry import random_markerlabel
 from export_jsx import JSXExportWindow
 from utils import open_directory
 import settings
@@ -142,7 +142,7 @@ class QuickEDLApp:
         project_menu = ttk.Menu(menu_bar, tearoff=0)
         project_menu.add_command(label="New Project", command=lambda: show_new_project_window(self.root, self.project, self))
         project_menu.add_command(label="Load Project", command=self.project.load_project_dialog)
-        project_menu.add_command(label="Save Labels to Project", command= lambda: save_markerlabel(self, save_path=self.project.project_texts_file))
+        project_menu.add_command(label="Save Labels to Project", command= lambda: save_markerlabel(self, save_path=self.project.project_markerlabel_file))
         menu_bar.add_cascade(label="Project", menu=project_menu)
 
         edl_menu = ttk.Menu(menu_bar, tearoff=0)
@@ -153,9 +153,9 @@ class QuickEDLApp:
         menu_bar.add_cascade(label="EDL", menu=edl_menu)
 
         texts_menu = ttk.Menu(menu_bar, tearoff=0)
-        texts_menu.add_command(label="Save markerlabels", command=self.save_texts)
-        texts_menu.add_command(label="Load markerlabels", command=self.open_texts)
-        texts_menu.add_command(label="Load default markerlabels", command=self.load_default_texts)
+        texts_menu.add_command(label="Save markerlabels", command=self.save_markerlabels)
+        texts_menu.add_command(label="Load markerlabels", command=self.open_markerlabels)
+        texts_menu.add_command(label="Load default markerlabels", command=self.load_default_markerlabels)
         texts_menu.add_separator()
         texts_menu.add_command(label="Edit playlist", command=self.playlist.playlist_edit_window)
         menu_bar.add_cascade(label="Markerlabels", menu=texts_menu)
@@ -185,19 +185,19 @@ class QuickEDLApp:
         self.hotkey_status.grid(column=2, columnspan=3, row=3)
 
         # Text entry fields
-        self.text_entries = []
+        self.markerlabel_entries = []
         for i in range(9):
             frame = ttk.Frame(self.root)
             frame.grid(column=2, columnspan=5, row=i+4, padx=10, sticky="EW")
 
             entry = ttk.Entry(frame, width=30)
             entry.pack(side=LEFT, padx=10, pady=5)
-            self.text_entries.append(entry)
+            self.markerlabel_entries.append(entry)
 
             button = ttk.Button(frame, text=f"{i + 1}", command=lambda i=i: self.add_to_file(i), width=2)
             button.pack(side=RIGHT, pady=5)
 
-        self.bind_text_entries()
+        self.bind_markerlabel_entries()
 
         # Playlist
         playlist_frame = ttk.Frame(self.root)
@@ -221,7 +221,7 @@ class QuickEDLApp:
         playlist_button.grid(column=4, row=0, sticky="E")
         playlist_frame.columnconfigure(4, weight=0)
 
-        # Special entries
+        # Special markerlabel entries
         separator_button = ttk.Button(root, text="Separator (0)", command=self.add_separator)
         separator_button.grid(column=3, row= 14, padx=5, pady=5, sticky="E")
 
@@ -243,8 +243,8 @@ class QuickEDLApp:
         root.columnconfigure(2, weight=1)
         root.columnconfigure(6, weight=0, minsize=10)
 
-    def bind_text_entries(self):
-        for entry in self.text_entries:
+    def bind_markerlabel_entries(self):
+        for entry in self.markerlabel_entries:
             entry.bind("<FocusIn>", lambda e: self.set_entry_focus(True))
             entry.bind("<FocusOut>", lambda e: self.set_entry_focus(False))
 
@@ -282,7 +282,7 @@ class QuickEDLApp:
             if self.window_focused and self.entry_focused:
                 self.root.focus_set()
         else:
-            if event.widget not in self.text_entries:
+            if event.widget not in self.markerlabel_entries:
                 self.root.focus_set()
             else:
                 event.widget.focus_set()
@@ -308,7 +308,7 @@ class QuickEDLApp:
     
     def on_key_press(self, event):
     # Check if any text field has focus
-        if self.root.focus_get() not in self.text_entries:
+        if self.root.focus_get() not in self.markerlabel_entries:
             key = event.char
             if key.isdigit():
                 key_num = int(key)
@@ -321,8 +321,8 @@ class QuickEDLApp:
                 self.add_with_popup()  # Trigger the pop-up entry for spacebar
     
     def flash_button(self, index):
-        self.text_entries[index].config(bootstyle="danger")
-        self.root.after(500, lambda: self.text_entries[index].config(bootstyle="default"))
+        self.markerlabel_entries[index].config(bootstyle="danger")
+        self.root.after(500, lambda: self.markerlabel_entries[index].config(bootstyle="default"))
     
     def toast(self, message): #TODO Remove Toast and Toast call at start
         toast = ToastNotification(
@@ -385,7 +385,7 @@ class QuickEDLApp:
                 self.last_markers.extend(recent_lines)
                 self.last_markers_text.set("\n".join(self.last_markers))
 
-    def save_texts(self):
+    def save_markerlabels(self):
         save_path = filedialog.asksaveasfilename(
             initialdir=self.current_dir,
             defaultextension=".txt",
@@ -394,20 +394,20 @@ class QuickEDLApp:
         )
         if save_path:
             save_path = Path(save_path)
-            save_path.write_text("\n".join(entry.get() for entry in self.text_entries) + "\n")
+            save_path.write_text("\n".join(entry.get() for entry in self.markerlabel_entries) + "\n")
 
-    def open_texts(self):
+    def open_markerlabels(self):
         load_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")],
                                                initialdir=self.current_dir)
-        self.import_texts(load_path)
+        self.import_markerlabels(load_path)
 
-    def import_texts(self, load_path):    
+    def import_markerlabels(self, load_path):    
         if load_path:
             load_path = Path(load_path)
             lines = load_path.read_text().splitlines()
             for i, line in enumerate(lines[:9]):
-                self.text_entries[i].delete(0, END)
-                self.text_entries[i].insert(0, line.strip())
+                self.markerlabel_entries[i].delete(0, END)
+                self.markerlabel_entries[i].insert(0, line.strip())
             logging.info(f"Imported markerlabels from {load_path}")
     
     def load_settings(self):
@@ -416,7 +416,7 @@ class QuickEDLApp:
         if self.settings_folder.exists():
             load_path = self.settings_folder / "texts.txt"
             if load_path.exists():
-                self.import_texts(load_path)
+                self.import_markerlabels(load_path)
                 settings.load_yaml(self)
                 self.toast("Found and loaded settings.")
                 logging.info(f"Imported markerlabels and settings from {load_path}")
@@ -425,11 +425,11 @@ class QuickEDLApp:
         else:
             logging.info("No markerlabels loaded.")
     
-    def load_default_texts(self):
+    def load_default_markerlabels(self):
         if self.settings_folder.exists():
             load_path = self.settings_folder / "texts.txt"
             if load_path.exists():
-                self.import_texts(load_path)
+                self.import_markerlabels(load_path)
                 logging.info(f"Imported markerlabels and settings from {load_path}")
             else:
                 Messagebox.show_error("Default markerlabel file doesn't exist.")
@@ -449,9 +449,9 @@ class QuickEDLApp:
 
     def add_to_file(self, index, *args):
         if self.hotkeys_active and self.project.project_edl_file:
-            text = self.text_entries[index].get()
+            text = self.markerlabel_entries[index].get()
             if not text and self.funny:
-                text = random_entry(self)
+                text = random_markerlabel(self)
             elif not text and not self.funny:
                 text = f"Button {index +1}"
             marker = f"{datetime.now().strftime('%H:%M:%S')} - {text}"
@@ -504,7 +504,7 @@ class QuickEDLApp:
             self.entry_error()
 
     def handle_backspace(self, event):
-        if event.widget not in self.text_entries and self.delete_key:
+        if event.widget not in self.markerlabel_entries and self.delete_key:
             self.delete_last_marker(self)
 
     def delete_last_marker(self, **kwargs):  
