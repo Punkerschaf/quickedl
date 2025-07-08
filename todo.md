@@ -4,7 +4,7 @@
 
 # v2.3
 [ ] make default edl path working
-[ ] feat: setting for lines in last_entries
+[ ] feat: setting for lines in last_markers
 [ ] time offset
 
 # vx

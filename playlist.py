@@ -6,9 +6,13 @@ from pathlib import Path
 import logging
 
 class Playlist():
-    def __init__(self, **kwargs):
+    def __init__(self, project=None, **kwargs):
         """
         Creates an playlist instance.
+        
+        Args:
+            project: Project instance for new project-based workflow
+            **kwargs: Additional parameters for backward compatibility
 
         Objects:
             playhead: ttk.IntVar
@@ -32,6 +36,9 @@ class Playlist():
         self.data_len = ttk.IntVar(value=len(self.data))
         self.data_len.trace_add("write", self.update_decinc_able)
 
+        # Store project reference for new workflow
+        self.project = project
+
         self.playhead = ttk.IntVar(value=0)
         self.playhead.trace_add("write", self.on_playhead_update)
         self.playhead.trace_add("write", self.update_decinc_able)
@@ -43,6 +50,11 @@ class Playlist():
 
         self.edit_window = None
         self.directory = kwargs.get('directory', Path.home())
+        
+        # Load from project if available
+        if self.project and self.project.project_isvalid:
+            self.load_from_project()
+        
         logging.debug("Playlist initialized.")
     
 
@@ -87,10 +99,17 @@ class Playlist():
         self.text_ctx_menu.add_command(label="Copy", command=lambda: self.text_area.event_generate("<<Copy>>"))
         self.text_ctx_menu.add_command(label="Paste", command=lambda: self.text_area.event_generate("<<Paste>>"))
 
-        # Buttons
-        ttk.Button(self.edit_window, text="Update", command=self.update_list).grid(column=1, row=2, padx=5, pady=5)
-        ttk.Button(self.edit_window, text="Load", command=self.load_playlist, bootstyle="primary-outline").grid(column=2, row=2, padx=5, pady=5)
-        ttk.Button(self.edit_window, text="Save", command=self.safe_playlist, bootstyle="primary-outline").grid(column=3, row=2, padx=5, pady=5)
+        # Buttons - Choose based on project availability
+        if self.project and self.project.project_isvalid:
+            # New project-based workflow buttons
+            ttk.Button(self.edit_window, text="Cancel", command=self.close_window, bootstyle="secondary").grid(column=1, row=2, padx=5, pady=5)
+            ttk.Button(self.edit_window, text="Import", command=self.load_playlist, bootstyle="info-outline").grid(column=2, row=2, padx=5, pady=5)
+            ttk.Button(self.edit_window, text="Update & Save", command=self.update_and_save_to_project, bootstyle="success").grid(column=3, columnspan=2, row=2, padx=5, pady=5, sticky="EW")
+        else:
+            # Legacy workflow buttons for backward compatibility
+            ttk.Button(self.edit_window, text="Update", command=self.update_list).grid(column=1, row=2, padx=5, pady=5)
+            ttk.Button(self.edit_window, text="Load", command=self.load_playlist, bootstyle="primary-outline").grid(column=2, row=2, padx=5, pady=5)
+            ttk.Button(self.edit_window, text="Save", command=self.safe_playlist, bootstyle="primary-outline").grid(column=3, row=2, padx=5, pady=5)
 
         self.populate_text_area()
         self.text_area.focus_set()
@@ -203,7 +222,7 @@ class Playlist():
 
     def playlist_entry(self, *args):
         """
-        Returns current playlist entry as string and increments playhead after that.
+        Returns current playlist marker as string and increments playhead after that.
         
         Return:
             playlist_entry: str
@@ -219,30 +238,105 @@ class Playlist():
             logging.error(f"Playlist.playlist_entry: Index out of range ({index} from {self.playhead.get()})")
 
 
-    # FILE HANDLING
-    def safe_playlist(self):
-        save_path = filedialog.asksaveasfilename(
-            initialdir=self.directory,
-            defaultextension=".txt",
-            initialfile="Playlist.txt",
-            filetypes=[("Text files", "*.txt")]
-        )
+    # LEGACY FILE HANDLING (Backward Compatibility)
+    def safe_playlist(self, save_path=None):
+        if not save_path:
+            save_path = filedialog.asksaveasfilename(
+                initialdir=self.directory,
+                defaultextension=".txt",
+                initialfile="Playlist.txt",
+                filetypes=[("Text files", "*.txt")]
+            )
         if save_path:
             save_path = Path(save_path)
             save_path.write_text("\n".join(self.data))
+            logging.info("Playlist saved after changing.")
     
-    def load_playlist(self):
-        load_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")],
-                                               initialdir=self.directory)
+    def load_playlist(self, load_path=None):
+        if not load_path:
+            load_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")],
+                                                initialdir=self.directory)
         if load_path:
             load_path = Path(load_path)
             self.data = load_path.read_text().splitlines()
             self.update_data_len()
             self.populate_text_area()
+            logging.info("Playlist loaded")
 
 
+    # PROJECT-BASED FILE HANDLING (New Workflow)
+    def update_and_save_to_project(self):
+        """
+        Updates the playlist from the text area and saves directly to project playlist file.
+        This is the new project-based workflow function.
+        """
+        # Update the internal data from text area
+        self.update_list()
+        
+        # Save to project playlist file if project is available
+        if self.project and self.project.project_playlist_file:
+            try:
+                playlist_file = Path(self.project.project_playlist_file)
+                playlist_file.write_text("\n".join(self.data))
+                logging.info(f"Playlist saved to project file: {playlist_file}")
+            except Exception as e:
+                logging.error(f"Failed to save playlist to project: {e}")
+        else:
+            logging.warning("No project or project playlist file available for saving")
+    
+    def load_from_project(self):
+        """
+        Loads the playlist from the current project's playlist file.
+        """
+        if self.project and self.project.project_playlist_file:
+            playlist_file = Path(self.project.project_playlist_file)
+            if playlist_file.exists():
+                try:
+                    self.data = playlist_file.read_text().splitlines()
+                    # Filter out empty lines
+                    self.data = [line for line in self.data if line.strip()]
+                    if not self.data:
+                        self.data = ["No Items"]
+                    
+                    self.update_data_len()
+                    if hasattr(self, 'text_area'):
+                        self.populate_text_area()
+                    self.repos_playhead()
+                    logging.info(f"Playlist loaded from project file: {playlist_file}")
+                except Exception as e:
+                    logging.error(f"Failed to load playlist from project: {e}")
+            else:
+                logging.info("Project playlist file does not exist yet")
+        else:
+            logging.warning("No project or project playlist file available for loading")
 
-# EXEC
+    # LEGACY FILE HANDLING (Backward Compatibility)
+    def safe_playlist_legacy(self, save_path=None):
+        if not save_path:
+            save_path = filedialog.asksaveasfilename(
+                initialdir=self.directory,
+                defaultextension=".txt",
+                initialfile="Playlist.txt",
+                filetypes=[("Text files", "*.txt")]
+            )
+        if save_path:
+            save_path = Path(save_path)
+            save_path.write_text("\n".join(self.data))
+            logging.info("Playlist saved (legacy method).")
+    
+    def load_playlist_legacy(self, load_path=None):
+        if not load_path:
+            load_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")],
+                                                initialdir=self.directory)
+        if load_path:
+            load_path = Path(load_path)
+            self.data = load_path.read_text().splitlines()
+            self.update_data_len()
+            self.populate_text_area()
+            logging.info("Playlist loaded (legacy method).")
+
+
+# TEST
 if __name__ == "__main__":
     root = ttk.Window(themename="darkly")
     playlist = Playlist()

@@ -108,7 +108,7 @@ def show_settings_window(app):
     delete_key_var = BooleanVar(value=app.delete_key)
     delete_key_toggle = ttk.Checkbutton(shortcut_frame,
                                         bootstyle="success-square-toggle",
-                                        text="Delete last entry by shortcut (backspace):",
+                                        text="Delete last marker by shortcut (backspace):",
                                         variable=delete_key_var,
                                         command=lambda: setattr(app, 'delete_key', delete_key_var.get()))
     delete_key_toggle.pack(padx=10, pady=5, side="left")
