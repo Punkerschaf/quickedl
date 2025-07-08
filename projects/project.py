@@ -71,9 +71,10 @@ class Project:
                             missing_types.remove(file_type)
                             logging.debug(f"Found file: {file_type}")
                             break
-                        else :
-                            logging.error(f"Missing file {file_type}")
-                            break
+            
+            # Log any remaining missing files after the search
+            for missing_file_type in missing_types:
+                logging.error(f"Missing file {missing_file_type}")
 
         # Assign found files
         self.project_edl_file = files_found.get('edl')
