@@ -20,5 +20,5 @@ def random_markerlabel(self):
     Returns:
         str: A randomly selected markerlabel from the funny_markerlabels list.
     """
-    random_markerlabel = random.choice(funny_markerlabels)
-    return random_markerlabel
+    selected_label = random.choice(funny_markerlabels)
+    return selected_label

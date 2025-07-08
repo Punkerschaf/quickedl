@@ -149,7 +149,7 @@ class QuickEDLApp:
         edl_menu.add_command(label="New EDL", command=self.create_new_file)
         edl_menu.add_command(label="Open EDL", command=self.load_file)
         edl_menu.add_separator()
-        edl_menu.add_command(label="Export JSX", command=lambda: JSXExportWindow(self.root, self.project.project_edl_file))
+        edl_menu.add_command(label="Export JSX", command=lambda: JSXExportWindow(self.root, self.project.project_edl_file if self.project.project_edl_file else self.file_path))
         menu_bar.add_cascade(label="EDL", menu=edl_menu)
 
         texts_menu = ttk.Menu(menu_bar, tearoff=0)
@@ -448,21 +448,27 @@ class QuickEDLApp:
 ####  #  #   #    #  #  ###   ####  ###
 
     def add_to_file(self, index, *args):
-        if self.hotkeys_active and self.project.project_edl_file:
+        # Use project EDL file if available, otherwise fall back to standalone file
+        edl_file = self.project.project_edl_file if self.project.project_edl_file else self.file_path
+        
+        if self.hotkeys_active and edl_file:
             text = self.markerlabel_entries[index].get()
             if not text and self.funny:
                 text = random_markerlabel(self)
             elif not text and not self.funny:
                 text = f"Button {index +1}"
             marker = f"{datetime.now().strftime('%H:%M:%S')} - {text}"
-            with Path(self.project.project_edl_file).open('a') as file:
+            with Path(edl_file).open('a') as file:
                 file.write(marker + "\n")
             self.update_last_markers(marker)        
         else:
             self.entry_error()
 
     def add_with_popup(self):
-        if self.hotkeys_active and self.project.project_edl_file:
+        # Use project EDL file if available, otherwise fall back to standalone file
+        edl_file = self.project.project_edl_file if self.project.project_edl_file else self.file_path
+        
+        if self.hotkeys_active and edl_file:
             timestamp = datetime.now().strftime("%H:%M:%S")
             marker = f"{timestamp} - "
 
@@ -471,7 +477,7 @@ class QuickEDLApp:
                 popup.destroy()
                 if text_input:
                     marker_popup = marker + text_input
-                    with Path(self.project.project_edl_file).open('a') as file:
+                    with Path(edl_file).open('a') as file:
                         file.write(marker_popup + "\n")
                     self.update_last_markers(marker_popup)
 
