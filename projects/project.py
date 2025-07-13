@@ -10,11 +10,12 @@ class Project:
     """
     Creates and handles a QuickEDL project containing EDL file, markerlabel contents, and playlist content.
     """
-    def __init__(self, update_callback=None, **kwargs):
+    def __init__(self, update_callback=None, recent_project_callback=None, **kwargs):
         self.kwargs = kwargs
         
         self.project_isvalid = False
         self.update_callback = update_callback
+        self.recent_project_callback = recent_project_callback
 
         self.project_path = None
         self.project_name = None
@@ -88,6 +89,9 @@ class Project:
 
         if self.project_isvalid:
             logging.info(f"Project '{self.project_name}' loaded successfully")
+            # Notify callback about successful project load for recent projects management
+            if hasattr(self, 'recent_project_callback') and self.recent_project_callback:
+                self.recent_project_callback(project_path)
         else:
             logging.error(f"Project in '{project_path}' could not be loaded: EDL file missing")
 

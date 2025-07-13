@@ -1,0 +1,24 @@
+# QuickEDL Settings Configuration
+# This file stores user preferences and application settings.
+# Missing settings will use default values.
+
+# Logging settings
+log_level: DEBUG  # Options: DEBUG, INFO, WARNING, ERROR
+
+# User interface settings
+theme: darkly  # Available themes: darkly (dark), litera (light)
+window_geometry: "400x700"
+
+# General behavior settings
+funny: false  # Enable random text when fields are empty
+delete_key: false  # Allow backspace to delete last marker
+
+# File and directory settings
+default_dir: null  # Default directory for file operations (null = use system default)
+max_recent_files: 10  # Maximum number of recent files to remember
+
+# Auto-save settings
+auto_save_interval: 300  # Auto-save interval in seconds
+
+# Recent files (automatically managed)
+recent_projects: []

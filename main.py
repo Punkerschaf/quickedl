@@ -18,7 +18,7 @@ from about import show_about
 from random_entry import random_markerlabel
 from export_jsx import JSXExportWindow
 from utils import open_directory
-import settings
+from settings import SettingsManager, show_settings_window
 from playlist import Playlist
 from markerlabel import save_markerlabel
 from projects.project import Project
@@ -35,6 +35,12 @@ class QuickEDLApp:
         self.root.title(f"QuickEDL {version}")
         self.root.geometry("400x700")
         self.style = ttk.Style("darkly")
+
+        # Initialize settings manager
+        self.settings_manager = SettingsManager()
+
+        # Auto-save timer
+        self.auto_save_timer = None
 
         # Legacy file path for standalone EDL files (not part of project)
         self.file_path = None
@@ -56,7 +62,10 @@ class QuickEDLApp:
         self.hotkey_status = None # init-Placeholder for label widget
 
         # Project
-        self.project = Project(update_callback=self.update_project_display)
+        self.project = Project(
+            update_callback=self.update_project_display,
+            recent_project_callback=self.add_recent_project
+        )
 
         # Playlist
         self.playlist = Playlist(project=self.project)
@@ -65,6 +74,9 @@ class QuickEDLApp:
         self.create_menu()
         self.create_widgets()
         self.check_window_focus()
+        
+        # Setup auto-save after everything is initialized
+        self.setup_auto_save()
 
     def setup_logging(self):
         home_dir = Path.home()
@@ -77,6 +89,57 @@ class QuickEDLApp:
                 logging.StreamHandler()
             ])
         logging.info(f"Logging initialized at {log_file}.")
+
+    def setup_auto_save(self):
+        """Sets up the auto-save functionality based on settings."""
+        interval = self.settings_manager.get_setting('auto_save_interval', 300)  # Default 5 minutes
+        if interval > 0:
+            self.schedule_auto_save(interval)
+            logging.info(f"Auto-save enabled with interval: {interval} seconds")
+        else:
+            logging.info("Auto-save disabled")
+
+    def schedule_auto_save(self, interval_seconds):
+        """Schedules the next auto-save."""
+        if self.auto_save_timer:
+            self.root.after_cancel(self.auto_save_timer)
+        
+        # Schedule auto-save in milliseconds
+        self.auto_save_timer = self.root.after(interval_seconds * 1000, self.perform_auto_save)
+
+    def perform_auto_save(self):
+        """Performs auto-save if conditions are met."""
+        try:
+            # Only auto-save if we have a project with markers
+            if (self.project.project_isvalid and 
+                self.project.project_markerlabel_file and 
+                self.last_markers):
+                
+                # Save current markerlabels to project
+                self.auto_save_markerlabels()
+                logging.debug("Auto-save: Markerlabels saved to project")
+            
+            # Reschedule next auto-save
+            interval = self.settings_manager.get_setting('auto_save_interval', 300)
+            if interval > 0:
+                self.schedule_auto_save(interval)
+                
+        except Exception as e:
+            logging.error(f"Auto-save failed: {e}")
+            # Still reschedule to try again later
+            interval = self.settings_manager.get_setting('auto_save_interval', 300)
+            if interval > 0:
+                self.schedule_auto_save(interval)
+
+    def auto_save_markerlabels(self):
+        """Auto-saves markerlabels to the project file."""
+        if self.project.project_markerlabel_file:
+            try:
+                markerlabel_data = "\n".join(entry.get() for entry in self.markerlabel_entries) + "\n"
+                Path(self.project.project_markerlabel_file).write_text(markerlabel_data, encoding='utf-8')
+                logging.debug(f"Auto-saved markerlabels to {self.project.project_markerlabel_file}")
+            except Exception as e:
+                logging.error(f"Failed to auto-save markerlabels: {e}")
 
     def load_project_history(self):
         """
@@ -128,7 +191,7 @@ class QuickEDLApp:
         menu_bar = ttk.Menu(self.root)
 
         app_menu = ttk.Menu(menu_bar, tearoff=0)
-        app_menu.add_command(label="Settings", command=lambda: settings.show_settings_window(self))
+        app_menu.add_command(label="Settings", command=lambda: show_settings_window(self))
 
         if sys.platform == "darwin":
             self.root.createcommand("tkAboutDialog", lambda: show_about(self, version))
@@ -142,6 +205,7 @@ class QuickEDLApp:
         project_menu = ttk.Menu(menu_bar, tearoff=0)
         project_menu.add_command(label="New Project", command=lambda: show_new_project_window(self.root, self.project, self))
         project_menu.add_command(label="Load Project", command=self.project.load_project_dialog)
+        self.create_recent_projects_menu(project_menu)
         project_menu.add_command(label="Save Labels to Project", command= lambda: save_markerlabel(self, save_path=self.project.project_markerlabel_file))
         menu_bar.add_cascade(label="Project", menu=project_menu)
 
@@ -347,6 +411,53 @@ class QuickEDLApp:
 ###    #    #     ###
 #      #    #     #
 #     ###   ####  ####
+    def add_recent_project(self, project_path):
+        """
+        Adds a project to the recent projects list.
+        """
+        if project_path:
+            self.settings_manager.add_recent_file(str(project_path))
+            logging.info(f"Added to recent projects: {project_path}")
+
+    def get_recent_projects(self):
+        """Gets the list of recent projects."""
+        return self.settings_manager.get_recent_files()
+
+    def create_recent_projects_menu(self, parent_menu):
+        """Creates a recent projects submenu."""
+        recent_projects = self.get_recent_projects()
+        
+        if recent_projects:
+            recent_menu = ttk.Menu(parent_menu, tearoff=0)
+            for project_path in recent_projects[:5]:  # Show last 5
+                project_name = Path(project_path).name
+                recent_menu.add_command(
+                    label=project_name,
+                    command=lambda p=project_path: self.load_recent_project(p)
+                )
+            recent_menu.add_separator()
+            recent_menu.add_command(
+                label="Clear Recent Projects",
+                command=self.clear_recent_projects
+            )
+            parent_menu.add_cascade(label="Recent Projects", menu=recent_menu)
+
+    def load_recent_project(self, project_path):
+        """Loads a recent project."""
+        if Path(project_path).exists():
+            self.project.load_project(project_path)
+        else:
+            Messagebox.show_error(f"Project not found: {project_path}")
+            # Remove from recent list if it doesn't exist
+            recent_projects = self.get_recent_projects()
+            if project_path in recent_projects:
+                recent_projects.remove(project_path)
+                self.settings_manager.set_setting('recent_projects', recent_projects)
+
+    def clear_recent_projects(self):
+        """Clears the recent projects list."""
+        self.settings_manager.clear_recent_files()
+        Messagebox.show_info("Recent projects cleared.")
 
     def create_new_file(self):
         try:
@@ -411,13 +522,29 @@ class QuickEDLApp:
             logging.info(f"Imported markerlabels from {load_path}")
     
     def load_settings(self):
-        self.settings_folder = settings.get_settings_folder()
+        # Load settings using the new settings manager
+        settings_data = self.settings_manager.load_settings()
+        
+        # Apply settings to instance variables
+        self.log_level = settings_data.get('log_level', self.log_level)
+        self.funny = settings_data.get('funny', self.funny)
+        self.default_dir = settings_data.get('default_dir', self.default_dir)
+        self.delete_key = settings_data.get('delete_key', self.delete_key)
+        
+        # Set log level
+        import logging
+        logging.getLogger().setLevel(self.log_level)
+        logging.info(f"Logging level set to {self.log_level}")
+        
+        # Update settings folder reference
+        self.settings_folder = self.settings_manager.get_settings_folder_path()
         self.settings_folder_str = StringVar(value=str(self.settings_folder))
+        
+        # Try to load markerlabels from legacy file
         if self.settings_folder.exists():
             load_path = self.settings_folder / "texts.txt"
             if load_path.exists():
                 self.import_markerlabels(load_path)
-                settings.load_yaml(self)
                 self.toast("Found and loaded settings.")
                 logging.info(f"Imported markerlabels and settings from {load_path}")
             else:
@@ -426,8 +553,9 @@ class QuickEDLApp:
             logging.info("No markerlabels loaded.")
     
     def load_default_markerlabels(self):
-        if self.settings_folder.exists():
-            load_path = self.settings_folder / "texts.txt"
+        settings_folder = self.settings_manager.get_settings_folder_path()
+        if settings_folder.exists():
+            load_path = settings_folder / "texts.txt"
             if load_path.exists():
                 self.import_markerlabels(load_path)
                 logging.info(f"Imported markerlabels and settings from {load_path}")
