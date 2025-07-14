@@ -38,9 +38,7 @@ class SettingsManager:
             'delete_key': False,
             'window_geometry': '400x700',
             'theme': 'darkly',
-            'auto_save_interval': 300,  # seconds
-            'recent_projects': [],
-            'max_recent_files': 10
+            'auto_save_interval': 300  # seconds
         }
     
     def create_settings_folder(self) -> bool:
@@ -129,6 +127,10 @@ class SettingsManager:
                 value = value[part]
             return value
         except (KeyError, TypeError):
+            # For dot notation keys, just return the provided default
+            if '.' in key:
+                return default
+            # For simple keys, try default_settings fallback
             return default if default is not None else self._default_settings.get(key)
     
     def set_setting(self, key: str, value: Any) -> bool:
@@ -198,65 +200,6 @@ class SettingsManager:
     def settings_file_exists(self) -> bool:
         """Returns True if settings file exists."""
         return self.settings_file.exists()
-    
-    def add_recent_file(self, file_path: str, file_type: str = 'project') -> bool:
-        """
-        Adds a file to recent files list.
-        Args:
-            file_path: Path to the file
-            file_type: Type of file ('project' only)
-        Returns:
-            True if successful, False otherwise
-        """
-        if file_type != 'project':
-            logging.warning(f"Only 'project' file type is supported, got '{file_type}'")
-            return False
-            
-        recent_key = f'recent_{file_type}s'
-        recent_list = self.get_setting(recent_key, [])
-        
-        # Remove if already in list
-        if file_path in recent_list:
-            recent_list.remove(file_path)
-        
-        # Add to beginning
-        recent_list.insert(0, file_path)
-        
-        # Limit list size
-        max_files = self.get_setting('max_recent_files', 10)
-        recent_list = recent_list[:max_files]
-        
-        return self.set_setting(recent_key, recent_list)
-    
-    def get_recent_files(self, file_type: str = 'project') -> list:
-        """
-        Gets the list of recent files for the specified type.
-        Args:
-            file_type: Type of file ('project' only)
-        Returns:
-            List of recent file paths
-        """
-        if file_type != 'project':
-            logging.warning(f"Only 'project' file type is supported, got '{file_type}'")
-            return []
-            
-        recent_key = f'recent_{file_type}s'
-        return self.get_setting(recent_key, [])
-    
-    def clear_recent_files(self, file_type: str = 'project') -> bool:
-        """
-        Clears the recent files list for the specified type.
-        Args:
-            file_type: Type of file ('project' only) 
-        Returns:
-            True if successful, False otherwise
-        """
-        if file_type != 'project':
-            logging.warning(f"Only 'project' file type is supported, got '{file_type}'")
-            return False
-            
-        recent_key = f'recent_{file_type}s'
-        return self.set_setting(recent_key, [])
     
     def get_auto_save_interval(self) -> int:
         """

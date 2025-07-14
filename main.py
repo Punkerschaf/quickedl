@@ -62,8 +62,7 @@ class QuickEDLApp:
 
         # Project
         self.project = Project(
-            update_callback=self.update_project_display,
-            recent_project_callback=self.add_recent_project
+            update_callback=self.update_project_display
         )
 
         # Playlist
@@ -204,12 +203,12 @@ class QuickEDLApp:
         app_menu.add_command(label="Exit", command=self.root.quit)
         menu_bar.add_cascade(label="App", menu=app_menu)
         
-        project_menu = ttk.Menu(menu_bar, tearoff=0)
-        project_menu.add_command(label="New Project", command=lambda: show_new_project_window(self.root, self.project, self))
-        project_menu.add_command(label="Load Project", command=self.project.load_project_dialog)
-        self.create_recent_projects_menu(project_menu)
-        project_menu.add_command(label="Save Labels to Project", command= lambda: save_markerlabel(self, save_path=self.project.project_markerlabel_file))
-        menu_bar.add_cascade(label="Project", menu=project_menu)
+        # Store reference to project menu for dynamic updates
+        self.project_menu = ttk.Menu(menu_bar, tearoff=0)
+        self.project_menu.add_command(label="New Project", command=lambda: show_new_project_window(self.root, self.project, self))
+        self.project_menu.add_command(label="Load Project", command=self.project.load_project_dialog)
+        self.project_menu.add_command(label="Save Labels to Project", command= lambda: save_markerlabel(self, save_path=self.project.project_markerlabel_file))
+        menu_bar.add_cascade(label="Project", menu=self.project_menu)
 
         edl_menu = ttk.Menu(menu_bar, tearoff=0)
         edl_menu.add_command(label="New EDL", command=self.create_new_file)
@@ -288,13 +287,13 @@ class QuickEDLApp:
         playlist_frame.columnconfigure(4, weight=0)
 
         # Special markerlabel entries
-        separator_button = ttk.Button(root, text="Separator (0)", command=self.add_separator)
+        separator_button = ttk.Button(self.root, text="Separator (0)", command=self.add_separator)
         separator_button.grid(column=3, row= 14, padx=5, pady=5, sticky="E")
 
-        popup_button = ttk.Button(root, text="Popup (Space)", command=self.add_with_popup)
+        popup_button = ttk.Button(self.root, text="Popup (Space)", command=self.add_with_popup)
         popup_button.grid(column=4, row= 14, padx=5, pady=5, sticky="E")
 
-        delete_button = ttk.Button(root, text="Delete", bootstyle="danger-outline", command=self.delete_last_marker)
+        delete_button = ttk.Button(self.root, text="Delete", bootstyle="danger-outline", command=self.delete_last_marker)
         delete_button.grid(column=5, row= 14, padx=5, pady=5, sticky="E")
 
         # Last markers display
@@ -304,10 +303,10 @@ class QuickEDLApp:
         last_markers_label = ttk.Label(self.markers_labelframe, textvariable=self.last_markers_text, justify=LEFT)
         last_markers_label.pack(pady=5, fill="both", expand=True)
 
-        root.rowconfigure(16, weight=1)
-        root.columnconfigure(1, weight=1, minsize=10)
-        root.columnconfigure(2, weight=1)
-        root.columnconfigure(6, weight=0, minsize=10)
+        self.root.rowconfigure(16, weight=1)
+        self.root.columnconfigure(1, weight=1, minsize=10)
+        self.root.columnconfigure(2, weight=1)
+        self.root.columnconfigure(6, weight=0, minsize=10)
 
     def bind_markerlabel_entries(self):
         for entry in self.markerlabel_entries:
@@ -413,53 +412,6 @@ class QuickEDLApp:
 ###    #    #     ###
 #      #    #     #
 #     ###   ####  ####
-    def add_recent_project(self, project_path):
-        """
-        Adds a project to the recent projects list.
-        """
-        if project_path:
-            self.settings_manager.add_recent_file(str(project_path))
-            logging.info(f"Added to recent projects: {project_path}")
-
-    def get_recent_projects(self):
-        """Gets the list of recent projects."""
-        return self.settings_manager.get_recent_files()
-
-    def create_recent_projects_menu(self, parent_menu):
-        """Creates a recent projects submenu."""
-        recent_projects = self.get_recent_projects()
-        
-        if recent_projects:
-            recent_menu = ttk.Menu(parent_menu, tearoff=0)
-            for project_path in recent_projects[:5]:  # Show last 5
-                project_name = Path(project_path).name
-                recent_menu.add_command(
-                    label=project_name,
-                    command=lambda p=project_path: self.load_recent_project(p)
-                )
-            recent_menu.add_separator()
-            recent_menu.add_command(
-                label="Clear Recent Projects",
-                command=self.clear_recent_projects
-            )
-            parent_menu.add_cascade(label="Recent Projects", menu=recent_menu)
-
-    def load_recent_project(self, project_path):
-        """Loads a recent project."""
-        if Path(project_path).exists():
-            self.project.load_project(project_path)
-        else:
-            Messagebox.show_error(f"Project not found: {project_path}")
-            # Remove from recent list if it doesn't exist
-            recent_projects = self.get_recent_projects()
-            if project_path in recent_projects:
-                recent_projects.remove(project_path)
-                self.settings_manager.set_setting('recent_projects', recent_projects)
-
-    def clear_recent_projects(self):
-        """Clears the recent projects list."""
-        self.settings_manager.clear_recent_files()
-        Messagebox.show_info("Recent projects cleared.")
 
     def create_new_file(self):
         try:
