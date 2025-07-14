@@ -34,7 +34,6 @@ class QuickEDLApp:
         self.root = root
         self.root.title(f"QuickEDL {version}")
         self.root.geometry("400x700")
-        self.style = ttk.Style("darkly")
 
         # Initialize settings manager
         self.settings_manager = SettingsManager()
@@ -90,6 +89,7 @@ class QuickEDLApp:
             ])
         logging.info(f"Logging initialized at {log_file}.")
 
+    # AUTO SAVE FUNCTIONS
     def setup_auto_save(self):
         """Sets up the auto-save functionality based on settings."""
         interval = self.settings_manager.get_setting('auto_save_interval', 300)  # Default 5 minutes
@@ -141,6 +141,7 @@ class QuickEDLApp:
             except Exception as e:
                 logging.error(f"Failed to auto-save markerlabels: {e}")
 
+    # 
     def load_project_history(self):
         """
         Loads the history from the current project's EDL file.
@@ -171,6 +172,7 @@ class QuickEDLApp:
     def update_project_display(self):
         """
         Updates the project display based on the current project state.
+        Used as callback function for loading projects.
         """
         if self.project.project_isvalid and self.project.project_name:
             self.file_label.config(text=f"Project: {self.project.project_name}")
@@ -524,7 +526,21 @@ class QuickEDLApp:
     def load_settings(self):
         # Load settings using the new settings manager
         settings_data = self.settings_manager.load_settings()
-        
+
+        # apply theme
+        theme = settings_data.get('theme', 'darkly')
+        try:
+            # Apply theme to the existing root window
+            self.root.style.theme_use(theme)
+            logging.info(f"Theme set to: {theme}")
+        except Exception as e:
+            logging.warning(f"Failed to set theme '{theme}', falling back to 'darkly': {e}")
+            try:
+                self.root.style.theme_use("darkly")
+            except Exception:
+                logging.error("Failed to set fallback theme")
+                pass
+
         # Apply settings to instance variables
         self.log_level = settings_data.get('log_level', self.log_level)
         self.funny = settings_data.get('funny', self.funny)
@@ -532,7 +548,6 @@ class QuickEDLApp:
         self.delete_key = settings_data.get('delete_key', self.delete_key)
         
         # Set log level
-        import logging
         logging.getLogger().setLevel(self.log_level)
         logging.info(f"Logging level set to {self.log_level}")
         
@@ -704,7 +719,8 @@ class QuickEDLApp:
 
 if __name__ == "__main__":
     try:
-        root = ttk.Window(themename="darkly")
+        # Create window without fixed theme - theme will be set in load_settings()
+        root = ttk.Window()
         app = QuickEDLApp(root)
         app.load_settings()
         root.mainloop()

@@ -20,9 +20,10 @@ class SettingsWindow:
     Settings window for QuickEDL application.
     """
     
-    def __init__(self, parent, settings_manager):
+    def __init__(self, parent, settings_manager, app=None):
         self.parent = parent
         self.settings_manager = settings_manager
+        self.app = app  # Reference to the main app for theme changes
         self.window = None
         self.settings_vars = {}
         
@@ -343,15 +344,26 @@ class SettingsWindow:
             
             # Save settings
             if self.settings_manager.update_settings(new_settings):
-                Messagebox.show_info("Settings saved successfully!")
-                self._close_window()
+                # Apply theme immediately if changed
+                if 'theme' in new_settings and self.app:
+                    new_theme = new_settings['theme']
+                    
+                    try:
+                        # Use the existing root window's style to change theme
+                        self.app.root.style.theme_use(new_theme)
+                        logging.info(f"Theme changed to: {new_theme}")
+                    except Exception as e:
+                        logging.error(f"Failed to apply theme '{new_theme}': {e}")
                 
                 # Apply log level immediately
                 if 'log_level' in new_settings:
                     self._apply_log_level(new_settings['log_level'])
+                    
+                Messagebox.show_info("Settings saved successfully!")
+                self._close_window()
             else:
                 Messagebox.show_error("Failed to save settings.")
-                
+
         except Exception as e:
             logging.error(f"Error saving settings: {e}")
             Messagebox.show_error(f"Error saving settings: {e}")

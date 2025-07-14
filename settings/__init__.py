@@ -43,7 +43,7 @@ def show_settings_window(app):
         app._settings_manager = SettingsManager()
     
     if not hasattr(app, '_settings_window'):
-        app._settings_window = SettingsWindow(app.root, app._settings_manager)
+        app._settings_window = SettingsWindow(app.root, app.settings_manager, app)
     
     app._settings_window.show()
 
