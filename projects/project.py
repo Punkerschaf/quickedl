@@ -48,6 +48,16 @@ class Project:
         First tries standardized filenames, then searches for files with matching suffixes.
         """
         path = Path(project_path)
+        
+        # Check if the path exists and is a directory
+        if not path.exists():
+            logging.error(f"Project path does not exist: {project_path}")
+            return False
+            
+        if not path.is_dir():
+            logging.error(f"Project path is not a directory: {project_path}")
+            return False
+        
         self.project_path = path
         self.project_name = path.name
 
@@ -67,17 +77,21 @@ class Project:
         if len(files_found) < len(expected_files):
             missing_types = set(expected_files.keys()) - set(files_found.keys())
             # Search all files in the folder
-            for file_path in path.iterdir():
-                if file_path.is_file():
-                    file_name = file_path.name.upper()
-                    # Search for suffixes
-                    for file_type in missing_types.copy():
-                        suffix = f"_{file_type.upper()}.txt".upper()
-                        if file_name.endswith(suffix):
-                            files_found[file_type] = file_path
-                            missing_types.remove(file_type)
-                            logging.debug(f"Found file: {file_type}")
-                            break
+            try:
+                for file_path in path.iterdir():
+                    if file_path.is_file():
+                        file_name = file_path.name.upper()
+                        # Search for suffixes
+                        for file_type in missing_types.copy():
+                            suffix = f"_{file_type.upper()}.txt".upper()
+                            if file_name.endswith(suffix):
+                                files_found[file_type] = file_path
+                                missing_types.remove(file_type)
+                                logging.debug(f"Found file: {file_type}")
+                                break
+            except PermissionError:
+                logging.error(f"Permission denied when accessing directory: {project_path}")
+                return False
             
             # Log any remaining missing files after the search
             for missing_file_type in missing_types:

@@ -62,7 +62,7 @@ class QuickEDLApp:
 
         # Project
         self.project = Project(
-            update_callback=self.update_project_display
+            update_callback=self.on_project_update
         )
 
         # Playlist
@@ -180,6 +180,41 @@ class QuickEDLApp:
         else:
             self.file_label.config(text="No project loaded.")
             self.file_labelframe.config(bootstyle="warning")
+
+    def on_project_update(self):
+        """
+        Callback function called when a project is updated/loaded.
+        Updates the display and loads project content (markerlabels and playlist).
+        """
+        # Update the display first
+        self.update_project_display()
+        
+        # Load project content if project is valid
+        if self.project.project_isvalid:
+            self.load_project_content()
+
+    def load_project_content(self):
+        """
+        Loads markerlabels and playlist content from the current project files.
+        """
+        try:
+            # Load markerlabels if file exists
+            if (self.project.project_markerlabel_file and 
+                Path(self.project.project_markerlabel_file).exists()):
+                
+                from markerlabel import load_markerlabel
+                load_markerlabel(self, self.project.project_markerlabel_file)
+                logging.info(f"Loaded markerlabels from project: {self.project.project_markerlabel_file}")
+            
+            # Load playlist if file exists
+            if (self.project.project_playlist_file and 
+                Path(self.project.project_playlist_file).exists()):
+                
+                self.playlist.load_from_project()
+                logging.info(f"Loaded playlist from project: {self.project.project_playlist_file}")
+                
+        except Exception as e:
+            logging.error(f"Error loading project content: {e}")
 
 # GUI
 ####  #  #  ###

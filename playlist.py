@@ -211,6 +211,9 @@ class Playlist():
         index = self.playhead.get()
         if 0 <= index < len(self.data):
             self.playhead_text.set(self.data[index])
+            logging.debug(f"Playlist GUI updated: playhead={index}, text='{self.data[index]}'")
+        else:
+            logging.warning(f"Playlist playhead index out of bounds: {index}, data_len={len(self.data)}")
     
     def repos_playhead(self):
         current = int(self.playhead.get())
@@ -218,7 +221,7 @@ class Playlist():
         if current > lenght-1:
             self.playhead.set(lenght-1)
             logging.debug(f"Playlist: Repositioning playhead to {self.playhead.get()}")
-            self.on_playhead_update
+        self.on_playhead_update()
 
     def playlist_entry(self, *args):
         """
@@ -302,6 +305,8 @@ class Playlist():
                     if hasattr(self, 'text_area'):
                         self.populate_text_area()
                     self.repos_playhead()
+                    # Ensure GUI is updated with the new data
+                    self.on_playhead_update()
                     logging.info(f"Playlist loaded from project file: {playlist_file}")
                 except Exception as e:
                     logging.error(f"Failed to load playlist from project: {e}")
