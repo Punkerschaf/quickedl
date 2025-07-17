@@ -69,7 +69,7 @@ class SettingsManager:
         
         try:
             with self.settings_file.open('r', encoding='utf-8') as file:
-                loaded_settings = yaml.safe_load(file) or {} # {} -> Avoid NoneType
+                loaded_settings = yaml.safe_load(file) or {} # {} to Avoid NoneType
                 
             # Merge loaded settings with defaults (loaded values override defaults)
             settings.update(loaded_settings)

@@ -89,11 +89,18 @@ def show_new_project_window(root, project, app_instance=None):
                 if dialog_result != "Yes":
                     return
                 
-                # Find the next available increment
-                while new_project_path.exists():
+                # Find the next available increment (with safety limit)
+                max_iterations = 1000  # Prevent infinite loops
+                while new_project_path.exists() and increment < max_iterations:
                     increment += 1
                     project_name = f"{original_project_name}_{increment}"
                     new_project_path = project_path / project_name
+                
+                # Check if we hit the iteration limit
+                if increment >= max_iterations:
+                    logging.error(f"Could not find available project name after {max_iterations} attempts")
+                    Messagebox.show_error("Error", "Could not create project: too many existing projects with similar names.\nPlease choose a different project name or location.")
+                    return
                 
                 logging.info(f"Using incremented project name: {project_name}")
             

@@ -95,7 +95,7 @@ class Project:
                         file_name = file_path.name.upper()
                         # Search for suffixes
                         for file_type in missing_types.copy():
-                            suffix = f"_{file_type.upper()}.txt".upper()
+                            suffix = f"_{file_type.upper()}.txt"
                             if file_name.endswith(suffix):
                                 files_found[file_type] = file_path
                                 missing_types.remove(file_type)
