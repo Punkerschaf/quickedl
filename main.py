@@ -4,7 +4,6 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import LEFT, RIGHT
 from ttkbootstrap.dialogs import Messagebox
-from ttkbootstrap.toast import ToastNotification
 
 from datetime import datetime
 from tkinter import filedialog, StringVar
@@ -435,16 +434,6 @@ class QuickEDLApp:
         self.markerlabel_entries[index].config(bootstyle="danger")
         self.root.after(500, lambda: self.markerlabel_entries[index].config(bootstyle="default"))
     
-    def toast(self, message): #TODO Remove Toast and Toast call at start
-        toast = ToastNotification(
-            title="QuickEDL",
-            message=message,
-            duration=3000,
-            bootstyle="primary",
-            icon=""
-        )
-        toast.show_toast()
-    
     def update_playlist_selector(self, lenght, *args):
         self.playlist_selector.configure(to=lenght)
 
@@ -580,7 +569,6 @@ class QuickEDLApp:
             load_path = self.settings_folder / "texts.txt"
             if load_path.exists():
                 self.import_markerlabels(load_path)
-                self.toast("Found and loaded settings.")
                 logging.info(f"Imported markerlabels and settings from {load_path}")
             else:
                 return
