@@ -51,12 +51,28 @@ class Playlist():
         self.edit_window = None
         self.directory = kwargs.get('directory', Path.home())
         
-        # Load from project if available
-        if self.project and self.project.project_isvalid:
+                # Load from project if available
+        if self.project and hasattr(self.project, 'project_playlist_file'):
             self.load_from_project()
+
+    def get_default_directory(self):
+        """
+        Gets the default directory for file dialogs.
+        Priority: self.directory > project settings > None
+        """
+        if self.directory:
+            return self.directory
         
-        logging.debug("Playlist initialized.")
-    
+        if (self.project and 
+            hasattr(self.project, 'settings_manager') and 
+            self.project.settings_manager):
+            default_dir = self.project.settings_manager.get_setting('default_dir')
+            if default_dir and Path(default_dir).exists() and Path(default_dir).is_dir():
+                return default_dir
+        
+        return None
+
+    # Methods
 
     def playlist_edit_window(self):
         """
@@ -211,6 +227,9 @@ class Playlist():
         index = self.playhead.get()
         if 0 <= index < len(self.data):
             self.playhead_text.set(self.data[index])
+            logging.debug(f"Playlist GUI updated: playhead={index}, text='{self.data[index]}'")
+        else:
+            logging.warning(f"Playlist playhead index out of bounds: {index}, data_len={len(self.data)}")
     
     def repos_playhead(self):
         current = int(self.playhead.get())
@@ -218,7 +237,7 @@ class Playlist():
         if current > lenght-1:
             self.playhead.set(lenght-1)
             logging.debug(f"Playlist: Repositioning playhead to {self.playhead.get()}")
-            self.on_playhead_update
+        self.on_playhead_update()
 
     def playlist_entry(self, *args):
         """
@@ -242,7 +261,7 @@ class Playlist():
     def safe_playlist(self, save_path=None):
         if not save_path:
             save_path = filedialog.asksaveasfilename(
-                initialdir=self.directory,
+                initialdir=self.get_default_directory(),
                 defaultextension=".txt",
                 initialfile="Playlist.txt",
                 filetypes=[("Text files", "*.txt")]
@@ -254,8 +273,10 @@ class Playlist():
     
     def load_playlist(self, load_path=None):
         if not load_path:
-            load_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")],
-                                                initialdir=self.directory)
+            load_path = filedialog.askopenfilename(
+                filetypes=[("Text files", "*.txt")],
+                initialdir=self.get_default_directory()
+            )
         if load_path:
             load_path = Path(load_path)
             self.data = load_path.read_text().splitlines()
@@ -302,6 +323,8 @@ class Playlist():
                     if hasattr(self, 'text_area'):
                         self.populate_text_area()
                     self.repos_playhead()
+                    # Ensure GUI is updated with the new data
+                    self.on_playhead_update()
                     logging.info(f"Playlist loaded from project file: {playlist_file}")
                 except Exception as e:
                     logging.error(f"Failed to load playlist from project: {e}")
@@ -314,7 +337,7 @@ class Playlist():
     def safe_playlist_legacy(self, save_path=None):
         if not save_path:
             save_path = filedialog.asksaveasfilename(
-                initialdir=self.directory,
+                initialdir=self.get_default_directory(),
                 defaultextension=".txt",
                 initialfile="Playlist.txt",
                 filetypes=[("Text files", "*.txt")]
@@ -326,8 +349,10 @@ class Playlist():
     
     def load_playlist_legacy(self, load_path=None):
         if not load_path:
-            load_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")],
-                                                initialdir=self.directory)
+            load_path = filedialog.askopenfilename(
+                filetypes=[("Text files", "*.txt")],
+                initialdir=self.get_default_directory()
+            )
         if load_path:
             load_path = Path(load_path)
             self.data = load_path.read_text().splitlines()

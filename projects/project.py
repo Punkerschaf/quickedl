@@ -10,8 +10,9 @@ class Project:
     """
     Creates and handles a QuickEDL project containing EDL file, markerlabel contents, and playlist content.
     """
-    def __init__(self, update_callback=None, **kwargs):
+    def __init__(self, update_callback=None, settings_manager=None, **kwargs):
         self.kwargs = kwargs
+        self.settings_manager = settings_manager
         
         self.project_isvalid = False
         self.update_callback = update_callback
@@ -23,11 +24,29 @@ class Project:
         self.project_markerlabel_file = None
         self.project_playlist_file = None
     
+    def load_project(self, project_path):
+        """
+        Loads a project from the given path. This is a wrapper for load_project_files
+        that provides compatibility with the main app.
+        """
+        return self.load_project_files(project_path)
+
     def load_project_dialog(self):
         """
         Opens a dialog to select a project folder and loads the project files.
         """
-        project_path = filedialog.askdirectory(title="Select Project Folder")
+        # Get default directory from settings if available
+        initial_dir = None
+        if self.settings_manager:
+            default_dir = self.settings_manager.get_setting('default_dir')
+            if default_dir and Path(default_dir).exists() and Path(default_dir).is_dir():
+                initial_dir = default_dir
+                logging.debug(f"Using default directory for project dialog: {initial_dir}")
+        
+        project_path = filedialog.askdirectory(
+            title="Select Project Folder",
+            initialdir=initial_dir
+        )
         
         if project_path:
             return self.load_project_files(project_path)
@@ -41,6 +60,16 @@ class Project:
         First tries standardized filenames, then searches for files with matching suffixes.
         """
         path = Path(project_path)
+        
+        # Check if the path exists and is a directory
+        if not path.exists():
+            logging.error(f"Project path does not exist: {project_path}")
+            return False
+            
+        if not path.is_dir():
+            logging.error(f"Project path is not a directory: {project_path}")
+            return False
+        
         self.project_path = path
         self.project_name = path.name
 
@@ -60,17 +89,21 @@ class Project:
         if len(files_found) < len(expected_files):
             missing_types = set(expected_files.keys()) - set(files_found.keys())
             # Search all files in the folder
-            for file_path in path.iterdir():
-                if file_path.is_file():
-                    file_name = file_path.name.upper()
-                    # Search for suffixes
-                    for file_type in missing_types.copy():
-                        suffix = f"_{file_type.upper()}.txt".upper()
-                        if file_name.endswith(suffix):
-                            files_found[file_type] = file_path
-                            missing_types.remove(file_type)
-                            logging.debug(f"Found file: {file_type}")
-                            break
+            try:
+                for file_path in path.iterdir():
+                    if file_path.is_file():
+                        file_name = file_path.name.upper()
+                        # Search for suffixes
+                        for file_type in missing_types.copy():
+                            suffix = f"_{file_type.upper()}.txt"
+                            if file_name.endswith(suffix):
+                                files_found[file_type] = file_path
+                                missing_types.remove(file_type)
+                                logging.debug(f"Found file: {file_type}")
+                                break
+            except PermissionError:
+                logging.error(f"Permission denied when accessing directory: {project_path}")
+                return False
             
             # Log any remaining missing files after the search
             for missing_file_type in missing_types:

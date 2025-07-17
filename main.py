@@ -18,7 +18,7 @@ from about import show_about
 from random_entry import random_markerlabel
 from export_jsx import JSXExportWindow
 from utils import open_directory
-import settings
+from settings import SettingsManager, show_settings_window
 from playlist import Playlist
 from markerlabel import save_markerlabel
 from projects.project import Project
@@ -34,7 +34,12 @@ class QuickEDLApp:
         self.root = root
         self.root.title(f"QuickEDL {version}")
         self.root.geometry("400x700")
-        self.style = ttk.Style("darkly")
+
+        # Initialize settings manager
+        self.settings_manager = SettingsManager()
+
+        # Auto-save timer
+        self.auto_save_timer = None
 
         # Legacy file path for standalone EDL files (not part of project)
         self.file_path = None
@@ -56,7 +61,10 @@ class QuickEDLApp:
         self.hotkey_status = None # init-Placeholder for label widget
 
         # Project
-        self.project = Project(update_callback=self.update_project_display)
+        self.project = Project(
+            update_callback=self.on_project_update,
+            settings_manager=self.settings_manager
+        )
 
         # Playlist
         self.playlist = Playlist(project=self.project)
@@ -65,6 +73,9 @@ class QuickEDLApp:
         self.create_menu()
         self.create_widgets()
         self.check_window_focus()
+        
+        # Setup auto-save after everything is initialized
+        self.setup_auto_save()
 
     def setup_logging(self):
         home_dir = Path.home()
@@ -78,6 +89,59 @@ class QuickEDLApp:
             ])
         logging.info(f"Logging initialized at {log_file}.")
 
+    # AUTO SAVE FUNCTIONS
+    def setup_auto_save(self):
+        """Sets up the auto-save functionality based on settings."""
+        interval = self.settings_manager.get_setting('auto_save_interval', 300)  # Default 5 minutes
+        if interval > 0:
+            self.schedule_auto_save(interval)
+            logging.info(f"Auto-save enabled with interval: {interval} seconds")
+        else:
+            logging.info("Auto-save disabled")
+
+    def schedule_auto_save(self, interval_seconds):
+        """Schedules the next auto-save."""
+        if self.auto_save_timer:
+            self.root.after_cancel(self.auto_save_timer)
+        
+        # Schedule auto-save in milliseconds
+        self.auto_save_timer = self.root.after(interval_seconds * 1000, self.perform_auto_save)
+
+    def perform_auto_save(self):
+        """Performs auto-save if conditions are met."""
+        try:
+            # Only auto-save if we have a project with markers
+            if (self.project.project_isvalid and 
+                self.project.project_markerlabel_file and 
+                self.last_markers):
+                
+                # Save current markerlabels to project
+                self.auto_save_markerlabels()
+                logging.debug("Auto-save: Markerlabels saved to project")
+            
+            # Reschedule next auto-save
+            interval = self.settings_manager.get_setting('auto_save_interval', 300)
+            if interval > 0:
+                self.schedule_auto_save(interval)
+                
+        except Exception as e:
+            logging.error(f"Auto-save failed: {e}")
+            # Still reschedule to try again later
+            interval = self.settings_manager.get_setting('auto_save_interval', 300)
+            if interval > 0:
+                self.schedule_auto_save(interval)
+
+    def auto_save_markerlabels(self):
+        """Auto-saves markerlabels to the project file."""
+        if self.project.project_markerlabel_file:
+            try:
+                markerlabel_data = "\n".join(entry.get() for entry in self.markerlabel_entries) + "\n"
+                Path(self.project.project_markerlabel_file).write_text(markerlabel_data, encoding='utf-8')
+                logging.debug(f"Auto-saved markerlabels to {self.project.project_markerlabel_file}")
+            except Exception as e:
+                logging.error(f"Failed to auto-save markerlabels: {e}")
+
+    # 
     def load_project_history(self):
         """
         Loads the history from the current project's EDL file.
@@ -108,6 +172,7 @@ class QuickEDLApp:
     def update_project_display(self):
         """
         Updates the project display based on the current project state.
+        Used as callback function for loading projects.
         """
         if self.project.project_isvalid and self.project.project_name:
             self.file_label.config(text=f"Project: {self.project.project_name}")
@@ -116,6 +181,41 @@ class QuickEDLApp:
         else:
             self.file_label.config(text="No project loaded.")
             self.file_labelframe.config(bootstyle="warning")
+
+    def on_project_update(self):
+        """
+        Callback function called when a project is updated/loaded.
+        Updates the display and loads project content (markerlabels and playlist).
+        """
+        # Update the display first
+        self.update_project_display()
+        
+        # Load project content if project is valid
+        if self.project.project_isvalid:
+            self.load_project_content()
+
+    def load_project_content(self):
+        """
+        Loads markerlabels and playlist content from the current project files.
+        """
+        try:
+            # Load markerlabels if file exists
+            if (self.project.project_markerlabel_file and 
+                Path(self.project.project_markerlabel_file).exists()):
+                
+                from markerlabel import load_markerlabel
+                load_markerlabel(self, self.project.project_markerlabel_file)
+                logging.info(f"Loaded markerlabels from project: {self.project.project_markerlabel_file}")
+            
+            # Load playlist if file exists
+            if (self.project.project_playlist_file and 
+                Path(self.project.project_playlist_file).exists()):
+                
+                self.playlist.load_from_project()
+                logging.info(f"Loaded playlist from project: {self.project.project_playlist_file}")
+                
+        except Exception as e:
+            logging.error(f"Error loading project content: {e}")
 
 # GUI
 ####  #  #  ###
@@ -128,7 +228,7 @@ class QuickEDLApp:
         menu_bar = ttk.Menu(self.root)
 
         app_menu = ttk.Menu(menu_bar, tearoff=0)
-        app_menu.add_command(label="Settings", command=lambda: settings.show_settings_window(self))
+        app_menu.add_command(label="Settings", command=lambda: show_settings_window(self))
 
         if sys.platform == "darwin":
             self.root.createcommand("tkAboutDialog", lambda: show_about(self, version))
@@ -139,11 +239,12 @@ class QuickEDLApp:
         app_menu.add_command(label="Exit", command=self.root.quit)
         menu_bar.add_cascade(label="App", menu=app_menu)
         
-        project_menu = ttk.Menu(menu_bar, tearoff=0)
-        project_menu.add_command(label="New Project", command=lambda: show_new_project_window(self.root, self.project, self))
-        project_menu.add_command(label="Load Project", command=self.project.load_project_dialog)
-        project_menu.add_command(label="Save Labels to Project", command= lambda: save_markerlabel(self, save_path=self.project.project_markerlabel_file))
-        menu_bar.add_cascade(label="Project", menu=project_menu)
+        # Store reference to project menu for dynamic updates
+        self.project_menu = ttk.Menu(menu_bar, tearoff=0)
+        self.project_menu.add_command(label="New Project", command=lambda: show_new_project_window(self.root, self.project, self))
+        self.project_menu.add_command(label="Load Project", command=self.project.load_project_dialog)
+        self.project_menu.add_command(label="Save Labels to Project", command= lambda: save_markerlabel(self, save_path=self.project.project_markerlabel_file))
+        menu_bar.add_cascade(label="Project", menu=self.project_menu)
 
         edl_menu = ttk.Menu(menu_bar, tearoff=0)
         edl_menu.add_command(label="New EDL", command=self.create_new_file)
@@ -163,10 +264,11 @@ class QuickEDLApp:
         self.root.config(menu=menu_bar)
 
     def create_widgets(self):
-        self.root.bind("<Button-1>", self.defocus_text)
-        self.root.bind("<Return>", self.defocus_text)
-        self.root.bind("<BackSpace>", self.handle_backspace)
+        # Bind events only to the root window, not all widgets
         self.root.bind("<KeyPress>", self.on_key_press)
+        self.root.bind("<BackSpace>", self.handle_backspace)
+        # Only bind click events to specific areas where defocusing makes sense
+        self.root.bind("<Button-1>", self.defocus_text)
 
         # File label
         self.file_labelframe = ttk.Labelframe(self.root, bootstyle="warning", text=" Project ")
@@ -217,18 +319,18 @@ class QuickEDLApp:
         self.plst_inc_button.grid(column=3, row=0, sticky="E", padx=5)
         playlist_frame.columnconfigure(3, weight=0)
  
-        playlist_button = ttk.Button(playlist_frame, text="Plst", width=3, command=lambda event: self.add_to_file(self.playlist.playhead_stringvar))
+        playlist_button = ttk.Button(playlist_frame, text="Plst", width=3, command=self.add_playlist_to_file)
         playlist_button.grid(column=4, row=0, sticky="E")
         playlist_frame.columnconfigure(4, weight=0)
 
         # Special markerlabel entries
-        separator_button = ttk.Button(root, text="Separator (0)", command=self.add_separator)
+        separator_button = ttk.Button(self.root, text="Separator (0)", command=self.add_separator)
         separator_button.grid(column=3, row= 14, padx=5, pady=5, sticky="E")
 
-        popup_button = ttk.Button(root, text="Popup (Space)", command=self.add_with_popup)
+        popup_button = ttk.Button(self.root, text="Popup (Space)", command=self.add_with_popup)
         popup_button.grid(column=4, row= 14, padx=5, pady=5, sticky="E")
 
-        delete_button = ttk.Button(root, text="Delete", bootstyle="danger-outline", command=self.delete_last_marker)
+        delete_button = ttk.Button(self.root, text="Delete", bootstyle="danger-outline", command=self.delete_last_marker)
         delete_button.grid(column=5, row= 14, padx=5, pady=5, sticky="E")
 
         # Last markers display
@@ -238,15 +340,18 @@ class QuickEDLApp:
         last_markers_label = ttk.Label(self.markers_labelframe, textvariable=self.last_markers_text, justify=LEFT)
         last_markers_label.pack(pady=5, fill="both", expand=True)
 
-        root.rowconfigure(16, weight=1)
-        root.columnconfigure(1, weight=1, minsize=10)
-        root.columnconfigure(2, weight=1)
-        root.columnconfigure(6, weight=0, minsize=10)
+        self.root.rowconfigure(16, weight=1)
+        self.root.columnconfigure(1, weight=1, minsize=10)
+        self.root.columnconfigure(2, weight=1)
+        self.root.columnconfigure(6, weight=0, minsize=10)
 
     def bind_markerlabel_entries(self):
-        for entry in self.markerlabel_entries:
-            entry.bind("<FocusIn>", lambda e: self.set_entry_focus(True))
-            entry.bind("<FocusOut>", lambda e: self.set_entry_focus(False))
+        for i, entry in enumerate(self.markerlabel_entries):
+            # Use a closure to capture the current state properly
+            entry.bind("<FocusIn>", lambda e, entry=entry: self.set_entry_focus(True))
+            entry.bind("<FocusOut>", lambda e, entry=entry: self.set_entry_focus(False))
+            # Allow Return key to defocus entry
+            entry.bind("<Return>", lambda e, entry=entry: self.root.focus_set())
 
 #####################
 ### GUI FUNCTIONS ###
@@ -265,27 +370,24 @@ class QuickEDLApp:
         Check if the window is focused and update hotkey status.
         """
         try:
-            focused_widget = self.root.focus_displayof()
-            widget_name = str(focused_widget) if focused_widget else ""
-            if widget_name and "#menu" not in widget_name:
-                self.window_focused = True
-            else:
-                self.window_focused = False
-        except KeyError:
+            # Check if the window itself has focus, not individual widgets
+            self.window_focused = self.root.focus_displayof() is not None
+        except (KeyError, AttributeError):
             self.window_focused = False
         self.update_hotkey_status()
-        self.root.after(100, self.check_window_focus)
+        # Increase interval to reduce interference with normal GUI operations
+        self.root.after(500, self.check_window_focus)
     
     def defocus_text(self, event):
-        # Check if click is in root
-        if event.type == "2":  # KeyPress event
+        # Only defocus when clicking outside of any interactive widget
+        if event.type == "2":  # KeyPress event (Return key)
             if self.window_focused and self.entry_focused:
                 self.root.focus_set()
-        else:
-            if event.widget not in self.markerlabel_entries:
+        else:  # Mouse click event
+            # Only set focus to root if clicked on the root window itself
+            # Don't interfere with clicks on buttons or other widgets
+            if event.widget == self.root:
                 self.root.focus_set()
-            else:
-                event.widget.focus_set()
 
     def update_time(self):
         current_time = datetime.now().strftime("%H:%M:%S")
@@ -307,18 +409,27 @@ class QuickEDLApp:
             self.hotkey_status.config(text="Hotkeys Inactive", bootstyle="inverse-danger")
     
     def on_key_press(self, event):
-    # Check if any text field has focus
-        if self.root.focus_get() not in self.markerlabel_entries:
-            key = event.char
-            if key.isdigit():
-                key_num = int(key)
-                if key_num == 0:
-                    self.add_separator()  # Separator for key '0'
-                elif 1 <= key_num <= 9:
-                    self.add_to_file(key_num - 1)  # Corresponding button for keys 1-9
-                    self.flash_button(key_num - 1)
-            elif event.keysym == "space":
-                self.add_with_popup()  # Trigger the pop-up entry for spacebar
+        # Only handle hotkeys when hotkeys are active and not in an entry field
+        if not self.hotkeys_active:
+            return
+            
+        # Check if focus is on an entry field
+        current_focus = self.root.focus_get()
+        if current_focus in self.markerlabel_entries:
+            return
+            
+        key = event.char
+        if key.isdigit():
+            key_num = int(key)
+            if key_num == 0:
+                self.add_separator()  # Separator for key '0'
+            elif 1 <= key_num <= 9:
+                self.add_to_file(key_num - 1)  # Corresponding button for keys 1-9
+                self.flash_button(key_num - 1)
+        elif event.keysym == "space":
+            self.add_with_popup()  # Trigger the pop-up entry for spacebar
+        elif key == "p" or key == "P":
+            self.add_playlist_to_file()  # Add playlist entry for 'p' or 'P'
     
     def flash_button(self, index):
         self.markerlabel_entries[index].config(bootstyle="danger")
@@ -348,11 +459,22 @@ class QuickEDLApp:
 #      #    #     #
 #     ###   ####  ####
 
+    def get_default_directory(self):
+        """
+        Gets the default directory from settings if it exists and is valid.
+        Returns None if not set or invalid.
+        """
+        default_dir = self.settings_manager.get_setting('default_dir')
+        if default_dir and Path(default_dir).exists() and Path(default_dir).is_dir():
+            return default_dir
+        return None
+
     def create_new_file(self):
         try:
             file_path = filedialog.asksaveasfilename(
                 defaultextension=".txt",
                 initialfile=f"EDL_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt",
+                initialdir=self.get_default_directory(),
                 filetypes=[("Text files", "*.txt")])
             if file_path:
                 self.file_path = Path(file_path)
@@ -367,7 +489,10 @@ class QuickEDLApp:
             logging.error(f"An error occurred while creating a new file: {e}", exc_info=True)
 
     def load_file(self):
-        file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
+        file_path = filedialog.askopenfilename(
+            filetypes=[("Text files", "*.txt")],
+            initialdir=self.get_default_directory()
+        )
         if file_path:
             self.file_path = Path(file_path)
             self.current_dir = self.file_path.parent
@@ -386,8 +511,11 @@ class QuickEDLApp:
                 self.last_markers_text.set("\n".join(self.last_markers))
 
     def save_markerlabels(self):
+        # Use current_dir if available, otherwise default directory from settings
+        initial_dir = self.current_dir or self.get_default_directory()
+        
         save_path = filedialog.asksaveasfilename(
-            initialdir=self.current_dir,
+            initialdir=initial_dir,
             defaultextension=".txt",
             initialfile=f"Markerlabels_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt",
             filetypes=[("Text files", "*.txt")]
@@ -397,8 +525,13 @@ class QuickEDLApp:
             save_path.write_text("\n".join(entry.get() for entry in self.markerlabel_entries) + "\n")
 
     def open_markerlabels(self):
-        load_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")],
-                                               initialdir=self.current_dir)
+        # Use current_dir if available, otherwise default directory from settings
+        initial_dir = self.current_dir or self.get_default_directory()
+        
+        load_path = filedialog.askopenfilename(
+            filetypes=[("Text files", "*.txt")],
+            initialdir=initial_dir
+        )
         self.import_markerlabels(load_path)
 
     def import_markerlabels(self, load_path):    
@@ -411,13 +544,42 @@ class QuickEDLApp:
             logging.info(f"Imported markerlabels from {load_path}")
     
     def load_settings(self):
-        self.settings_folder = settings.get_settings_folder()
+        # Load settings using the new settings manager
+        settings_data = self.settings_manager.load_settings()
+
+        # apply theme
+        theme = settings_data.get('theme', 'darkly')
+        try:
+            # Apply theme to the existing root window
+            self.root.style.theme_use(theme)
+            logging.info(f"Theme set to: {theme}")
+        except Exception as e:
+            logging.warning(f"Failed to set theme '{theme}', falling back to 'darkly': {e}")
+            try:
+                self.root.style.theme_use("darkly")
+            except Exception:
+                logging.error("Failed to set fallback theme")
+                pass
+
+        # Apply settings to instance variables
+        self.log_level = settings_data.get('log_level', self.log_level)
+        self.funny = settings_data.get('funny', self.funny)
+        self.default_dir = settings_data.get('default_dir', self.default_dir)
+        self.delete_key = settings_data.get('delete_key', self.delete_key)
+        
+        # Set log level
+        logging.getLogger().setLevel(self.log_level)
+        logging.info(f"Logging level set to {self.log_level}")
+        
+        # Update settings folder reference
+        self.settings_folder = self.settings_manager.get_settings_folder_path()
         self.settings_folder_str = StringVar(value=str(self.settings_folder))
+        
+        # Try to load markerlabels from legacy file
         if self.settings_folder.exists():
             load_path = self.settings_folder / "texts.txt"
             if load_path.exists():
                 self.import_markerlabels(load_path)
-                settings.load_yaml(self)
                 self.toast("Found and loaded settings.")
                 logging.info(f"Imported markerlabels and settings from {load_path}")
             else:
@@ -426,8 +588,9 @@ class QuickEDLApp:
             logging.info("No markerlabels loaded.")
     
     def load_default_markerlabels(self):
-        if self.settings_folder.exists():
-            load_path = self.settings_folder / "texts.txt"
+        settings_folder = self.settings_manager.get_settings_folder_path()
+        if settings_folder.exists():
+            load_path = settings_folder / "texts.txt"
             if load_path.exists():
                 self.import_markerlabels(load_path)
                 logging.info(f"Imported markerlabels and settings from {load_path}")
@@ -461,6 +624,28 @@ class QuickEDLApp:
             with Path(edl_file).open('a') as file:
                 file.write(marker + "\n")
             self.update_last_markers(marker)        
+        else:
+            self.entry_error()
+
+    def add_playlist_to_file(self):
+        """Add current playlist entry to EDL file"""
+        # Use project EDL file if available, otherwise fall back to standalone file
+        edl_file = self.project.project_edl_file if self.project.project_edl_file else self.file_path
+        
+        if self.hotkeys_active and edl_file:
+            try:
+                # Get current playlist entry (this also increments the playhead)
+                playlist_text = self.playlist.playlist_entry()
+                if playlist_text:
+                    marker = f"{datetime.now().strftime('%H:%M:%S')} - {playlist_text}"
+                    with Path(edl_file).open('a') as file:
+                        file.write(marker + "\n")
+                    self.update_last_markers(marker)
+                else:
+                    logging.warning("No playlist entry available")
+            except Exception as e:
+                logging.error(f"Error adding playlist entry to file: {e}")
+                self.entry_error()
         else:
             self.entry_error()
 
@@ -510,8 +695,10 @@ class QuickEDLApp:
             self.entry_error()
 
     def handle_backspace(self, event):
-        if event.widget not in self.markerlabel_entries and self.delete_key:
-            self.delete_last_marker(self)
+        # Only handle backspace for deletion when not in an entry field
+        current_focus = self.root.focus_get()
+        if current_focus not in self.markerlabel_entries and self.delete_key and self.hotkeys_active:
+            self.delete_last_marker()
 
     def delete_last_marker(self, **kwargs):  
         if self.project.project_edl_file and self.last_markers:
@@ -525,8 +712,9 @@ class QuickEDLApp:
                 with Path(self.project.project_edl_file).open('w') as file:
                     file.writelines(lines)            
             # Update last_markers list and label
-            self.last_markers.pop()
-            self.last_markers_text.set("\n".join(self.last_markers))
+            if self.last_markers:  # Check if there are markers to remove
+                self.last_markers.pop()
+                self.last_markers_text.set("\n".join(self.last_markers))
         else:
             self.entry_error()
 
@@ -576,7 +764,8 @@ class QuickEDLApp:
 
 if __name__ == "__main__":
     try:
-        root = ttk.Window(themename="darkly")
+        # Create window without fixed theme - theme will be set in load_settings()
+        root = ttk.Window()
         app = QuickEDLApp(root)
         app.load_settings()
         root.mainloop()
