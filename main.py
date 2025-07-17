@@ -722,18 +722,6 @@ class QuickEDLApp:
             self.last_markers.pop(0)
         self.last_markers_text.set("\n".join(self.last_markers))
 
-
-### EXPORT ###
-##############
-
-    def export_cmx(self): #XXX
-        # Placeholder for CMX export
-        Messagebox.show_info("Export CMX functionality is not implemented yet.")
-
-    def export_fcp7(self): #XXX
-        # Placeholder for FCP7 export
-        Messagebox.show_info("Export FCP7 XML functionality is not implemented yet.")
-
 ### ERRORS ###
 ##############
 
