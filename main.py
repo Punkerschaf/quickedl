@@ -62,7 +62,8 @@ class QuickEDLApp:
 
         # Project
         self.project = Project(
-            update_callback=self.on_project_update
+            update_callback=self.on_project_update,
+            settings_manager=self.settings_manager
         )
 
         # Playlist
@@ -458,11 +459,22 @@ class QuickEDLApp:
 #      #    #     #
 #     ###   ####  ####
 
+    def get_default_directory(self):
+        """
+        Gets the default directory from settings if it exists and is valid.
+        Returns None if not set or invalid.
+        """
+        default_dir = self.settings_manager.get_setting('default_dir')
+        if default_dir and Path(default_dir).exists() and Path(default_dir).is_dir():
+            return default_dir
+        return None
+
     def create_new_file(self):
         try:
             file_path = filedialog.asksaveasfilename(
                 defaultextension=".txt",
                 initialfile=f"EDL_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt",
+                initialdir=self.get_default_directory(),
                 filetypes=[("Text files", "*.txt")])
             if file_path:
                 self.file_path = Path(file_path)
@@ -477,7 +489,10 @@ class QuickEDLApp:
             logging.error(f"An error occurred while creating a new file: {e}", exc_info=True)
 
     def load_file(self):
-        file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
+        file_path = filedialog.askopenfilename(
+            filetypes=[("Text files", "*.txt")],
+            initialdir=self.get_default_directory()
+        )
         if file_path:
             self.file_path = Path(file_path)
             self.current_dir = self.file_path.parent
@@ -496,8 +511,11 @@ class QuickEDLApp:
                 self.last_markers_text.set("\n".join(self.last_markers))
 
     def save_markerlabels(self):
+        # Use current_dir if available, otherwise default directory from settings
+        initial_dir = self.current_dir or self.get_default_directory()
+        
         save_path = filedialog.asksaveasfilename(
-            initialdir=self.current_dir,
+            initialdir=initial_dir,
             defaultextension=".txt",
             initialfile=f"Markerlabels_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt",
             filetypes=[("Text files", "*.txt")]
@@ -507,8 +525,13 @@ class QuickEDLApp:
             save_path.write_text("\n".join(entry.get() for entry in self.markerlabel_entries) + "\n")
 
     def open_markerlabels(self):
-        load_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")],
-                                               initialdir=self.current_dir)
+        # Use current_dir if available, otherwise default directory from settings
+        initial_dir = self.current_dir or self.get_default_directory()
+        
+        load_path = filedialog.askopenfilename(
+            filetypes=[("Text files", "*.txt")],
+            initialdir=initial_dir
+        )
         self.import_markerlabels(load_path)
 
     def import_markerlabels(self, load_path):    

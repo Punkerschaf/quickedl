@@ -106,7 +106,18 @@ def show_new_project_window(root, project, app_instance=None):
             Messagebox.show_error("Error", f"Failed to create project:\n{str(e)}")
 
     def select_location():
-        folder = filedialog.askdirectory(title="Select Project Location")
+        # Get default directory from settings if available
+        initial_dir = None
+        if app_instance and hasattr(app_instance, 'settings_manager'):
+            default_dir = app_instance.settings_manager.get_setting('default_dir')
+            if default_dir and Path(default_dir).exists() and Path(default_dir).is_dir():
+                initial_dir = default_dir
+                logging.debug(f"Using default directory for create project dialog: {initial_dir}")
+        
+        folder = filedialog.askdirectory(
+            title="Select Project Location",
+            initialdir=initial_dir
+        )
         if folder:
             # Convert to Path object for platform-independent handling
             folder_path = Path(folder)

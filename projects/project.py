@@ -10,8 +10,9 @@ class Project:
     """
     Creates and handles a QuickEDL project containing EDL file, markerlabel contents, and playlist content.
     """
-    def __init__(self, update_callback=None, **kwargs):
+    def __init__(self, update_callback=None, settings_manager=None, **kwargs):
         self.kwargs = kwargs
+        self.settings_manager = settings_manager
         
         self.project_isvalid = False
         self.update_callback = update_callback
@@ -34,7 +35,18 @@ class Project:
         """
         Opens a dialog to select a project folder and loads the project files.
         """
-        project_path = filedialog.askdirectory(title="Select Project Folder")
+        # Get default directory from settings if available
+        initial_dir = None
+        if self.settings_manager:
+            default_dir = self.settings_manager.get_setting('default_dir')
+            if default_dir and Path(default_dir).exists() and Path(default_dir).is_dir():
+                initial_dir = default_dir
+                logging.debug(f"Using default directory for project dialog: {initial_dir}")
+        
+        project_path = filedialog.askdirectory(
+            title="Select Project Folder",
+            initialdir=initial_dir
+        )
         
         if project_path:
             return self.load_project_files(project_path)
