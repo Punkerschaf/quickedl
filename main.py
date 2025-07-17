@@ -1,5 +1,14 @@
 # QuickEDL
 # 2024-2025 / Eric Kirchheim (punkerschaf)
+"""
+   ____        _      _      ______ _____  _      
+  / __ \      (_)    | |    |  ____|  __ \| |     
+ | |  | |_   _ _  ___| | __ | |__  | |  | | |     
+ | |  | | | | | |/ __| |/ / |  __| | |  | | |     
+ | |__| | |_| | | (__|   <  | |____| |__| | |____ 
+  \___\_\\__,_|_|\___|_|\_\ |______|_____/|______|                                                
+"""
+
 
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import LEFT, RIGHT
@@ -216,12 +225,13 @@ class QuickEDLApp:
         except Exception as e:
             logging.error(f"Error loading project content: {e}")
 
-# GUI
-####  #  #  ###
-#     #  #   #
-####  #  #   #
-#  #  #  #   #
- ###  ####  ###
+#  ██████  ██    ██ ██ 
+# ██       ██    ██ ██ 
+# ██   ███ ██    ██ ██ 
+# ██    ██ ██    ██ ██ 
+#  ██████   ██████  ██ 
+#                      
+#                      
 
     def create_menu(self):
         menu_bar = ttk.Menu(self.root)
@@ -437,16 +447,13 @@ class QuickEDLApp:
     def update_playlist_selector(self, lenght, *args):
         self.playlist_selector.configure(to=lenght)
 
-#####################
-### APP FUNCTIONS ###
-#####################
-
-# file handling
-####  ###   #     ####
-#      #    #     #
-###    #    #     ###
-#      #    #     #
-#     ###   ####  ####
+# ███████ ██ ██      ███████ ███████     ██   ██  █████  ███    ██ ██████  ██      ██ ███    ██  ██████  
+# ██      ██ ██      ██      ██          ██   ██ ██   ██ ████   ██ ██   ██ ██      ██ ████   ██ ██       
+# █████   ██ ██      █████   ███████     ███████ ███████ ██ ██  ██ ██   ██ ██      ██ ██ ██  ██ ██   ███ 
+# ██      ██ ██      ██           ██     ██   ██ ██   ██ ██  ██ ██ ██   ██ ██      ██ ██  ██ ██ ██    ██ 
+# ██      ██ ███████ ███████ ███████     ██   ██ ██   ██ ██   ████ ██████  ███████ ██ ██   ████  ██████  
+#                                                                                                        
+#                                                                                                        
 
     def get_default_directory(self):
         """
@@ -591,12 +598,13 @@ class QuickEDLApp:
             logging.error("Settingsfolder not found.")
 
 
-# markers
-####  #  #  ####  ###   ###   ####   ###
-#     ## #   #    #  #   #    #     #
-###   # ##   #    ####   #    ###   ####
-#     # ##   #    # #    #    #        #
-####  #  #   #    #  #  ###   ####  ###
+# ███    ███  █████  ██████  ██   ██ ███████ ██████  ███████ 
+# ████  ████ ██   ██ ██   ██ ██  ██  ██      ██   ██ ██      
+# ██ ████ ██ ███████ ██████  █████   █████   ██████  ███████ 
+# ██  ██  ██ ██   ██ ██   ██ ██  ██  ██      ██   ██      ██ 
+# ██      ██ ██   ██ ██   ██ ██   ██ ███████ ██   ██ ███████ 
+#                                                            
+#                                                            
 
     def add_to_file(self, index, *args):
         # Use project EDL file if available, otherwise fall back to standalone file
@@ -638,7 +646,6 @@ class QuickEDLApp:
             self.entry_error()
 
     def add_with_popup(self):
-        # Use project EDL file if available, otherwise fall back to standalone file
         edl_file = self.project.project_edl_file if self.project.project_edl_file else self.file_path
         
         if self.hotkeys_active and edl_file:
@@ -732,12 +739,13 @@ class QuickEDLApp:
             Messagebox.show_error("No project loaded. Please create or load a project first.")
 
 
-# MAIN APP CALL
-#   #   ##   ###   #  #
-## ##  #  #   #    ## #
-# # #  ####   #    # ##
-#   #  #  #  ###   #  #
-
+# ███    ███  █████  ██ ███    ██ 
+# ████  ████ ██   ██ ██ ████   ██ 
+# ██ ████ ██ ███████ ██ ██ ██  ██ 
+# ██  ██  ██ ██   ██ ██ ██  ██ ██ 
+# ██      ██ ██   ██ ██ ██   ████ 
+#                                 
+#                                 
 if __name__ == "__main__":
     try:
         # Create window without fixed theme - theme will be set in load_settings()
