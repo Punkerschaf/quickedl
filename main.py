@@ -728,8 +728,6 @@ class QuickEDLApp:
             self.last_markers.pop(0)
         self.last_markers_text.set("\n".join(self.last_markers))
 
-### ERRORS ###
-##############
 
     def entry_error(self):
         if not self.hotkeys_active:
@@ -747,10 +745,10 @@ class QuickEDLApp:
 #                                 
 if __name__ == "__main__":
     try:
-        # Create window without fixed theme - theme will be set in load_settings()
+        #XXX Create window without fixed theme - theme will be set in load_settings()
         root = ttk.Window()
         app = QuickEDLApp(root)
-        app.load_settings()
+        app.load_settings() #INSPECT load settings in app init?
         root.mainloop()
     except Exception as e:
         logging.error(f"An error occurred: {e}", exc_info=True)
