@@ -27,6 +27,7 @@ from random_entry import random_markerlabel
 from export_jsx import JSXExportWindow
 from utils import open_directory
 from settings import SettingsManager, show_settings_window
+from settings.recent import RecentProjectsManager, RecentProjectsMenu
 from playlist import Playlist
 from markerlabel import save_markerlabel
 from projects.project import Project
@@ -76,6 +77,11 @@ class QuickEDLApp:
 
         # Playlist
         self.playlist = Playlist(project=self.project)
+
+        # Recent Projects Manager
+        max_recent = self.settings_manager.get_setting('max_recent', 5)
+        self.recent_manager = RecentProjectsManager(self.settings_manager, max_recent)
+        self.recent_menu = None  # Will be initialized in create_menu
 
         # create window
         self.create_menu()
@@ -201,6 +207,32 @@ class QuickEDLApp:
         # Load project content if project is valid
         if self.project.project_isvalid:
             self.load_project_content()
+            
+            # Add to recent projects if project is valid
+            if self.project.project_name and self.project.project_path:
+                self.recent_manager.add_project(
+                    self.project.project_name, 
+                    str(self.project.project_path)
+                )
+                # Update recent projects menu
+                if self.recent_menu:
+                    self.recent_menu.update_submenu()
+
+    def _load_recent_project(self, project_path: str):
+        """
+        Callback method to load a project from recent projects list.
+        
+        Args:
+            project_path: Path to the project folder
+        """
+        try:
+            self.project.load_project(project_path)
+        except Exception as e:
+            logging.error(f"Error loading recent project: {e}")
+            Messagebox.show_error(
+                title="Error loading project",
+                message=f"Failed to load project:\n{str(e)}"
+            )
 
     def load_project_content(self):
         """
@@ -252,6 +284,15 @@ class QuickEDLApp:
         self.project_menu.add_command(label="New Project", command=lambda: show_new_project_window(self.root, self.project, self))
         self.project_menu.add_command(label="Load Project", command=self.project.load_project_dialog)
         self.project_menu.add_command(label="Save Labels to Project", command= lambda: save_markerlabel(self, save_path=self.project.project_markerlabel_file))
+        
+        # Initialize Recent Projects Menu
+        self.recent_menu = RecentProjectsMenu(
+            self.project_menu, 
+            self.recent_manager, 
+            self._load_recent_project
+        )
+        self.recent_menu.create_submenu()
+        
         menu_bar.add_cascade(label="Project", menu=self.project_menu)
 
         edl_menu = ttk.Menu(menu_bar, tearoff=0)
@@ -561,6 +602,14 @@ class QuickEDLApp:
         self.funny = settings_data.get('funny', self.funny)
         self.default_dir = settings_data.get('default_dir', self.default_dir)
         self.delete_key = settings_data.get('delete_key', self.delete_key)
+        
+        # Update recent projects manager with max_recent setting
+        max_recent = settings_data.get('max_recent', 5)
+        if hasattr(self, 'recent_manager'):
+            self.recent_manager.update_max_recent(max_recent)
+            # Update recent menu if it exists
+            if hasattr(self, 'recent_menu') and self.recent_menu:
+                self.recent_menu.update_submenu()
         
         # Set log level
         logging.getLogger().setLevel(self.log_level)
