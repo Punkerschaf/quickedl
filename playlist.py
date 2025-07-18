@@ -325,7 +325,7 @@ class Playlist():
                     self.repos_playhead()
                     # Ensure GUI is updated with the new data
                     self.on_playhead_update()
-                    logging.info(f"Playlist loaded from project file: {playlist_file}")
+                    logging.info(f"Playlist data successfully loaded from project file: {playlist_file} ({len(self.data)} entries)")
                 except Exception as e:
                     logging.error(f"Failed to load playlist from project: {e}")
             else:

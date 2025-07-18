@@ -220,7 +220,6 @@ class QuickEDLApp:
                 Path(self.project.project_playlist_file).exists()):
                 
                 self.playlist.load_from_project()
-                logging.info(f"Loaded playlist from project: {self.project.project_playlist_file}")
                 
         except Exception as e:
             logging.error(f"Error loading project content: {e}")
