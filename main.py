@@ -371,6 +371,10 @@ class QuickEDLApp:
             self.add_with_popup()  # Trigger the pop-up entry for spacebar
         elif key == "p" or key == "P":
             self.add_playlist_to_file()  # Add playlist entry for 'p' or 'P'
+        elif event.keysym == "Left":
+            self.playlist.dec_playhead()  # Decrease playlist playhead with left arrow
+        elif event.keysym == "Right":
+            self.playlist.inc_playhead()  # Increase playlist playhead with right arrow
     
     def flash_button(self, index):
         self.markerlabel_entries[index].config(bootstyle="danger")
