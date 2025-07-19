@@ -228,48 +228,50 @@ class QuickEDLApp:
         self.markerlabel_entries = []
         for i in range(9):
             frame = ttk.Frame(self.root)
-            frame.grid(column=2, columnspan=5, row=i+4, padx=10, sticky="EW")
+            frame.grid(column=1, columnspan=6, row=i+4, padx=0, sticky="EW")
+            frame.columnconfigure(0, weight=1)  # Entry field expands
+            frame.columnconfigure(1, weight=0)  # Button stays fixed
 
-            entry = ttk.Entry(frame, width=30)
-            entry.pack(side=LEFT, padx=10, pady=5)
+            entry = ttk.Entry(frame)
+            entry.grid(column=0, row=0, padx=(10, 5), pady=5, sticky="EW")
             self.markerlabel_entries.append(entry)
 
             button = ttk.Button(frame, text=f"{i + 1}", command=lambda i=i: self.add_to_file(i), width=2)
-            button.pack(side=RIGHT, pady=5)
+            button.grid(column=1, row=0, padx=(0, 10), pady=5, sticky="E")
 
         self.bind_markerlabel_entries()
 
         # Playlist
         playlist_frame = ttk.Frame(self.root)
-        playlist_frame.grid(column=2, columnspan=5, row=13, padx=10, sticky="EW")
+        playlist_frame.grid(column=1, columnspan=6, row=13, padx=0, sticky="EW")
+        playlist_frame.columnconfigure(1, weight=1)  # Playlist label expands
+        playlist_frame.columnconfigure(2, weight=0)  # Buttons stay fixed
+        playlist_frame.columnconfigure(3, weight=0)
+        playlist_frame.columnconfigure(4, weight=0)
 
         playlist_label = ttk.Label(playlist_frame, 
                                    textvariable=self.playlist.playhead_text, 
                                    bootstyle="primary")
-        playlist_label.grid(column=1, row=0, sticky="EW")
-        playlist_frame.columnconfigure(1, weight=1)
+        playlist_label.grid(column=1, row=0, padx=(10, 5), pady=5, sticky="EW")
         
         self.plst_dec_button = ttk.Button(playlist_frame, text="<", bootstyle="primary", command= self.playlist.dec_playhead)
-        self.plst_dec_button.grid(column=2, row=0, sticky="E")
-        playlist_frame.columnconfigure(2, weight=0)
+        self.plst_dec_button.grid(column=2, row=0, padx=2, pady=5, sticky="E")
 
         self.plst_inc_button = ttk.Button(playlist_frame, text=">", bootstyle="primary", command= self.playlist.inc_playhead)
-        self.plst_inc_button.grid(column=3, row=0, sticky="E", padx=5)
-        playlist_frame.columnconfigure(3, weight=0)
+        self.plst_inc_button.grid(column=3, row=0, padx=2, pady=5, sticky="E")
  
         playlist_button = ttk.Button(playlist_frame, text="Plst", width=3, command=self.add_playlist_to_file)
-        playlist_button.grid(column=4, row=0, sticky="E")
-        playlist_frame.columnconfigure(4, weight=0)
+        playlist_button.grid(column=4, row=0, padx=(2, 10), pady=5, sticky="E")
 
         # Special markerlabel entries
         separator_button = ttk.Button(self.root, text="Separator (0)", command=self.add_separator)
-        separator_button.grid(column=3, row= 14, padx=5, pady=5, sticky="E")
+        separator_button.grid(column=2, row=14, padx=5, pady=5, sticky="E")
 
         popup_button = ttk.Button(self.root, text="Popup (Space)", command=self.add_with_popup)
-        popup_button.grid(column=4, row= 14, padx=5, pady=5, sticky="E")
+        popup_button.grid(column=3, row=14, padx=5, pady=5, sticky="E")
 
         delete_button = ttk.Button(self.root, text="Delete", bootstyle="danger-outline", command=self.delete_last_marker)
-        delete_button.grid(column=5, row= 14, padx=5, pady=5, sticky="E")
+        delete_button.grid(column=4, row=14, padx=5, pady=5, sticky="E")
 
         # Last markers display
         self.markers_labelframe = ttk.Labelframe(self.root, bootstyle="primary", text=" History ")
@@ -279,9 +281,8 @@ class QuickEDLApp:
         last_markers_label.pack(pady=5, fill="both", expand=True)
 
         self.root.rowconfigure(16, weight=1)
-        self.root.columnconfigure(1, weight=1, minsize=10)
-        self.root.columnconfigure(2, weight=1)
-        self.root.columnconfigure(6, weight=0, minsize=10)
+        self.root.columnconfigure(1, weight=1)
+        self.root.columnconfigure(6, weight=1)
 
     def bind_markerlabel_entries(self):
         for i, entry in enumerate(self.markerlabel_entries):
