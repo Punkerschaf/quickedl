@@ -8,6 +8,7 @@ import logging
 from pathlib import Path
 from typing import List, Callable
 import ttkbootstrap as ttk
+from ttkbootstrap.dialogs import Messagebox
 
 
 class RecentProjectsManager:
@@ -261,7 +262,6 @@ class RecentProjectsMenu:
             # Check if project folder still exists
             if not Path(project_path).exists():
                 # Show error message
-                from ttkbootstrap.dialogs import Messagebox
                 Messagebox.show_error(
                     title="Project not found",
                     message=f"The project folder could not be found:\n{project_path}\n\nIt will be removed from the recent projects list."
@@ -279,7 +279,6 @@ class RecentProjectsMenu:
             
         except Exception as e:
             logging.error(f"Error loading recent project {project_path}: {e}")
-            from ttkbootstrap.dialogs import Messagebox
             Messagebox.show_error(
                 title="Error loading project",
                 message=f"An error occurred while loading the project:\n{str(e)}"
