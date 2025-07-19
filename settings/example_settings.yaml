@@ -15,7 +15,7 @@ delete_key: false  # Allow backspace to delete last marker
 
 # File and directory settings
 default_dir: null  # Default directory for file operations (null = use system default)
-max_recent_files: 10  # Maximum number of recent files to remember
+max_recent: 5  # Maximum number of recent projects to remember
 
 # Auto-save settings
 auto_save_interval: 300  # Auto-save interval in seconds
