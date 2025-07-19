@@ -9,7 +9,7 @@ QuickEDL
  | |__| | |_| | | (__|   <  | |____| |__| | |____ 
   \___\_\\__,_|_|\___|_|\_\ |______|_____/|______|                                                
 
-  """
+"""
 
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import LEFT, RIGHT
@@ -153,7 +153,6 @@ class QuickEDLApp:
 #  ██████   ██████  ██ 
 #                      
 #                      
-
     def create_menu(self):
         menu_bar = ttk.Menu(self.root)
 
@@ -292,10 +291,13 @@ class QuickEDLApp:
             # Allow Return key to defocus entry
             entry.bind("<Return>", lambda e, entry=entry: self.root.focus_set())
 
-#####################
-### GUI FUNCTIONS ###
-#####################
-
+#  ██████  ██    ██ ██     ███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██ ███████ 
+# ██       ██    ██ ██     ██      ██    ██ ████   ██ ██         ██    ██ ██    ██ ████   ██ ██      
+# ██   ███ ██    ██ ██     █████   ██    ██ ██ ██  ██ ██         ██    ██ ██    ██ ██ ██  ██ ███████ 
+# ██    ██ ██    ██ ██     ██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██      ██ 
+#  ██████   ██████  ██     ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████ 
+#                                                                                                    
+#                                                                                                    
     def adjust_window_height(self):
         """
         Adjust the height of the root window to fit all widgets.
@@ -433,8 +435,7 @@ class QuickEDLApp:
 # ██      ██ ██      ██           ██     ██   ██ ██   ██ ██  ██ ██ ██   ██ ██      ██ ██  ██ ██ ██    ██ 
 # ██      ██ ███████ ███████ ███████     ██   ██ ██   ██ ██   ████ ██████  ███████ ██ ██   ████  ██████  
 #                                                                                                        
-#
-                                                                                                   
+#                                                                                                 
     def _load_recent_project(self, project_path: str):
         """
         Callback method to load a project from recent projects list.
@@ -652,7 +653,6 @@ class QuickEDLApp:
 # ██      ██ ██   ██ ██   ██ ██   ██ ███████ ██   ██ ███████ 
 #                                                            
 #                                                            
-
     def add_to_file(self, index, *args):
         # Use project EDL file if available, otherwise fall back to standalone file
         edl_file = self.project.project_edl_file if self.project.project_edl_file else self.file_path
@@ -782,7 +782,6 @@ class QuickEDLApp:
             Messagebox.show_error("Hotkeys are inactive. Please click outside text fields to enable.")
         else:
             Messagebox.show_error("No project loaded. Please create or load a project first.")
-
 
 # ███    ███  █████  ██ ███    ██ 
 # ████  ████ ██   ██ ██ ████   ██ 
