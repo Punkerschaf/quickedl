@@ -1,14 +1,15 @@
-# QuickEDL
-# 2024-2025 / Eric Kirchheim (punkerschaf)
 """
+QuickEDL
+2024-2025 / Eric Kirchheim (punkerschaf)
+
    ____        _      _      ______ _____  _      
   / __ \      (_)    | |    |  ____|  __ \| |     
  | |  | |_   _ _  ___| | __ | |__  | |  | | |     
  | |  | | | | | |/ __| |/ / |  __| | |  | | |     
  | |__| | |_| | | (__|   <  | |____| |__| | |____ 
   \___\_\\__,_|_|\___|_|\_\ |______|_____/|______|                                                
-"""
 
+  """
 
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import LEFT, RIGHT
@@ -106,7 +107,7 @@ class QuickEDLApp:
     # AUTO SAVE FUNCTIONS
     def setup_auto_save(self):
         """Sets up the auto-save functionality based on settings."""
-        interval = self.settings_manager.get_setting('auto_save_interval', 300)  # Default 5 minutes
+        interval = self.settings_manager.get_setting('auto_save_interval', 300)
         if interval > 0:
             self.schedule_auto_save(interval)
             logging.info(f"Auto-save enabled with interval: {interval} seconds")
@@ -144,117 +145,6 @@ class QuickEDLApp:
             interval = self.settings_manager.get_setting('auto_save_interval', 300)
             if interval > 0:
                 self.schedule_auto_save(interval)
-
-    def auto_save_markerlabels(self):
-        """Auto-saves markerlabels to the project file."""
-        if self.project.project_markerlabel_file:
-            try:
-                markerlabel_data = "\n".join(entry.get() for entry in self.markerlabel_entries) + "\n"
-                Path(self.project.project_markerlabel_file).write_text(markerlabel_data, encoding='utf-8')
-                logging.debug(f"Auto-saved markerlabels to {self.project.project_markerlabel_file}")
-            except Exception as e:
-                logging.error(f"Failed to auto-save markerlabels: {e}")
-
-    # 
-    def load_project_history(self):
-        """
-        Loads the history from the current project's EDL file.
-        """
-        if self.project.project_edl_file and Path(self.project.project_edl_file).exists():
-            # Clear existing history
-            self.last_markers.clear()
-            
-            try:
-                with Path(self.project.project_edl_file).open('r', encoding='utf-8') as file:
-                    lines = file.readlines()
-                    # Get the last 5 lines that are not empty
-                    non_empty_lines = [line.strip() for line in lines if line.strip()]
-                    recent_lines = non_empty_lines[-5:] if len(non_empty_lines) >= 5 else non_empty_lines
-                    
-                    # Add them to history without using update_last_markers to avoid duplication
-                    self.last_markers.extend(recent_lines)
-                    self.last_markers_text.set("\n".join(self.last_markers))
-                    
-                logging.info(f"Loaded {len(recent_lines)} markers from project EDL file: {self.project.project_edl_file}")
-            except Exception as e:
-                logging.error(f"Error loading project history: {e}")
-        else:
-            # Clear history if no valid project file
-            self.last_markers.clear()
-            self.last_markers_text.set("No markers yet.")
-
-    def update_project_display(self):
-        """
-        Updates the project display based on the current project state.
-        Used as callback function for loading projects.
-        """
-        if self.project.project_isvalid and self.project.project_name:
-            self.file_label.config(text=f"Project: {self.project.project_name}")
-            self.file_labelframe.config(bootstyle="success")
-            self.load_project_history()
-        else:
-            self.file_label.config(text="No project loaded.")
-            self.file_labelframe.config(bootstyle="warning")
-
-    def on_project_update(self):
-        """
-        Callback function called when a project is updated/loaded.
-        Updates the display and loads project content (markerlabels and playlist).
-        """
-        # Update the display first
-        self.update_project_display()
-        
-        # Load project content if project is valid
-        if self.project.project_isvalid:
-            self.load_project_content()
-            
-            # Add to recent projects if project is valid
-            if self.project.project_name and self.project.project_path:
-                self.recent_manager.add_project(
-                    self.project.project_name, 
-                    str(self.project.project_path)
-                )
-                # Update recent projects menu
-                if self.recent_menu:
-                    self.recent_menu.update_submenu()
-
-    def _load_recent_project(self, project_path: str):
-        """
-        Callback method to load a project from recent projects list.
-        
-        Args:
-            project_path: Path to the project folder
-        """
-        try:
-            self.project.load_project(project_path)
-        except Exception as e:
-            logging.error(f"Error loading recent project: {e}")
-            Messagebox.show_error(
-                title="Error loading project",
-                message=f"Failed to load project:\n{str(e)}"
-            )
-
-    def load_project_content(self):
-        """
-        Loads markerlabels and playlist content from the current project files.
-        """
-        try:
-            # Load markerlabels if file exists
-            if (self.project.project_markerlabel_file and 
-                Path(self.project.project_markerlabel_file).exists()):
-                
-                from markerlabel import load_markerlabel
-                load_markerlabel(self, self.project.project_markerlabel_file)
-                logging.info(f"Loaded markerlabels from project: {self.project.project_markerlabel_file}")
-            
-            # Load playlist if file exists
-            if (self.project.project_playlist_file and 
-                Path(self.project.project_playlist_file).exists()):
-                
-                self.playlist.load_from_project()
-                
-        except Exception as e:
-            logging.error(f"Error loading project content: {e}")
 
 #  ██████  ██    ██ ██ 
 # ██       ██    ██ ██ 
@@ -487,13 +377,101 @@ class QuickEDLApp:
     def update_playlist_selector(self, lenght, *args):
         self.playlist_selector.configure(to=lenght)
 
+    def auto_save_markerlabels(self):
+        """Auto-saves markerlabels to the project file."""
+        if self.project.project_markerlabel_file:
+            try:
+                markerlabel_data = "\n".join(entry.get() for entry in self.markerlabel_entries) + "\n"
+                Path(self.project.project_markerlabel_file).write_text(markerlabel_data, encoding='utf-8')
+                logging.debug(f"Auto-saved markerlabels to {self.project.project_markerlabel_file}")
+            except Exception as e:
+                logging.error(f"Failed to auto-save markerlabels: {e}")
+
+    def load_project_history(self):
+        """
+        Loads the history from the current project's EDL file.
+        """
+        if self.project.project_edl_file and Path(self.project.project_edl_file).exists():
+            # Clear existing history
+            self.last_markers.clear()
+            
+            try:
+                with Path(self.project.project_edl_file).open('r', encoding='utf-8') as file:
+                    lines = file.readlines()
+                    # Get the last 5 lines that are not empty
+                    non_empty_lines = [line.strip() for line in lines if line.strip()]
+                    recent_lines = non_empty_lines[-5:] if len(non_empty_lines) >= 5 else non_empty_lines
+                    
+                    # Add them to history without using update_last_markers to avoid duplication
+                    self.last_markers.extend(recent_lines)
+                    self.last_markers_text.set("\n".join(self.last_markers))
+                    
+                logging.info(f"Loaded {len(recent_lines)} markers from project EDL file: {self.project.project_edl_file}")
+            except Exception as e:
+                logging.error(f"Error loading project history: {e}")
+        else:
+            # Clear history if no valid project file
+            self.last_markers.clear()
+            self.last_markers_text.set("No markers yet.")
+
+    def update_project_display(self):
+        """
+        Updates the project display based on the current project state.
+        Used as callback function for loading projects.
+        """
+        if self.project.project_isvalid and self.project.project_name:
+            self.file_label.config(text=f"Project: {self.project.project_name}")
+            self.file_labelframe.config(bootstyle="success")
+            self.load_project_history()
+        else:
+            self.file_label.config(text="No project loaded.")
+            self.file_labelframe.config(bootstyle="warning")
+
 # ███████ ██ ██      ███████ ███████     ██   ██  █████  ███    ██ ██████  ██      ██ ███    ██  ██████  
 # ██      ██ ██      ██      ██          ██   ██ ██   ██ ████   ██ ██   ██ ██      ██ ████   ██ ██       
 # █████   ██ ██      █████   ███████     ███████ ███████ ██ ██  ██ ██   ██ ██      ██ ██ ██  ██ ██   ███ 
 # ██      ██ ██      ██           ██     ██   ██ ██   ██ ██  ██ ██ ██   ██ ██      ██ ██  ██ ██ ██    ██ 
 # ██      ██ ███████ ███████ ███████     ██   ██ ██   ██ ██   ████ ██████  ███████ ██ ██   ████  ██████  
 #                                                                                                        
-#                                                                                                        
+#
+                                                                                                   
+    def _load_recent_project(self, project_path: str):
+        """
+        Callback method to load a project from recent projects list.
+        
+        Args:
+            project_path: Path to the project folder
+        """
+        try:
+            self.project.load_project(project_path)
+        except Exception as e:
+            logging.error(f"Error loading recent project: {e}")
+            Messagebox.show_error(
+                title="Error loading project",
+                message=f"Failed to load project:\n{str(e)}"
+            )
+
+    def load_project_content(self):
+        """
+        Loads markerlabels and playlist content from the current project files.
+        """
+        try:
+            # Load markerlabels if file exists
+            if (self.project.project_markerlabel_file and 
+                Path(self.project.project_markerlabel_file).exists()):
+                
+                from markerlabel import load_markerlabel
+                load_markerlabel(self, self.project.project_markerlabel_file)
+                logging.info(f"Loaded markerlabels from project: {self.project.project_markerlabel_file}")
+            
+            # Load playlist if file exists
+            if (self.project.project_playlist_file and 
+                Path(self.project.project_playlist_file).exists()):
+                
+                self.playlist.load_from_project()
+                
+        except Exception as e:
+            logging.error(f"Error loading project content: {e}")
 
     def get_default_directory(self):
         """
@@ -645,6 +623,27 @@ class QuickEDLApp:
             Messagebox.show_error("Settingsfolder not found.")
             logging.error("Settingsfolder not found.")
 
+    def on_project_update(self):
+        """
+        Callback function called when a project is updated/loaded.
+        Updates the display and loads project content (markerlabels and playlist).
+        """
+        # Update the display first
+        self.update_project_display()
+        
+        # Load project content if project is valid
+        if self.project.project_isvalid:
+            self.load_project_content()
+            
+            # Add to recent projects if project is valid
+            if self.project.project_name and self.project.project_path:
+                self.recent_manager.add_project(
+                    self.project.project_name, 
+                    str(self.project.project_path)
+                )
+                # Update recent projects menu
+                if self.recent_menu:
+                    self.recent_menu.update_submenu()
 
 # ███    ███  █████  ██████  ██   ██ ███████ ██████  ███████ 
 # ████  ████ ██   ██ ██   ██ ██  ██  ██      ██   ██ ██      

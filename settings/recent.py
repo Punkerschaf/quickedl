@@ -1,5 +1,5 @@
 """
-Recent Projects Manager for QuickEDL
+Recent Projects Manager for QuickEDL.
 Handles the list of recently opened projects.
 """
 
@@ -11,7 +11,9 @@ import ttkbootstrap as ttk
 
 
 class RecentProjectsManager:
-    """Manages the list of recently opened projects."""
+    """
+    Manages the list of recently opened projects.
+    """
     
     def __init__(self, settings_manager, max_recent: int = 10):
         """
