@@ -4,10 +4,19 @@
 BUILD_DIR="build"
 APP_NAME="QuickEDL"
 VERSION=$(python -c "from version import VERSION; print(VERSION)")
+# Create a macOS-compatible version (replace problematic characters)
+BUNDLE_VERSION=$(echo "$VERSION" | sed 's/-alpha.*//g' | sed 's/-beta.*//g' | sed 's/-rc.*//g' | sed 's/-.*//g')
+
+# Ensure we have at least 3 version components (e.g., 3.0.0)
+if [[ "$BUNDLE_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
+    BUNDLE_VERSION="${BUNDLE_VERSION}.0"
+elif [[ "$BUNDLE_VERSION" =~ ^[0-9]+$ ]]; then
+    BUNDLE_VERSION="${BUNDLE_VERSION}.0.0"
+fi
 
 # Check if build directory exists
 if [ ! -d "$BUILD_DIR" ]; then
-    echo "Error: Build directory not found. Run 'python setup_cxfreeze.py build' first."
+    echo "Error: Build directory not found. Run 'python setup.py build' first."
     exit 1
 fi
 
@@ -52,7 +61,7 @@ cat > "$APP_BUNDLE/Contents/Info.plist" << EOF
     <key>CFBundleShortVersionString</key>
     <string>${VERSION}</string>
     <key>CFBundleVersion</key>
-    <string>${VERSION}</string>
+    <string>${BUNDLE_VERSION}</string>
     <key>LSMinimumSystemVersion</key>
     <string>10.12</string>
     <key>NSHighResolutionCapable</key>

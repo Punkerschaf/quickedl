@@ -8,4 +8,4 @@ Version file.
 - v3 + cx_Freeze build workflow
 """
 
-VERSION = "3.0-alpha-cxtest"
+VERSION = "3.0.0-alpha-cxtest"
