@@ -5,7 +5,7 @@ BUILD_DIR="build"
 APP_NAME="QuickEDL"
 VERSION=$(python -c "from version import VERSION; print(VERSION)")
 # Create a macOS-compatible version (replace problematic characters)
-BUNDLE_VERSION=$(echo "$VERSION" | sed 's/-alpha.*//g' | sed 's/-beta.*//g' | sed 's/-rc.*//g' | sed 's/-.*//g')
+BUNDLE_VERSION=$(echo "$VERSION" | sed 's/-\(alpha\|beta\|rc\|.*\).*//g')
 
 # Ensure we have at least 3 version components (e.g., 3.0.0)
 if [[ "$BUNDLE_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then

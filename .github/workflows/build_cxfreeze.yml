@@ -49,9 +49,6 @@ jobs:
 
   build-macos:
     runs-on: macos-latest
-    strategy:
-      matrix:
-        arch: [x86_64, arm64]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -63,12 +60,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          arch -${{ matrix.arch }} pip install cx_Freeze
-          arch -${{ matrix.arch }} pip install -r dependencies.txt
+          pip install cx_Freeze
+          pip install -r dependencies.txt
 
       - name: Build executable
         run: |
-          arch -${{ matrix.arch }} python setup.py build
+          python setup.py build
 
       - name: Create .app bundle
         run: |
@@ -84,7 +81,7 @@ jobs:
       - name: Create DMG
         run: |
           version="${{ steps.version.outputs.VERSION }}"
-          filename="quickedl_v${version}_macOS${{ matrix.arch }}.dmg"
+          filename="quickedl_v${version}_macOS_Universal.dmg"
           
           # Create temporary directory for DMG contents
           mkdir dmg_temp
@@ -96,8 +93,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: QuickEDL-macOS-${{ matrix.arch }}-cx_Freeze
-          path: quickedl_v${{ steps.version.outputs.VERSION }}_macOS${{ matrix.arch }}.dmg
+          name: QuickEDL-macOS-Universal-cx_Freeze
+          path: quickedl_v${{ steps.version.outputs.VERSION }}_macOS_Universal.dmg
 
   build-linux:
     runs-on: ubuntu-latest
