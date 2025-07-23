@@ -18,7 +18,10 @@ class StartupToast:
         self.message = f"QuickEDL {self.version}"
         self.toast = ToastNotification(
             title="QuickEDL",
-            message=self.message
+            message=self.message,
+            bootstyle="success",
+            icon="",
+            duration=5000
             )
     
     def addline(self, text):
