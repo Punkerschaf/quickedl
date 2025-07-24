@@ -12,7 +12,8 @@ class SettingsManager:
     Manages application settings with YAML storage and backwards compatibility.
     """
     
-    def __init__(self):
+    def __init__(self, startup_toast=None):
+        self.startup_toast = startup_toast
         self.settings_folder = self._get_settings_folder()
         self.settings_file = self.settings_folder / "settings.yaml"
         self._settings_cache = {}
@@ -47,8 +48,13 @@ class SettingsManager:
         Returns True if created or already exists, False on error.
         """
         try:
-            self.settings_folder.mkdir(parents=True, exist_ok=True)
-            logging.info(f"Settings folder created/verified at: {self.settings_folder}")
+            if not self.settings_folder.exists():
+                self.settings_folder.mkdir(parents=True, exist_ok=True)
+                logging.info(f"Settings folder created at: {self.settings_folder}")
+            else:
+                logging.info(f"Settings folder already exists at: {self.settings_folder}")
+                if self.startup_toast:
+                    self.startup_toast.addline(f"Settings-Ordner gefunden: {self.settings_folder}")
             return True
         except Exception as e:
             logging.error(f"Failed to create settings folder: {e}")
@@ -64,6 +70,8 @@ class SettingsManager:
         
         if not self.settings_file.exists():
             logging.info("Settings file doesn't exist, using defaults")
+            if self.startup_toast:
+                self.startup_toast.addline("Settings not found.", True)
             self._settings_cache = settings
             return settings
         
@@ -77,9 +85,14 @@ class SettingsManager:
             logging.info(f"Settings loaded from {self.settings_file}")
             logging.debug(f"Loaded settings: {loaded_settings}")
             
+            if self.startup_toast:
+                self.startup_toast.addline("Settings loaded.")
+            
         except Exception as e:
             logging.error(f"Error loading settings file: {e}")
             logging.info("Using default settings")
+            if self.startup_toast:
+                self.startup_toast.addline("Settings not loaded.", warning=True)
         
         self._settings_cache = settings
         return settings
