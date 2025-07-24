@@ -40,7 +40,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: QuickEDL-Windows-cx_Freeze
+          name: QuickEDL-Windows
           path: quickedl_v${{ steps.version.outputs.VERSION }}_Windows.zip
 
   build-macos:
@@ -88,7 +88,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: QuickEDL-macOS-Universal-cx_Freeze
+          name: QuickEDL-macOS-Universal
           path: quickedl_v${{ steps.version.outputs.VERSION }}_macOS_Universal.dmg
 
   build-linux:
@@ -133,5 +133,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: QuickEDL-Linux-cx_Freeze
+          name: QuickEDL-Linux
           path: quickedl_v${{ steps.version.outputs.VERSION }}_Linux.zip
