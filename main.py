@@ -33,6 +33,7 @@ from playlist import Playlist
 from markerlabel import save_markerlabel
 from projects.project import Project
 from projects.newproject import show_new_project_window
+from startup import StartupToast
 from version import VERSION
 
 # version number
@@ -45,8 +46,11 @@ class QuickEDLApp:
         self.root.title(f"QuickEDL {version}")
         self.root.geometry("400x700")
 
-        # Initialize settings manager
-        self.settings_manager = SettingsManager()
+        # Initialize the startup toast
+        self.startup_toast = StartupToast()
+
+        # Initialize settings manager with startup toast
+        self.settings_manager = SettingsManager(startup_toast=self.startup_toast)
 
         # Auto-save timer
         self.auto_save_timer = None
@@ -564,7 +568,6 @@ class QuickEDLApp:
             logging.info(f"Imported markerlabels from {load_path}")
     
     def load_settings(self):
-        # Load settings using the new settings manager
         settings_data = self.settings_manager.load_settings()
 
         # apply theme
@@ -801,6 +804,10 @@ if __name__ == "__main__":
         root = ttk.Window()
         app = QuickEDLApp(root)
         app.load_settings() #INSPECT load settings in app init?
+        
+        # Show startup toast after settings are loaded
+        app.startup_toast.show()
+        
         root.mainloop()
     except Exception as e:
         logging.error(f"An error occurred: {e}", exc_info=True)

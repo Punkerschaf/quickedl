@@ -20,7 +20,7 @@ def save_markerlabel(self, save_path):
     else:
         logging.error("No path to save markerlabels.")
 
-def load_markerlabel(self, load_path):
+def load_markerlabel(self, load_path, startup_toast=None):
     """
     Loads the markerlabels from a file.
     Takes path-object.
@@ -32,5 +32,7 @@ def load_markerlabel(self, load_path):
             self.markerlabel_entries[i].delete(0, END)
             self.markerlabel_entries[i].insert(0, line.strip())
         logging.debug("Loaded markerlabels from project.")
+        if startup_toast:
+            startup_toast.addline("Markerlabels loaded.")
     else:
         logging.error("No path to load markerlabels.")

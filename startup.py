@@ -1,6 +1,6 @@
 """
 This file is part of QuickEDL.
-It creates and handles a message on application startup.
+It creates and handles a toast message on application startup.
 """
 
 import logging
