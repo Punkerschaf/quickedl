@@ -606,9 +606,9 @@ class QuickEDLApp:
         self.settings_folder = self.settings_manager.get_settings_folder_path()
         self.settings_folder_str = StringVar(value=str(self.settings_folder))
         
-        # Try to load markerlabels from legacy file
+        # Try to load markerlabels from default file
         if self.settings_folder.exists():
-            load_path = self.settings_folder / "texts.txt"
+            load_path = self.settings_folder / "markerlabels.txt"
             if load_path.exists():
                 self.import_markerlabels(load_path)
                 logging.info(f"Imported markerlabels and settings from {load_path}")
@@ -620,7 +620,7 @@ class QuickEDLApp:
     def load_default_markerlabels(self):
         settings_folder = self.settings_manager.get_settings_folder_path()
         if settings_folder.exists():
-            load_path = settings_folder / "texts.txt"
+            load_path = settings_folder / "markerlabels.txt"
             if load_path.exists():
                 self.import_markerlabels(load_path)
                 logging.info(f"Imported markerlabels and settings from {load_path}")

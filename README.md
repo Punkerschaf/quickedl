@@ -42,7 +42,7 @@ When label fields are empty, some random funny labels are used (German only).
 ## Saving settings
 Currently changing settings will not save them for the next time. When opened, QuickEDL will search for a folder named "quickedl" in you user directory and tries to read different files:
 - `settings.yaml` to load user settings. Just edit the file directly; it's very simple and documented
-- `texts.txt` to load users default markerlabels
+- `markerlabels.txt` to load users default markerlabels
 - `quickedl.log` used as log file
 
 Example files are found in the repository. In the settings window the expected path is shown as well as a confirmation, if the files are found and valid.

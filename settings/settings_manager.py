@@ -45,19 +45,56 @@ class SettingsManager:
     def create_settings_folder(self) -> bool:
         """
         Creates the settings folder if it doesn't exist.
+        Also creates default markerlabels.txt if folder is newly created.
         Returns True if created or already exists, False on error.
         """
         try:
+            folder_was_created = False
             if not self.settings_folder.exists():
                 self.settings_folder.mkdir(parents=True, exist_ok=True)
+                folder_was_created = True
                 logging.info(f"Settings folder created at: {self.settings_folder}")
             else:
                 logging.info(f"Settings folder already exists at: {self.settings_folder}")
                 if self.startup_toast:
                     self.startup_toast.addline(f"Settings-Ordner gefunden: {self.settings_folder}")
+            
+            # Create default markerlabels.txt if folder was just created or file doesn't exist
+            markerlabels_file = self.settings_folder / "markerlabels.txt"
+            if folder_was_created or not markerlabels_file.exists():
+                self._create_default_markerlabels(markerlabels_file)
+                
             return True
         except Exception as e:
             logging.error(f"Failed to create settings folder: {e}")
+            return False
+    
+    def _create_default_markerlabels(self, markerlabels_file: Path) -> bool:
+        """
+        Creates a default markerlabels.txt file with standard labels.
+        Returns True if successful, False otherwise.
+        """
+        try:
+            default_markerlabels = [
+                "Button 1 Label",
+                "Button 2 Label", 
+                "Button 3 Label",
+                "Button 4 Label",
+                "Button 5 Label",
+                "Button 6 Label",
+                "Button 7 Label",
+                "Button 8 Label",
+                "Button 9 Label",
+                ""  # Empty line at the end
+            ]
+            
+            markerlabels_content = "\n".join(default_markerlabels)
+            markerlabels_file.write_text(markerlabels_content, encoding='utf-8')
+            logging.info(f"Default markerlabels.txt created at: {markerlabels_file}")
+            return True
+            
+        except Exception as e:
+            logging.error(f"Failed to create default markerlabels.txt: {e}")
             return False
     
     def load_settings(self) -> Dict[str, Any]:
