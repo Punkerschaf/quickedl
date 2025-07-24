@@ -323,7 +323,14 @@ class SettingsWindow:
         
     def _create_settings_folder(self):
         """Creates the settings folder."""
-        if self.settings_manager.create_settings_folder():
+        # Try to get current markerlabels from the app if available
+        current_markerlabels = None
+        if hasattr(self, 'app') and self.app and hasattr(self.app, 'markerlabel_entries'):
+            current_markerlabels = [entry.get() for entry in self.app.markerlabel_entries]
+            while len(current_markerlabels) < 9:
+                current_markerlabels.append("")
+        
+        if self.settings_manager.create_settings_folder(current_markerlabels):
             Messagebox.show_info("Settings folder created successfully!")
             self._close_window()
             self.show()  # Refresh window

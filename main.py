@@ -111,7 +111,7 @@ class QuickEDLApp:
     # AUTO SAVE FUNCTIONS
     def setup_auto_save(self):
         """Sets up the auto-save functionality based on settings."""
-        interval = self.settings_manager.get_setting('auto_save_interval', 300)
+        interval = self.settings_manager.get_setting('auto_save_interval', 30)
         if interval > 0:
             self.schedule_auto_save(interval)
             logging.info(f"Auto-save enabled with interval: {interval} seconds")
@@ -199,6 +199,8 @@ class QuickEDLApp:
         texts_menu.add_command(label="Save markerlabels", command=self.save_markerlabels)
         texts_menu.add_command(label="Load markerlabels", command=self.open_markerlabels)
         texts_menu.add_command(label="Load default markerlabels", command=self.load_default_markerlabels)
+        texts_menu.add_separator()
+        texts_menu.add_command(label="Save markerlabels to defaults", command=self.save_markerlabels_to_defaults)
         texts_menu.add_separator()
         texts_menu.add_command(label="Edit playlist", command=self.playlist.playlist_edit_window)
         menu_bar.add_cascade(label="Markerlabels", menu=texts_menu)
@@ -566,6 +568,34 @@ class QuickEDLApp:
                 self.markerlabel_entries[i].delete(0, END)
                 self.markerlabel_entries[i].insert(0, line.strip())
             logging.info(f"Imported markerlabels from {load_path}")
+
+    def save_markerlabels_to_defaults(self):
+        """Saves current markerlabels to the default markerlabels.txt file."""
+        try:
+            # Check if settings folder exists first
+            if not self.settings_manager.settings_folder_exists():
+                Messagebox.show_error(
+                    "Settings folder not found!\n\n"
+                    "Please create the settings folder first:\n"
+                    "App → Settings → Create Settings Folder"
+                )
+                return
+            
+            current_markerlabels = [entry.get() for entry in self.markerlabel_entries]
+            # Ensure we always have 9 entries (pad with empty strings if necessary)
+            while len(current_markerlabels) < 9:
+                current_markerlabels.append("")
+            
+            success = self.settings_manager.save_current_markerlabels_to_default(current_markerlabels)
+            if success:
+                Messagebox.show_info("Markerlabels successfully saved to defaults!")
+                logging.info("Current markerlabels saved to defaults")
+            else:
+                Messagebox.show_error("Failed to save markerlabels to defaults.")
+                logging.error("Failed to save markerlabels to defaults")
+        except Exception as e:
+            Messagebox.show_error(f"Error saving markerlabels to defaults: {e}")
+            logging.error(f"Failed to save current markerlabels to default: {e}")
     
     def load_settings(self):
         settings_data = self.settings_manager.load_settings()
@@ -606,7 +636,7 @@ class QuickEDLApp:
         self.settings_folder = self.settings_manager.get_settings_folder_path()
         self.settings_folder_str = StringVar(value=str(self.settings_folder))
         
-        # Try to load markerlabels from default file
+        # Try to load markerlabels from default file only if settings folder already exists
         if self.settings_folder.exists():
             load_path = self.settings_folder / "markerlabels.txt"
             if load_path.exists():
@@ -615,7 +645,7 @@ class QuickEDLApp:
             else:
                 return
         else:
-            logging.info("No markerlabels loaded.")
+            logging.info("No markerlabels loaded - settings folder does not exist yet.")
     
     def load_default_markerlabels(self):
         settings_folder = self.settings_manager.get_settings_folder_path()
@@ -625,12 +655,20 @@ class QuickEDLApp:
                 self.import_markerlabels(load_path)
                 logging.info(f"Imported markerlabels and settings from {load_path}")
             else:
-                Messagebox.show_error("Default markerlabel file doesn't exist.")
+                Messagebox.show_error(
+                    "Default markerlabel file doesn't exist.\n\n"
+                    "You can create one by saving your current markerlabels:\n"
+                    "Markerlabels → Save markerlabels to defaults"
+                )
                 logging.error("Default markerlabel file doesn't exist.")
                 return
         else:
-            Messagebox.show_error("Settingsfolder not found.")
-            logging.error("Settingsfolder not found.")
+            Messagebox.show_error(
+                "Settings folder not found!\n\n"
+                "Please create the settings folder first:\n"
+                "App → Settings → Create Settings Folder"
+            )
+            logging.error("Settings folder not found.")
 
     def on_project_update(self):
         """
