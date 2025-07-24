@@ -42,22 +42,71 @@ class SettingsManager:
             'auto_save_interval': 300  # seconds
         }
     
-    def create_settings_folder(self) -> bool:
+    def create_settings_folder(self, current_markerlabels=None) -> bool:
         """
         Creates the settings folder if it doesn't exist.
+        Also creates default markerlabels.txt if folder is newly created.
+        Args:
+            current_markerlabels: List of current markerlabel strings from GUI, if available
         Returns True if created or already exists, False on error.
         """
         try:
+            folder_was_created = False
             if not self.settings_folder.exists():
                 self.settings_folder.mkdir(parents=True, exist_ok=True)
+                folder_was_created = True
                 logging.info(f"Settings folder created at: {self.settings_folder}")
             else:
                 logging.info(f"Settings folder already exists at: {self.settings_folder}")
                 if self.startup_toast:
                     self.startup_toast.addline(f"Settings-Ordner gefunden: {self.settings_folder}")
+            
+            # Create default markerlabels.txt if folder was just created or file doesn't exist
+            markerlabels_file = self.settings_folder / "markerlabels.txt"
+            if folder_was_created or not markerlabels_file.exists():
+                self._create_default_markerlabels(markerlabels_file, current_markerlabels)
+                
             return True
         except Exception as e:
             logging.error(f"Failed to create settings folder: {e}")
+            return False
+    
+    def _create_default_markerlabels(self, markerlabels_file: Path, current_markerlabels=None) -> bool:
+        """
+        Creates a default markerlabels.txt file with current labels from GUI or standard labels.
+        Args:
+            markerlabels_file: Path to the markerlabels.txt file to create
+            current_markerlabels: List of current markerlabel strings from GUI, if available
+        Returns True if successful, False otherwise.
+        """
+        try:
+            if current_markerlabels is not None:
+                # Use current markerlabels from GUI
+                markerlabels_content = "\n".join(current_markerlabels) + "\n"
+                logging.info("Using current GUI markerlabels for default markerlabels.txt")
+            else:
+                # Fallback to hardcoded default labels
+                default_markerlabels = [
+                    "Button 1 Label",
+                    "Button 2 Label", 
+                    "Button 3 Label",
+                    "Button 4 Label",
+                    "Button 5 Label",
+                    "Button 6 Label",
+                    "Button 7 Label",
+                    "Button 8 Label",
+                    "Button 9 Label",
+                    ""  # Empty line at the end
+                ]
+                markerlabels_content = "\n".join(default_markerlabels)
+                logging.info("Using hardcoded default markerlabels (no GUI labels provided)")
+            
+            markerlabels_file.write_text(markerlabels_content, encoding='utf-8')
+            logging.info(f"Default markerlabels.txt created at: {markerlabels_file}")
+            return True
+            
+        except Exception as e:
+            logging.error(f"Failed to create default markerlabels.txt: {e}")
             return False
     
     def load_settings(self) -> Dict[str, Any]:
@@ -97,11 +146,12 @@ class SettingsManager:
         self._settings_cache = settings
         return settings
     
-    def save_settings(self, settings: Optional[Dict[str, Any]] = None) -> bool:
+    def save_settings(self, settings: Optional[Dict[str, Any]] = None, current_markerlabels=None) -> bool:
         """
         Saves settings to YAML file.
         Args:
             settings: Settings dictionary to save. If None, saves cached settings.
+            current_markerlabels: List of current markerlabel strings from GUI, if available
         Returns:
             True if successful, False otherwise.
         """
@@ -109,8 +159,8 @@ class SettingsManager:
             settings = self._settings_cache
         
         if not self.settings_folder.exists():
-            if not self.create_settings_folder():
-                return False
+            logging.warning("Settings folder does not exist. Please create it first using the Settings window.")
+            return False
         
         try:
             with self.settings_file.open('w', encoding='utf-8') as file:
@@ -214,6 +264,31 @@ class SettingsManager:
         """Returns True if settings file exists."""
         return self.settings_file.exists()
     
+    def save_current_markerlabels_to_default(self, markerlabels_list: list) -> bool:
+        """
+        Saves the current markerlabels from GUI to the default markerlabels.txt file.
+        Args:
+            markerlabels_list: List of current markerlabel strings from GUI
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            # Ensure settings folder exists
+            if not self.settings_folder.exists():
+                logging.warning("Settings folder does not exist. Please create it first using the Settings window.")
+                return False
+            
+            markerlabels_file = self.settings_folder / "markerlabels.txt"
+            markerlabels_content = "\n".join(markerlabels_list) + "\n"
+            
+            markerlabels_file.write_text(markerlabels_content, encoding='utf-8')
+            logging.info(f"Current markerlabels saved to default file: {markerlabels_file}")
+            return True
+            
+        except Exception as e:
+            logging.error(f"Failed to save current markerlabels to default file: {e}")
+            return False
+
     def get_auto_save_interval(self) -> int:
         """
         Gets the auto-save interval in seconds.

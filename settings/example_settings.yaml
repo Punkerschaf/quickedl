@@ -18,7 +18,7 @@ default_dir: null  # Default directory for file operations (null = use system de
 max_recent: 5  # Maximum number of recent projects to remember
 
 # Auto-save settings
-auto_save_interval: 300  # Auto-save interval in seconds
+auto_save_interval: 30  # Auto-save interval in seconds
 
 # Recent files (automatically managed)
 recent_projects: []

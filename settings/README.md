@@ -120,7 +120,7 @@ Die Migration vom alten zum neuen System erfolgt automatisch:
 
 1. **Erste Ausführung**: Settings werden aus der bestehenden `settings.yaml` geladen
 2. **Fehlende Settings**: Werden automatisch mit Defaults ergänzt
-3. **Legacy Support**: Alte `texts.txt` wird weiterhin unterstützt
+3. **Default Markerlabels**: Bei der Ordner-Erstellung wird automatisch eine `markerlabels.txt` mit Standard-Labels erstellt
 4. **Ordner-Struktur**: Bleibt unverändert (`~/quickedl/`)
 
 ## Entwicklung
