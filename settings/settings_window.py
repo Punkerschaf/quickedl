@@ -156,16 +156,6 @@ class SettingsWindow:
         )
         self._theme_combo.pack(side="right")
         
-        # Funny mode
-        self.settings_vars['funny'] = BooleanVar(value=settings.get('funny', False))
-        self._funny_toggle = ttk.Checkbutton(
-            general_frame,
-            text="Funny mode (random text when fields are empty)",
-            variable=self.settings_vars['funny'],
-            bootstyle="success-round-toggle"
-        )
-        self._funny_toggle.pack(anchor="w", pady=(0, 10))
-        
         # Default directory
         dir_frame = ttk.Frame(general_frame)
         dir_frame.pack(fill="x", pady=(0, 10))

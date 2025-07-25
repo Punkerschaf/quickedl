@@ -24,7 +24,6 @@ import sys
 
 # import internals
 from about import show_about
-from random_entry import random_markerlabel
 from export_jsx import JSXExportWindow
 from utils import open_directory
 from settings import SettingsManager, show_settings_window
@@ -64,7 +63,6 @@ class QuickEDLApp:
 
         # settings
         self.log_level = "DEBUG"
-        self.funny = False
         self.default_dir = None
         self.delete_key = False
 
@@ -616,7 +614,6 @@ class QuickEDLApp:
 
         # Apply settings to instance variables
         self.log_level = settings_data.get('log_level', self.log_level)
-        self.funny = settings_data.get('funny', self.funny)
         self.default_dir = settings_data.get('default_dir', self.default_dir)
         self.delete_key = settings_data.get('delete_key', self.delete_key)
         
@@ -705,9 +702,7 @@ class QuickEDLApp:
         
         if self.hotkeys_active and edl_file:
             text = self.markerlabel_entries[index].get()
-            if not text and self.funny:
-                text = random_markerlabel(self)
-            elif not text and not self.funny:
+            if not text:
                 text = f"Button {index +1}"
             marker = f"{datetime.now().strftime('%H:%M:%S')} - {text}"
             with Path(edl_file).open('a') as file:

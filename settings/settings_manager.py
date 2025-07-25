@@ -34,7 +34,6 @@ class SettingsManager:
         """Returns the default settings dictionary."""
         return {
             'log_level': 'DEBUG',
-            'funny': False,
             'default_dir': None,
             'delete_key': False,
             'window_geometry': '400x700',

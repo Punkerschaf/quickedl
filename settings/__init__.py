@@ -21,9 +21,6 @@ def load_yaml(app):
     if hasattr(app, 'log_level'):
         app.log_level = settings.get('log_level', app.log_level)
         set_log_level(app.log_level)
-    
-    if hasattr(app, 'funny'):
-        app.funny = settings.get('funny', app.funny)
         
     if hasattr(app, 'default_dir'):
         app.default_dir = settings.get('default_dir', app.default_dir)

@@ -57,7 +57,7 @@ config = settings.load_settings()
 theme = settings.get_setting('theme', 'darkly')
 
 # Einstellung setzen
-settings.set_setting('funny', True)
+settings.set_setting('theme', 'flatly')
 
 # Mehrere Einstellungen aktualisieren
 settings.update_settings({
@@ -104,7 +104,6 @@ Alle verfügbaren Einstellungen mit ihren Standardwerten:
 
 ```yaml
 log_level: 'DEBUG'           # Logging-Level
-funny: false                 # Zufälliger Text in leeren Feldern
 default_dir: null            # Standard-Verzeichnis
 delete_key: false            # Backspace löscht letzten Marker
 window_geometry: '400x700'   # Fenstergröße

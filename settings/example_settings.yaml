@@ -10,7 +10,6 @@ theme: darkly  # Available themes: darkly (dark), litera (light)
 window_geometry: "400x700"
 
 # General behavior settings
-funny: false  # Enable random text when fields are empty
 delete_key: false  # Allow backspace to delete last marker
 
 # File and directory settings
