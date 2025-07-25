@@ -42,26 +42,18 @@ class SettingsWindow:
         # Load current settings
         current_settings = self.settings_manager.load_settings()
         
-        # Bind close events
+        # Bind close events only
         self.window.bind("<Escape>", self._close_window)
         self.window.protocol("WM_DELETE_WINDOW", self._close_window)
         
-        # Bind focus events to improve widget behavior
-        self.window.bind("<Button-1>", self._on_window_click)
-        self.window.bind("<FocusIn>", self._on_focus_in)
-        
         self._create_widgets(current_settings)
         
-        # Center window and make it modal
+        # Center window and make it transient (but not modal)
         self.window.transient(self.parent)
         self._center_window()
         
-        # Set proper focus and modal behavior
+        # Set focus without grab_set() to avoid input delays
         self.window.focus_force()
-        self.window.grab_set()
-        
-        # Wait for window to be visible before setting focus
-        self.window.after(50, self._initial_focus)
         
     def _create_widgets(self, settings):
         """Creates all widgets for the settings window."""
@@ -87,9 +79,6 @@ class SettingsWindow:
         
         # Buttons section
         self._create_buttons_section(main_frame)
-        
-        # Set up tab order after all widgets are created
-        self.window.after(100, self._setup_tab_order)
         
     def _create_folder_section(self, parent, settings):
         """Creates the settings folder section."""
@@ -166,9 +155,6 @@ class SettingsWindow:
             width=15
         )
         self._theme_combo.pack(side="right")
-        # Improve combobox interaction
-        self._theme_combo.bind('<<ComboboxSelected>>', self._on_combobox_selected)
-        self._theme_combo.bind('<Button-1>', self._on_combobox_click)
         
         # Funny mode
         self.settings_vars['funny'] = BooleanVar(value=settings.get('funny', False))
@@ -225,9 +211,6 @@ class SettingsWindow:
             width=15
         )
         self._level_combo.pack(side="right")
-        # Improve combobox interaction
-        self._level_combo.bind('<<ComboboxSelected>>', self._on_combobox_selected)
-        self._level_combo.bind('<Button-1>', self._on_combobox_click)
         
         # Log file button
         self._log_button = ttk.Button(
@@ -304,22 +287,6 @@ class SettingsWindow:
             bootstyle="success"
         )
         self._save_button.pack(side="right")
-        
-    def _on_combobox_selected(self, event):
-        """Handles combobox selection events."""
-        widget = event.widget
-        # Clear selection to prevent visual artifacts
-        widget.selection_clear()
-        # Force focus on the combobox to ensure it's properly activated
-        widget.focus_set()
-        
-    def _on_combobox_click(self, event):
-        """Handles combobox click events to improve responsiveness."""
-        widget = event.widget
-        # Ensure the combobox is focused and ready for interaction
-        widget.focus_set()
-        # Small delay to allow the click to register properly
-        self.window.after(10, lambda: widget.focus_set())
         
     def _create_settings_folder(self):
         """Creates the settings folder."""
@@ -437,7 +404,6 @@ class SettingsWindow:
     def _close_window(self, event=None):
         """Closes the settings window."""
         if self.window:
-            self.window.grab_release()
             self.window.destroy()
             self.window = None
             
@@ -460,67 +426,3 @@ class SettingsWindow:
         y = parent_y + (parent_height // 2) - (window_height // 2)
         
         self.window.geometry(f"{window_width}x{window_height}+{x}+{y}")
-        
-    def _initial_focus(self):
-        """Sets initial focus to the first focusable widget."""
-        # Focus on the first combobox in the theme section
-        if hasattr(self, '_theme_combo'):
-            self._theme_combo.focus_set()
-        else:
-            self.window.focus_set()
-            
-    def _on_window_click(self, event):
-        """Handles window clicks to properly manage focus."""
-        # Check if click was on an empty area
-        widget = event.widget
-        if widget == self.window or isinstance(widget, ttk.Frame):
-            # Focus the window to clear widget focus
-            self.window.focus_set()
-            
-    def _on_focus_in(self, event):
-        """Handles focus in events to maintain modal behavior."""
-        # Ensure the window stays on top and focused
-        if event.widget == self.window:
-            self.window.lift()
-            
-    def _setup_tab_order(self):
-        """Sets up proper tab order for all widgets."""
-        # Store widgets in tab order
-        self.tab_order = []
-        
-        # Add widgets in visual order
-        if hasattr(self, '_theme_combo'):
-            self.tab_order.append(self._theme_combo)
-        if hasattr(self, '_funny_toggle'):
-            self.tab_order.append(self._funny_toggle)
-        if hasattr(self, '_browse_button'):
-            self.tab_order.append(self._browse_button)
-        if hasattr(self, '_level_combo'):
-            self.tab_order.append(self._level_combo)
-        if hasattr(self, '_log_button'):
-            self.tab_order.append(self._log_button)
-        if hasattr(self, '_delete_toggle'):
-            self.tab_order.append(self._delete_toggle)
-        if hasattr(self, '_recent_spin'):
-            self.tab_order.append(self._recent_spin)
-        if hasattr(self, '_reset_button'):
-            self.tab_order.append(self._reset_button)
-        if hasattr(self, '_save_button'):
-            self.tab_order.append(self._save_button)
-        if hasattr(self, '_cancel_button'):
-            self.tab_order.append(self._cancel_button)
-            
-        # Set up tab order
-        for i, widget in enumerate(self.tab_order):
-            if i < len(self.tab_order) - 1:
-                widget.bind("<Tab>", lambda e, next_widget=self.tab_order[i+1]: self._focus_next(next_widget))
-                widget.bind("<Shift-Tab>", lambda e, prev_widget=self.tab_order[i-1] if i > 0 else self.tab_order[-1]: self._focus_next(prev_widget))
-            else:
-                # Last widget - Tab goes to first
-                widget.bind("<Tab>", lambda e, next_widget=self.tab_order[0]: self._focus_next(next_widget))
-                widget.bind("<Shift-Tab>", lambda e, prev_widget=self.tab_order[i-1]: self._focus_next(prev_widget))
-                
-    def _focus_next(self, widget):
-        """Focuses the next widget and prevents default tab behavior."""
-        widget.focus_set()
-        return "break"  # Prevent default tab handling
