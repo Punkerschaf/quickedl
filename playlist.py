@@ -120,7 +120,7 @@ class Playlist():
             # New project-based workflow buttons
             ttk.Button(self.edit_window, text="Cancel", command=self.close_window, bootstyle="secondary").grid(column=1, row=2, padx=5, pady=5)
             ttk.Button(self.edit_window, text="Import", command=self.load_playlist, bootstyle="info-outline").grid(column=2, row=2, padx=5, pady=5)
-            ttk.Button(self.edit_window, text="Update & Save", command=self.update_and_save_to_project, bootstyle="success").grid(column=3, columnspan=2, row=2, padx=5, pady=5, sticky="EW")
+            ttk.Button(self.edit_window, text="Save", command=self.update_and_save_to_project, bootstyle="success").grid(column=3, columnspan=2, row=2, padx=5, pady=5, sticky="EW")
         else:
             # Legacy workflow buttons for backward compatibility
             ttk.Button(self.edit_window, text="Update", command=self.update_list).grid(column=1, row=2, padx=5, pady=5)
