@@ -174,7 +174,7 @@ class QuickEDLApp:
         self.project_menu = ttk.Menu(menu_bar, tearoff=0)
         self.project_menu.add_command(label="New Project", command=lambda: show_new_project_window(self.root, self.project, self))
         self.project_menu.add_command(label="Load Project", command=self.project.load_project_dialog)
-        self.project_menu.add_command(label="Save Labels to Project", command= lambda: save_markerlabel(self, save_path=self.project.project_markerlabel_file))
+        self.project_menu.add_command(label="Save Labels to Project", command= lambda: save_markerlabel(self, save_path=self.project.project_markerlabel_file)) #XXX move to markerlabels menu (docs!)
         
         # Initialize Recent Projects Menu
         self.recent_menu = RecentProjectsMenu(
@@ -575,7 +575,7 @@ class QuickEDLApp:
                 Messagebox.show_error(
                     "Settings folder not found!\n\n"
                     "Please create the settings folder first:\n"
-                    "App → Settings → Create Settings Folder"
+                    "App → Settings → Create Settings Folder" #XXX
                 )
                 return
             
