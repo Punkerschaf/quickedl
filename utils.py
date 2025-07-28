@@ -2,6 +2,7 @@ import subprocess
 from pathlib import Path
 import os
 import logging
+import webbrowser
 
 def open_directory(path):
     """
@@ -34,3 +35,7 @@ def open_directory(path):
             logging.error("Unsupported OS")
     except Exception as e:
         logging.error(f"An error occurred while opening the directory: {e}", exc_info=True)
+
+def open_in_browser(url):
+    webbrowser.open_new(url)
+    logging.debug(f"Opening in Browser: {url}")
