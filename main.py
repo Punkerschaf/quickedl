@@ -574,8 +574,6 @@ class QuickEDLApp:
             if not self.settings_manager.settings_folder_exists():
                 Messagebox.show_error(
                     "Settings folder not found!\n\n"
-                    "Please create the settings folder first:\n"
-                    "App → Settings → Create Settings Folder" #XXX
                 )
                 return
             
@@ -833,7 +831,6 @@ class QuickEDLApp:
 #                                 
 if __name__ == "__main__":
     try:
-        #XXX Create window without fixed theme - theme will be set in load_settings()
         root = ttk.Window()
         app = QuickEDLApp(root)
         app.load_settings() #INSPECT load settings in app init?
