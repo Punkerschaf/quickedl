@@ -14,10 +14,10 @@ QuickEDL
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import LEFT, RIGHT
 from ttkbootstrap.dialogs import Messagebox
-
-from datetime import datetime
 from tkinter import filedialog, StringVar
 from tkinter import END
+
+from datetime import datetime
 from pathlib import Path
 import logging
 import sys
@@ -48,24 +48,20 @@ class QuickEDLApp:
         # Initialize the startup toast
         self.startup_toast = StartupToast()
 
-        # Initialize settings manager with startup toast
-        self.settings_manager = SettingsManager(startup_toast=self.startup_toast)
-        self.load_settings()
-
-        # Auto-save timer
-        self.auto_save_timer = None
-
-        # Legacy file path for standalone EDL files (not part of project)
-        self.file_path = None
-        self.current_dir = None
-        self.last_markers = []
-        self.settings_folder = None
-        self.settings_folder_str = StringVar(value=str(self.settings_folder))
-
         # settings
         self.log_level = "DEBUG"
         self.default_dir = None
         self.delete_key = False
+        self.settings_manager = SettingsManager(startup_toast=self.startup_toast)
+
+        # Auto-save timer
+        self.auto_save_timer = None
+
+        self.file_path = None # Legacy EDL file
+        self.current_dir = None
+        self.last_markers = []
+        self.settings_folder = None
+        self.settings_folder_str = StringVar(value=str(self.settings_folder))
 
         # Hotkey status
         self.hotkeys_active = True
@@ -77,22 +73,20 @@ class QuickEDLApp:
         self.project = Project(
             update_callback=self.on_project_update,
             settings_manager=self.settings_manager
-        )
+            )
 
         # Playlist
         self.playlist = Playlist(project=self.project)
 
-        # Recent Projects Manager
-        max_recent = self.settings_manager.get_setting('max_recent', 5)
+        max_recent = 5  # Will be updated by load_settings()
         self.recent_manager = RecentProjectsManager(self.settings_manager, max_recent)
         self.recent_menu = None  # Will be initialized in create_menu
-
-        # create window
         self.create_menu()
         self.create_widgets()
-        self.check_window_focus()
+
+        self.load_settings()
         
-        # Setup auto-save after everything is initialized
+        self.check_window_focus()
         self.setup_auto_save()
 
     def setup_logging(self):
