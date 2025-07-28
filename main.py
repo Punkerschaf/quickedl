@@ -50,6 +50,7 @@ class QuickEDLApp:
 
         # Initialize settings manager with startup toast
         self.settings_manager = SettingsManager(startup_toast=self.startup_toast)
+        self.load_settings()
 
         # Auto-save timer
         self.auto_save_timer = None
@@ -833,9 +834,7 @@ if __name__ == "__main__":
     try:
         root = ttk.Window()
         app = QuickEDLApp(root)
-        app.load_settings() #INSPECT load settings in app init?
-        
-        # Show startup toast after settings are loaded
+
         app.startup_toast.show()
         
         root.mainloop()
