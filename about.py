@@ -5,7 +5,7 @@ from PIL import Image, ImageTk
 import io
 from logo import bin_logo
 
-def callback(url):
+def callback(url): #TODO use from utils
     webbrowser.open_new(url)
 
 def show_about(app, version):
