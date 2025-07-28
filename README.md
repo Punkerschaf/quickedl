@@ -37,21 +37,19 @@ A project is a folder named as it's project, which contains the *edl-file, marke
 
 # How to use
 
-### popup marker:
+### Popup Marker:
 If you want to create a marker with costum text one time, use spacebar to open a window and enter a custom text. Return key applies and Esc button will abort the popup marker.
 No matter how long you need for writing, timestamp the moment of hitting space bar is used.
 
-### delete last marker:
-With the delete button you can delete the last marker. For safety reasons the shortcut (backspace key) for this feature is deactivated by default. You can change this in the settings.
-
-Loading markerlabels from external is used for files from legacy versions. They are imported to the project and replaces the current ones.
-
-## Playlist marker
+### Playlist Marker
 Playlist is used for marker you only need one time in a show (Song titles for example). The playlist is edited in the text menu. One line is a label. The playlist is also stored in the project.
 It is possible to save and load playist (simple `*.txt` file). Loading imports and replaces it to the project.
 
 Once a playlist entry is used by clicking on the `Plst`-Button or hitting `P`, the next item in the playlist is automatically loaded.
 You can navigate through the playlist labels using the arrow left and right keys.
+
+### Delete last Marker:
+With the delete button you can delete the last marker. For safety reasons the shortcut (backspace key) for this feature is deactivated by default. You can change this in the settings.
 
 # Hotkeys
 | Key | Function |
