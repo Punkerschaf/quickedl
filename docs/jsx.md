@@ -5,7 +5,7 @@ Unlikely, Adobe do not allow to execute Extend Scripts directly inside the appli
 ## Installation
 - Install Visual Studio Code (VS Code) on the same system as *Adobe Premiere Pro*.
 - Install the ExtendScript Debugger extension for VS Code. (Click on the Extensions icon in the Activity Bar on the left side of the window, search for the extension and click "install").
-<img src="../assets/extendscript-debugger-extension.png" alt="Adobe ExtendScript Debugger extension for VSCode" style="width:50%;" />
+<img src="../docs/assets/extendscript-debugger-extension.png" alt="Adobe ExtendScript Debugger extension for VSCode" style="width:50%;" />
 
 - There is no need for further setup
 
