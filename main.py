@@ -25,7 +25,7 @@ import sys
 # import internals
 from about import show_about
 from export_jsx import JSXExportWindow
-from utils import open_directory
+from utils import open_directory, open_in_browser
 from settings import SettingsManager, show_settings_window
 from settings.recent import RecentProjectsManager, RecentProjectsMenu
 from playlist import Playlist
@@ -34,9 +34,11 @@ from projects.project import Project
 from projects.newproject import show_new_project_window
 from startup import StartupToast
 from version import VERSION
+from constants import READMEURL
 
 # version number
 version = VERSION
+readme_url = READMEURL
 
 class QuickEDLApp:
     def __init__(self, root):
@@ -154,6 +156,7 @@ class QuickEDLApp:
         menu_bar = ttk.Menu(self.root)
 
         app_menu = ttk.Menu(menu_bar, tearoff=0)
+        app_menu.add_command(label="Help ↗(Open Readme)", command=lambda: open_in_browser(readme_url))
         app_menu.add_command(label="Settings", command=lambda: show_settings_window(self))
 
         if sys.platform == "darwin":
@@ -189,13 +192,13 @@ class QuickEDLApp:
         menu_bar.add_cascade(label="EDL", menu=edl_menu)
 
         texts_menu = ttk.Menu(menu_bar, tearoff=0)
-        texts_menu.add_command(label="Save markerlabels", command=self.save_markerlabels)
-        texts_menu.add_command(label="Load markerlabels", command=self.open_markerlabels)
+        texts_menu.add_command(label="Save Markerlabels", command=self.save_markerlabels)
+        texts_menu.add_command(label="Load Markerlabels", command=self.open_markerlabels)
         texts_menu.add_separator()
-        texts_menu.add_command(label="Save markerlabels to defaults", command=self.save_markerlabels_to_defaults)
-        texts_menu.add_command(label="Load default markerlabels", command=self.load_default_markerlabels)
+        texts_menu.add_command(label="Save Markerlabels to Defaults", command=self.save_markerlabels_to_defaults)
+        texts_menu.add_command(label="Load default Markerlabels", command=self.load_default_markerlabels)
         texts_menu.add_separator()
-        texts_menu.add_command(label="Edit playlist", command=self.playlist.playlist_edit_window)
+        texts_menu.add_command(label="Edit Playlist", command=self.playlist.playlist_edit_window)
         menu_bar.add_cascade(label="Markerlabels", menu=texts_menu)
 
         self.root.config(menu=menu_bar)
