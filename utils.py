@@ -36,6 +36,6 @@ def open_directory(path):
     except Exception as e:
         logging.error(f"An error occurred while opening the directory: {e}", exc_info=True)
 
-def open_in_browser(url):
+def open_in_browser(url, **kwargs):
     webbrowser.open_new(url)
     logging.debug(f"Opening in Browser: {url}")
