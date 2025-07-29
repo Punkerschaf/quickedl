@@ -34,8 +34,8 @@ def show_about(app, version):
     label2 = ttk.Label(aboutscreen, text="© 2024-2025, Eric Kirchheim")
     label2.pack()
 
-    githuburl = f"↗{GITHUBURL}"
-    label3 = ttk.Label(aboutscreen, text=githuburl, bootstyle="info")
+    githuburl = GITHUBURL
+    label3 = ttk.Label(aboutscreen, text=f"↗ {githuburl}", bootstyle="info")
     label3.configure(underline=True)
     label3.pack(padx=10, pady=10)
     label3.bind("<Button-1>", lambda e: open_in_browser(githuburl))
