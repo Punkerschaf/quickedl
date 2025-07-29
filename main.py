@@ -156,7 +156,7 @@ class QuickEDLApp:
         menu_bar = ttk.Menu(self.root)
 
         app_menu = ttk.Menu(menu_bar, tearoff=0)
-        app_menu.add_command(label="Help ↗(Open Readme)", command=lambda: open_in_browser(readme_url))
+        app_menu.add_command(label="Help ↗ (Open Readme)", command=lambda: open_in_browser(readme_url))
         app_menu.add_command(label="Settings", command=lambda: show_settings_window(self))
 
         if sys.platform == "darwin":
