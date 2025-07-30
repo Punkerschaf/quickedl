@@ -1,3 +1,8 @@
+"""
+This file is part of QuickEDL.
+It provides utility functions for the application.
+"""
+
 import subprocess
 from pathlib import Path
 import os

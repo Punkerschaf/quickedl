@@ -1,3 +1,8 @@
+"""
+This file is part of QuickEDL.
+It provides a workflow to export EDL markers to a JSX script for Adobe Premiere Pro.
+"""
+
 import ttkbootstrap as ttk
 from ttkbootstrap.dialogs import Messagebox
 from ttkbootstrap.tooltip import ToolTip

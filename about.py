@@ -1,3 +1,8 @@
+"""
+This file is part of QuickEDL.
+It provides the About dialog for the application.
+"""
+
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *  # noqa: F403
 from PIL import Image, ImageTk

@@ -1,5 +1,6 @@
 """
-cx_Freeze setup script for QuickEDL
+This file is part of QuickEDL.
+It defines the build configuration for the application using cx_Freeze.
 """
 import sys
 import os

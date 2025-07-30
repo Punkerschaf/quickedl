@@ -1,3 +1,8 @@
+"""
+This file is part of QuickEDL.
+It provides a class to create and handle playlist based markerlabels.
+"""
+
 import ttkbootstrap as ttk
 
 from tkinter import filedialog, StringVar, BooleanVar
