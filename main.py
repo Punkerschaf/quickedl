@@ -35,6 +35,7 @@ from projects.newproject import show_new_project_window
 from startup import StartupToast
 from version import VERSION
 from constants import READMEURL
+from confetti_pil import show_confetti_pil
 
 # version number
 version = VERSION
@@ -378,6 +379,8 @@ class QuickEDLApp:
             self.playlist.dec_playhead()  # Decrease playlist playhead with left arrow
         elif event.keysym == "Right":
             self.playlist.inc_playhead()  # Increase playlist playhead with right arrow
+        elif event.keysym == "c":
+            show_confetti_pil(self.root, duration=2000, animation_speed=5)
     
     def flash_button(self, index):
         self.markerlabel_entries[index].config(bootstyle="danger")
@@ -477,6 +480,8 @@ class QuickEDLApp:
                 Path(self.project.project_playlist_file).exists()):
                 
                 self.playlist.load_from_project()
+            
+            show_confetti_pil(self.root, duration=1500, animation_speed=5)
                 
         except Exception as e:
             logging.error(f"Error loading project content: {e}")
