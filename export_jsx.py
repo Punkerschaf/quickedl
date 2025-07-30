@@ -12,7 +12,7 @@ import logging
 import re
 
 from utils import open_directory
-from confetti import show_confetti
+from confetti_pil import show_confetti_pil
 
 class JSXExportWindow:
     def __init__(self, root, file_path):
@@ -143,7 +143,7 @@ if (sequence) {
         self.generate_button.config(bootstyle="success-outline", text="Done.", command=None)
         self.done = True
         try:
-            show_confetti(window=self.export_window)
+            show_confetti_pil(self.export_window, duration=1500, animation_speed=5)
         except Exception:
             logging.error("Confetti gun is empty.", exc_info=True)  
         self.export_window.after(1000, lambda: open_directory(self.output_path))
