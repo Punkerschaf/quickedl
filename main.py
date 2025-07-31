@@ -537,7 +537,7 @@ class QuickEDLApp:
                 self.last_markers.extend(recent_lines)
                 self.last_markers_text.set("\n".join(self.last_markers))
 
-    def save_markerlabels(self):
+    def save_markerlabels(self): #TODO move all markerlabels functionality to markerlabel.py
         # Use current_dir if available, otherwise default directory from settings
         initial_dir = self.current_dir or self.get_default_directory()
         
@@ -551,7 +551,7 @@ class QuickEDLApp:
             save_path = Path(save_path)
             save_path.write_text("\n".join(entry.get() for entry in self.markerlabel_entries) + "\n")
 
-    def open_markerlabels(self):
+    def open_markerlabels(self):    #TODO Renome to "...dialog"
         # Use current_dir if available, otherwise default directory from settings
         initial_dir = self.current_dir or self.get_default_directory()
         
@@ -561,7 +561,7 @@ class QuickEDLApp:
         )
         self.import_markerlabels(load_path)
 
-    def import_markerlabels(self, load_path):    
+    def import_markerlabels(self, load_path):   #TODO Rename "import" to "load"
         if load_path:
             load_path = Path(load_path)
             lines = load_path.read_text().splitlines()
