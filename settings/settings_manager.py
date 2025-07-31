@@ -76,7 +76,7 @@ class SettingsManager:
         Args:
             markerlabels_file: Path to the markerlabels.txt file to create
             current_markerlabels: List of current markerlabel strings from GUI, if available
-        Returns True if successful, False otherwise.
+        Returns True if successful.
         """
         try:
             if current_markerlabels is not None:
@@ -86,19 +86,10 @@ class SettingsManager:
             else:
                 # Fallback to hardcoded default labels
                 default_markerlabels = [
-                    "Button 1 Label",
-                    "Button 2 Label", 
-                    "Button 3 Label",
-                    "Button 4 Label",
-                    "Button 5 Label",
-                    "Button 6 Label",
-                    "Button 7 Label",
-                    "Button 8 Label",
-                    "Button 9 Label",
-                    ""  # Empty line at the end
+                    ""
                 ]
                 markerlabels_content = "\n".join(default_markerlabels)
-                logging.info("Using hardcoded default markerlabels (no GUI labels provided)")
+                logging.info("Create empty markerlabels file for defaults.")
             
             markerlabels_file.write_text(markerlabels_content, encoding='utf-8')
             logging.info(f"Default markerlabels.txt created at: {markerlabels_file}")
