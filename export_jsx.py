@@ -12,7 +12,7 @@ import logging
 import re
 
 from utils import open_directory
-from confetti_pil import show_confetti_pil
+from confetti import show_confetti_pil
 
 class JSXExportWindow:
     def __init__(self, root, file_path):

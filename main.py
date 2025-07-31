@@ -35,7 +35,7 @@ from projects.newproject import show_new_project_window
 from startup import StartupToast
 from version import VERSION
 from constants import READMEURL
-from confetti_pil import show_confetti_pil
+from confetti import show_confetti_pil
 
 # version number
 version = VERSION
