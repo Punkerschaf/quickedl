@@ -79,6 +79,19 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install system dependencies (macOS Intel)
+        run: |
+          # Install Tcl/Tk via Homebrew to ensure availability
+          brew install tcl-tk
+          
+          # Verify installation
+          echo "Tcl/Tk installation check:"
+          ls -la /usr/local/lib/ | grep -E "(tcl|tk)" || true
+          find /usr/local -name "init.tcl" 2>/dev/null || true
+          
+          # Check Python tkinter
+          python -c "import tkinter; print('Tkinter works')"
+
       - name: Install dependencies
         run: |
           pip install -r dependencies.txt
@@ -122,6 +135,11 @@ jobs:
             codesign -dv --verbose=4 dist/QuickEDL.app 2>&1 || echo "No code signature"
             echo "Extended attributes:"
             xattr -l dist/QuickEDL.app || echo "No extended attributes"
+            echo "Tcl/Tk libraries check:"
+            ls -la dist/QuickEDL.app/Contents/lib/ | grep -E "(tcl|tk)" || echo "No Tcl/Tk in lib/"
+            find dist/QuickEDL.app -name "init.tcl" || echo "No init.tcl found"
+            echo "Test app execution:"
+            timeout 5s dist/QuickEDL.app/Contents/MacOS/QuickEDL --help 2>&1 || echo "App execution test completed"
           else
             echo "❌ App bundle not found"
             exit 1
@@ -161,6 +179,19 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
+
+      - name: Install system dependencies (macOS Apple Silicon)
+        run: |
+          # Install Tcl/Tk via Homebrew to ensure availability
+          brew install tcl-tk
+          
+          # Verify installation
+          echo "Tcl/Tk installation check:"
+          ls -la /opt/homebrew/lib/ | grep -E "(tcl|tk)" || true
+          find /opt/homebrew -name "init.tcl" 2>/dev/null || true
+          
+          # Check Python tkinter
+          python -c "import tkinter; print('Tkinter works')"
 
       - name: Install dependencies
         run: |
@@ -205,6 +236,11 @@ jobs:
             codesign -dv --verbose=4 dist/QuickEDL.app 2>&1 || echo "No code signature"
             echo "Extended attributes:"
             xattr -l dist/QuickEDL.app || echo "No extended attributes"
+            echo "Tcl/Tk libraries check:"
+            ls -la dist/QuickEDL.app/Contents/lib/ | grep -E "(tcl|tk)" || echo "No Tcl/Tk in lib/"
+            find dist/QuickEDL.app -name "init.tcl" || echo "No init.tcl found"
+            echo "Test app execution:"
+            timeout 5s dist/QuickEDL.app/Contents/MacOS/QuickEDL --help 2>&1 || echo "App execution test completed"
           else
             echo "❌ App bundle not found"
             exit 1

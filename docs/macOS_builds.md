@@ -144,6 +144,16 @@ sudo spctl --master-enable   # Gatekeeper wieder aktivieren
 otool -L /Applications/QuickEDL.app/Contents/MacOS/QuickEDL
 ```
 
+3. **Tcl/Tk Problem** (sollte mit neuen Builds behoben sein):
+```bash
+# Prüfen Sie, ob Tcl/Tk-Bibliotheken verfügbar sind
+ls -la /Applications/QuickEDL.app/Contents/lib/ | grep -E "(tcl|tk)"
+find /Applications/QuickEDL.app -name "init.tcl"
+
+# Falls nicht gefunden, installieren Sie Tcl/Tk:
+brew install tcl-tk
+```
+
 #### Problem: "Keine Berechtigung" Fehler
 **Lösung**:
 ```bash

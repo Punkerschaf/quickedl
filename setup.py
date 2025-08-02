@@ -18,40 +18,57 @@ def get_tcl_tk_path():
     tcl_tk_files = []
     
     if platform.system() == "Darwin":  # macOS
-        # GitHub Actions and local Python installations
-        python_versions = glob.glob("/Library/Frameworks/Python.framework/Versions/*/")
-        python_versions.extend(glob.glob("/opt/hostedtoolcache/Python/*/*/"))
+        # Priority order: Homebrew -> Python Framework -> System
+        search_paths = []
         
-        for version_path in python_versions:
-            tcl_path = os.path.join(version_path, "lib", "tcl8.6")
-            tk_path = os.path.join(version_path, "lib", "tk8.6")
-            
-            if os.path.exists(tcl_path):
-                tcl_tk_files.append((tcl_path, "lib/tcl8.6"))
-            if os.path.exists(tk_path):
-                tcl_tk_files.append((tk_path, "lib/tk8.6"))
+        # 1. Homebrew installations (preferred)
+        if platform.machine() == "arm64":  # Apple Silicon
+            search_paths.extend([
+                "/opt/homebrew/lib",
+                "/opt/homebrew/Cellar/tcl-tk/*/lib"
+            ])
+        else:  # Intel
+            search_paths.extend([
+                "/usr/local/lib",
+                "/usr/local/Cellar/tcl-tk/*/lib"
+            ])
         
-        # Homebrew installations
-        homebrew_paths = [
-            ("/opt/homebrew/lib/tcl8.6", "lib/tcl8.6"),
-            ("/opt/homebrew/lib/tk8.6", "lib/tk8.6"),
-            ("/usr/local/lib/tcl8.6", "lib/tcl8.6"),
-            ("/usr/local/lib/tk8.6", "lib/tk8.6"),
-        ]
+        # 2. Python Framework installations
+        search_paths.extend([
+            "/Library/Frameworks/Python.framework/Versions/*/lib",
+            "/opt/hostedtoolcache/Python/*/*/lib"  # GitHub Actions
+        ])
         
-        for path, dest in homebrew_paths:
-            if os.path.exists(path):
-                tcl_tk_files.append((path, dest))
+        # 3. System frameworks (fallback)
+        search_paths.extend([
+            "/System/Library/Frameworks/Tcl.framework/Versions/*/Resources",
+            "/System/Library/Frameworks/Tk.framework/Versions/*/Resources"
+        ])
         
-        # System frameworks (fallback)
-        system_paths = [
-            ("/System/Library/Frameworks/Tcl.framework/Versions/8.6/Resources/Scripts", "lib/tcl8.6"),
-            ("/System/Library/Frameworks/Tk.framework/Versions/8.6/Resources/Scripts", "lib/tk8.6")
-        ]
-        for path, dest in system_paths:
-            if os.path.exists(path):
-                tcl_tk_files.append((path, dest))
+        # Find Tcl/Tk directories
+        for pattern in search_paths:
+            for base_path in glob.glob(pattern):
+                tcl_path = os.path.join(base_path, "tcl8.6")
+                tk_path = os.path.join(base_path, "tk8.6")
+                
+                if os.path.exists(tcl_path) and os.path.exists(os.path.join(tcl_path, "init.tcl")):
+                    tcl_tk_files.append((tcl_path, "lib/tcl8.6"))
+                    print(f"Found Tcl: {tcl_path}")
+                    
+                if os.path.exists(tk_path):
+                    tcl_tk_files.append((tk_path, "lib/tk8.6"))
+                    print(f"Found Tk: {tk_path}")
+        
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_files = []
+        for item in tcl_tk_files:
+            if item not in seen:
+                seen.add(item)
+                unique_files.append(item)
+        tcl_tk_files = unique_files
     
+    print(f"Tcl/Tk files to include: {tcl_tk_files}")
     return tcl_tk_files
 
 def get_icon_path():
@@ -108,6 +125,11 @@ if sys.platform == "darwin":
     # macOS specific options for better compatibility
     build_exe_options.update({
         "silent": True,
+        # Add environment variables for Tcl/Tk
+        "environment": {
+            "TCL_LIBRARY": "",  # Will be set by wrapper
+            "TK_LIBRARY": "",   # Will be set by wrapper
+        }
     })
 
 # No special options needed for Windows and Linux with cx_Freeze

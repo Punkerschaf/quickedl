@@ -41,6 +41,56 @@ echo "Checking executable architecture:"
 file "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 lipo -info "$APP_BUNDLE/Contents/MacOS/$APP_NAME" 2>/dev/null || echo "Not a universal binary"
 
+# Create wrapper script to handle Tcl/Tk paths
+echo "Creating Tcl/Tk wrapper..."
+ORIGINAL_EXEC="$APP_BUNDLE/Contents/MacOS/${APP_NAME}_original"
+WRAPPER_SCRIPT="$APP_BUNDLE/Contents/MacOS/$APP_NAME"
+
+# Move original executable
+mv "$WRAPPER_SCRIPT" "$ORIGINAL_EXEC"
+
+# Create wrapper script
+cat > "$WRAPPER_SCRIPT" << 'EOF'
+#!/bin/bash
+# QuickEDL macOS Tcl/Tk Wrapper
+
+# Get the directory of this script
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+APP_DIR="$( dirname "$( dirname "$SCRIPT_DIR" )" )"
+
+# Set Tcl/Tk library paths
+export TCL_LIBRARY="$APP_DIR/Contents/lib/tcl8.6"
+export TK_LIBRARY="$APP_DIR/Contents/lib/tk8.6"
+
+# Fallback paths
+if [ ! -d "$TCL_LIBRARY" ]; then
+    # Try to find Tcl/Tk in common locations
+    for path in /opt/homebrew/lib/tcl8.6 /usr/local/lib/tcl8.6 /Library/Frameworks/Python.framework/Versions/*/lib/tcl8.6; do
+        if [ -d "$path" ] && [ -f "$path/init.tcl" ]; then
+            export TCL_LIBRARY="$path"
+            break
+        fi
+    done
+fi
+
+if [ ! -d "$TK_LIBRARY" ]; then
+    for path in /opt/homebrew/lib/tk8.6 /usr/local/lib/tk8.6 /Library/Frameworks/Python.framework/Versions/*/lib/tk8.6; do
+        if [ -d "$path" ]; then
+            export TK_LIBRARY="$path"
+            break
+        fi
+    done
+fi
+
+# Additional library paths
+export DYLD_FALLBACK_LIBRARY_PATH="$DYLD_FALLBACK_LIBRARY_PATH:/opt/homebrew/lib:/usr/local/lib"
+
+# Execute the original binary
+exec "$SCRIPT_DIR/${APP_NAME}_original" "$@"
+EOF
+
+chmod +x "$WRAPPER_SCRIPT"
+
 # Create Info.plist
 cat > "$APP_BUNDLE/Contents/Info.plist" << EOF
 <?xml version="1.0" encoding="UTF-8"?>
