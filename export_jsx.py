@@ -24,7 +24,7 @@ class JSXExportWindow:
 
         if file_path is not None:
             self.file_path = Path(file_path)
-            self.get_edl_entries()
+            self.get_edl_markers()
             self.create_window()
             logging.debug("JSXExportWindow init DONE.")
         else:
@@ -96,12 +96,12 @@ This function is dumb as f***. Please enter as HH:mm:ss
         except ValueError: 
             logging.error("calc_timeline_offset failed")
 
-    def get_edl_entries(self):
+    def get_edl_markers(self):
         try:
             with self.file_path.open('r') as file:
-                self.entries = [line.strip() for line in file.readlines() if " - " in line]
-                self.entries_count = len(self.entries)
-            logging.info(f"{self.entries_count} EDL entries loaded from {self.file_path}")
+                self.markers = [line.strip() for line in file.readlines() if " - " in line]
+                self.markers_count = len(self.markers)
+            logging.info(f"{self.markers_count} markers loaded from {self.file_path}")
         except Exception as e:
             logging.error(f"An error occurred while reading the EDL file: {e}", exc_info=True)   
 
@@ -117,15 +117,15 @@ if (sequence) {
     var markers = sequence.markers;
     var fps = 50; // Frames per second
 """
-                for entry in self.entries:
-                    time_str, text = entry.split(" - ", 1)
+                for marker in self.markers:
+                    time_str, text = marker.split(" - ", 1)
                     hours, minutes, seconds = map(int, time_str.split(":"))
                     marker_seconds = (hours * 3600 + minutes * 60 + seconds) - self.timeline_offset
                     jsx_content += f"""
     var newMarker = markers.createMarker({marker_seconds});
     newMarker.name = "{text}";
 """
-                    logging.debug(f"entry converted: {text} at {marker_seconds} seconds.")
+                    logging.debug(f"marker converted: {text} at {marker_seconds} seconds.")
                 jsx_content += """
 } else {
     alert("No active sequence found.");
