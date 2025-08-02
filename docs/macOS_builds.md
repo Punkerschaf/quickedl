@@ -41,6 +41,115 @@ Alternative Lösung für Quarantäne-Probleme:
 sudo xattr -d com.apple.quarantine /Applications/QuickEDL.app
 ```
 
+### Erweiterte Diagnose
+
+**Automatische Diagnose** (empfohlen):
+```bash
+# Laden Sie das Diagnose-Skript herunter und führen Sie es aus
+curl -O https://raw.githubusercontent.com/Punkerschaf/quickedl/main/diagnose_macos.sh
+chmod +x diagnose_macos.sh
+./diagnose_macos.sh
+```
+
+Falls die App sich immer noch nicht öffnen lässt, führen Sie diese **manuellen Schritte** zur Diagnose durch:
+
+#### 1. App-Status prüfen
+```bash
+# Prüfen Sie die App-Berechtigungen
+ls -la /Applications/QuickEDL.app/Contents/MacOS/QuickEDL
+
+# Prüfen Sie Extended Attributes
+xattr -l /Applications/QuickEDL.app
+
+# Prüfen Sie Code-Signierung
+codesign -dv --verbose=4 /Applications/QuickEDL.app
+```
+
+#### 2. Direkte Ausführung im Terminal
+Versuchen Sie die App direkt vom Terminal aus zu starten, um spezifische Fehlermeldungen zu sehen:
+```bash
+# Direkte Ausführung
+/Applications/QuickEDL.app/Contents/MacOS/QuickEDL
+
+# Mit detaillierter Ausgabe
+DYLD_PRINT_LIBRARIES=1 /Applications/QuickEDL.app/Contents/MacOS/QuickEDL
+
+# Python-spezifische Debug-Ausgabe
+PYTHONVERBOSE=1 /Applications/QuickEDL.app/Contents/MacOS/QuickEDL
+```
+
+#### 3. Console.app verwenden
+1. Öffnen Sie die **Console.app** (Programme → Dienstprogramme → Konsole)
+2. Wählen Sie Ihren Mac in der Seitenleiste
+3. Klicken Sie auf "Start" um Live-Protokollierung zu beginnen
+4. Versuchen Sie QuickEDL zu starten
+5. Suchen Sie nach Einträgen mit "QuickEDL" oder "QuickEDL"
+
+#### 4. Crash-Reports prüfen
+```bash
+# Prüfen Sie auf Crash-Reports
+ls ~/Library/Logs/DiagnosticReports/QuickEDL*
+```
+
+Falls Crash-Reports vorhanden sind, zeigen Sie den neuesten an:
+```bash
+# Zeigen Sie den neuesten Crash-Report
+ls -t ~/Library/Logs/DiagnosticReports/QuickEDL* | head -1 | xargs cat
+```
+
+#### 5. Spade (System Policy) prüfen
+```bash
+# Prüfen Sie System Policy Entscheidungen
+log show --predicate 'subsystem == "com.apple.security.syspolicy"' --info --last 1h | grep -i quickedl
+```
+
+#### 6. Gatekeeper Status
+```bash
+# Prüfen Sie Gatekeeper Status
+sudo spctl --assess --verbose /Applications/QuickEDL.app
+
+# Gatekeeper für diese App temporär deaktivieren
+sudo spctl --add /Applications/QuickEDL.app
+```
+
+### Häufige Probleme und Lösungen
+
+#### Problem: "QuickEDL kann nicht geöffnet werden, da es beschädigt ist"
+**Lösung**:
+```bash
+sudo xattr -cr /Applications/QuickEDL.app
+sudo codesign --force --deep --sign - /Applications/QuickEDL.app
+```
+
+#### Problem: "QuickEDL kann nicht geöffnet werden, da der Entwickler nicht überprüft werden kann"
+**Lösung**:
+1. Rechtsklick auf QuickEDL.app → "Öffnen"
+2. Klicken Sie "Öffnen" im Sicherheitsdialog
+3. Oder verwenden Sie:
+```bash
+sudo spctl --master-disable  # Temporär Gatekeeper deaktivieren
+# Nach dem ersten Start:
+sudo spctl --master-enable   # Gatekeeper wieder aktivieren
+```
+
+#### Problem: App startet aber stürzt sofort ab
+**Lösung**:
+1. Prüfen Sie Python-Abhängigkeiten:
+```bash
+/Applications/QuickEDL.app/Contents/MacOS/QuickEDL --version
+```
+
+2. Prüfen Sie auf fehlende Bibliotheken:
+```bash
+otool -L /Applications/QuickEDL.app/Contents/MacOS/QuickEDL
+```
+
+#### Problem: "Keine Berechtigung" Fehler
+**Lösung**:
+```bash
+chmod +x /Applications/QuickEDL.app/Contents/MacOS/QuickEDL
+```
+
 ### Architektur prüfen
 
 Um zu prüfen, welche Architektur Sie haben:

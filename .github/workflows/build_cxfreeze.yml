@@ -108,6 +108,24 @@ jobs:
         run: |
           chmod +x create_macos_app.sh
           ./create_macos_app.sh
+          
+      - name: Debug Intel app bundle
+        run: |
+          echo "=== Intel App Bundle Debug Information ==="
+          if [ -d "dist/QuickEDL.app" ]; then
+            echo "✅ App bundle created successfully"
+            echo "App bundle size: $(du -sh dist/QuickEDL.app)"
+            echo "Executable architecture:"
+            file dist/QuickEDL.app/Contents/MacOS/QuickEDL
+            lipo -info dist/QuickEDL.app/Contents/MacOS/QuickEDL 2>/dev/null || echo "Single architecture binary"
+            echo "Code signature:"
+            codesign -dv --verbose=4 dist/QuickEDL.app 2>&1 || echo "No code signature"
+            echo "Extended attributes:"
+            xattr -l dist/QuickEDL.app || echo "No extended attributes"
+          else
+            echo "❌ App bundle not found"
+            exit 1
+          fi
 
       - name: Get version
         id: version
@@ -173,6 +191,24 @@ jobs:
         run: |
           chmod +x create_macos_app.sh
           ./create_macos_app.sh
+          
+      - name: Debug Apple Silicon app bundle
+        run: |
+          echo "=== Apple Silicon App Bundle Debug Information ==="
+          if [ -d "dist/QuickEDL.app" ]; then
+            echo "✅ App bundle created successfully"
+            echo "App bundle size: $(du -sh dist/QuickEDL.app)"
+            echo "Executable architecture:"
+            file dist/QuickEDL.app/Contents/MacOS/QuickEDL
+            lipo -info dist/QuickEDL.app/Contents/MacOS/QuickEDL 2>/dev/null || echo "Single architecture binary"
+            echo "Code signature:"
+            codesign -dv --verbose=4 dist/QuickEDL.app 2>&1 || echo "No code signature"
+            echo "Extended attributes:"
+            xattr -l dist/QuickEDL.app || echo "No extended attributes"
+          else
+            echo "❌ App bundle not found"
+            exit 1
+          fi
 
       - name: Get version
         id: version
