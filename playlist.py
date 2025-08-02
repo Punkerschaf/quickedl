@@ -11,9 +11,13 @@ from pathlib import Path
 import logging
 
 class Playlist():
-    def __init__(self, **kwargs):
+    def __init__(self, project=None, **kwargs):
         """
         Creates an playlist instance.
+        
+        Args:
+            project: Project instance for new project-based workflow
+            **kwargs: Additional parameters for backward compatibility
 
         Objects:
             playhead: ttk.IntVar
@@ -37,6 +41,9 @@ class Playlist():
         self.data_len = ttk.IntVar(value=len(self.data))
         self.data_len.trace_add("write", self.update_decinc_able)
 
+        # Store project reference for new workflow
+        self.project = project
+
         self.playhead = ttk.IntVar(value=0)
         self.playhead.trace_add("write", self.on_playhead_update)
         self.playhead.trace_add("write", self.update_decinc_able)
@@ -48,8 +55,29 @@ class Playlist():
 
         self.edit_window = None
         self.directory = kwargs.get('directory', Path.home())
-        logging.debug("Playlist initialized.")
-    
+        
+                # Load from project if available
+        if self.project and hasattr(self.project, 'project_playlist_file'):
+            self.load_from_project()
+
+    def get_default_directory(self):
+        """
+        Gets the default directory for file dialogs.
+        Priority: self.directory > project settings > None
+        """
+        if self.directory:
+            return self.directory
+        
+        if (self.project and 
+            hasattr(self.project, 'settings_manager') and 
+            self.project.settings_manager):
+            default_dir = self.project.settings_manager.get_setting('default_dir')
+            if default_dir and Path(default_dir).exists() and Path(default_dir).is_dir():
+                return default_dir
+        
+        return None
+
+    # Methods
 
     def playlist_edit_window(self):
         """
@@ -92,7 +120,6 @@ class Playlist():
         self.text_ctx_menu.add_command(label="Copy", command=lambda: self.text_area.event_generate("<<Copy>>"))
         self.text_ctx_menu.add_command(label="Paste", command=lambda: self.text_area.event_generate("<<Paste>>"))
 
-<<<<<<< HEAD
         # Buttons - Choose based on project availability
         if self.project and self.project.project_isvalid:
             # New project-based workflow buttons
@@ -104,12 +131,6 @@ class Playlist():
             ttk.Button(self.edit_window, text="Update", command=self.update_list).grid(column=1, row=2, padx=5, pady=5)
             ttk.Button(self.edit_window, text="Load", command=self.load_playlist, bootstyle="primary-outline").grid(column=2, row=2, padx=5, pady=5)
             ttk.Button(self.edit_window, text="Save", command=self.safe_playlist, bootstyle="primary-outline").grid(column=3, row=2, padx=5, pady=5)
-=======
-        # Buttons
-        ttk.Button(self.edit_window, text="Update", command=self.update_list).grid(column=1, row=2, padx=5, pady=5)
-        ttk.Button(self.edit_window, text="Load", command=self.load_playlist, bootstyle="primary-outline").grid(column=2, row=2, padx=5, pady=5)
-        ttk.Button(self.edit_window, text="Save", command=self.safe_playlist, bootstyle="primary-outline").grid(column=3, row=2, padx=5, pady=5)
->>>>>>> origin/main
 
         self.populate_text_area()
         self.text_area.focus_set()
@@ -211,6 +232,9 @@ class Playlist():
         index = self.playhead.get()
         if 0 <= index < len(self.data):
             self.playhead_text.set(self.data[index])
+            logging.debug(f"Playlist GUI updated: playhead={index}, text='{self.data[index]}'")
+        else:
+            logging.warning(f"Playlist playhead index out of bounds: {index}, data_len={len(self.data)}")
     
     def repos_playhead(self):
         current = int(self.playhead.get())
@@ -218,11 +242,11 @@ class Playlist():
         if current > lenght-1:
             self.playhead.set(lenght-1)
             logging.debug(f"Playlist: Repositioning playhead to {self.playhead.get()}")
-            self.on_playhead_update
+        self.on_playhead_update()
 
     def playlist_entry(self, *args):
         """
-        Returns current playlist entry as string and increments playhead after that.
+        Returns current playlist marker as string and increments playhead after that.
         
         Return:
             playlist_entry: str
@@ -238,28 +262,34 @@ class Playlist():
             logging.error(f"Playlist.playlist_entry: Index out of range ({index} from {self.playhead.get()})")
 
 
-    # FILE HANDLING
-    def safe_playlist(self):
-        save_path = filedialog.asksaveasfilename(
-            initialdir=self.directory,
-            defaultextension=".txt",
-            initialfile="Playlist.txt",
-            filetypes=[("Text files", "*.txt")]
-        )
+    # LEGACY FILE HANDLING (Backward Compatibility)
+    def safe_playlist(self, save_path=None):
+        if not save_path:
+            save_path = filedialog.asksaveasfilename(
+                initialdir=self.get_default_directory(),
+                defaultextension=".txt",
+                initialfile="Playlist.txt",
+                filetypes=[("Text files", "*.txt")]
+            )
         if save_path:
             save_path = Path(save_path)
             save_path.write_text("\n".join(self.data))
+            logging.info("Playlist saved after changing.")
     
-    def load_playlist(self):
-        load_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")],
-                                               initialdir=self.directory)
+    def load_playlist(self, load_path=None):
+        if not load_path:
+            load_path = filedialog.askopenfilename(
+                filetypes=[("Text files", "*.txt")],
+                initialdir=self.get_default_directory()
+            )
         if load_path:
             load_path = Path(load_path)
             self.data = load_path.read_text().splitlines()
             self.update_data_len()
             self.populate_text_area()
+            logging.info("Playlist loaded")
 
-<<<<<<< HEAD
+
     # PROJECT-BASED FILE HANDLING (New Workflow)
     def update_and_save_to_project(self):
         """
@@ -334,11 +364,9 @@ class Playlist():
             self.update_data_len()
             self.populate_text_area()
             logging.info("Playlist loaded (legacy method).")
-=======
->>>>>>> origin/main
 
 
-# EXEC
+# TEST
 if __name__ == "__main__":
     root = ttk.Window(themename="darkly")
     playlist = Playlist()
