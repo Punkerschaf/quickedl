@@ -58,12 +58,12 @@ cat > "$WRAPPER_SCRIPT" << 'EOF'
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 APP_DIR="$( dirname "$( dirname "$SCRIPT_DIR" )" )"
 
-# Set Tcl/Tk library paths
+# Set Tcl/Tk library paths - first try bundled libraries
 export TCL_LIBRARY="$APP_DIR/Contents/lib/tcl8.6"
 export TK_LIBRARY="$APP_DIR/Contents/lib/tk8.6"
 
-# Fallback paths
-if [ ! -d "$TCL_LIBRARY" ]; then
+# Fallback paths if bundled libraries don't exist
+if [ ! -d "$TCL_LIBRARY" ] || [ ! -f "$TCL_LIBRARY/init.tcl" ]; then
     # Try to find Tcl/Tk in common locations
     for path in /opt/homebrew/lib/tcl8.6 /usr/local/lib/tcl8.6 /Library/Frameworks/Python.framework/Versions/*/lib/tcl8.6; do
         if [ -d "$path" ] && [ -f "$path/init.tcl" ]; then
@@ -82,14 +82,38 @@ if [ ! -d "$TK_LIBRARY" ]; then
     done
 fi
 
-# Additional library paths
+# Additional library paths for dynamic loading
 export DYLD_FALLBACK_LIBRARY_PATH="$DYLD_FALLBACK_LIBRARY_PATH:/opt/homebrew/lib:/usr/local/lib"
+
+# Debug information (remove in production)
+echo "TCL_LIBRARY: $TCL_LIBRARY" >&2
+echo "TK_LIBRARY: $TK_LIBRARY" >&2
 
 # Execute the original binary
 exec "$SCRIPT_DIR/${APP_NAME}_original" "$@"
 EOF
 
 chmod +x "$WRAPPER_SCRIPT"
+echo "Wrapper script created successfully"
+
+# Verify Tcl/Tk libraries were included
+echo "Verifying Tcl/Tk libraries in app bundle..."
+if [ -d "$APP_BUNDLE/Contents/lib/tcl8.6" ]; then
+    echo "✅ Tcl library found in app bundle"
+    if [ -f "$APP_BUNDLE/Contents/lib/tcl8.6/init.tcl" ]; then
+        echo "✅ init.tcl found"
+    else
+        echo "⚠️  init.tcl not found in bundled Tcl"
+    fi
+else
+    echo "⚠️  Tcl library not found in app bundle"
+fi
+
+if [ -d "$APP_BUNDLE/Contents/lib/tk8.6" ]; then
+    echo "✅ Tk library found in app bundle"
+else
+    echo "⚠️  Tk library not found in app bundle"
+fi
 
 # Create Info.plist
 cat > "$APP_BUNDLE/Contents/Info.plist" << EOF

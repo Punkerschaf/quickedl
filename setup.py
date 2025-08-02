@@ -125,11 +125,6 @@ if sys.platform == "darwin":
     # macOS specific options for better compatibility
     build_exe_options.update({
         "silent": True,
-        # Add environment variables for Tcl/Tk
-        "environment": {
-            "TCL_LIBRARY": "",  # Will be set by wrapper
-            "TK_LIBRARY": "",   # Will be set by wrapper
-        }
     })
 
 # No special options needed for Windows and Linux with cx_Freeze
