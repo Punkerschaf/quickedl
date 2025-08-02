@@ -60,7 +60,13 @@ build_exe_options = {
 }
 
 # Platform specific options
-# No special options needed for Windows, macOS and Linux with cx_Freeze
+if sys.platform == "darwin":
+    # macOS specific options for better compatibility
+    build_exe_options.update({
+        "silent": True,
+    })
+
+# No special options needed for Windows and Linux with cx_Freeze
 
 setup(
     name="QuickEDL",

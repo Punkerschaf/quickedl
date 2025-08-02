@@ -36,6 +36,11 @@ mkdir -p "$APP_BUNDLE/Contents/Resources"
 # Copy executable and resources
 cp -r "$EXE_DIR/"* "$APP_BUNDLE/Contents/MacOS/"
 
+# Check the architecture of the executable
+echo "Checking executable architecture:"
+file "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
+lipo -info "$APP_BUNDLE/Contents/MacOS/$APP_NAME" 2>/dev/null || echo "Not a universal binary"
+
 # Create Info.plist
 cat > "$APP_BUNDLE/Contents/Info.plist" << EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -79,5 +84,12 @@ fi
 
 # Make executable
 chmod +x "$APP_BUNDLE/Contents/MacOS/${APP_NAME}"
+
+# Ad-hoc code signing (removes quarantine issues)
+echo "Signing the app bundle..."
+codesign --force --deep --sign - "$APP_BUNDLE" 2>/dev/null || echo "Warning: Code signing failed, but app should still work"
+
+# Remove extended attributes that might cause issues
+xattr -cr "$APP_BUNDLE" 2>/dev/null || echo "Warning: Could not remove extended attributes"
 
 echo "Created ${APP_BUNDLE}"

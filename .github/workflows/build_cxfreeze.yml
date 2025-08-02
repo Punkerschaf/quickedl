@@ -68,8 +68,8 @@ jobs:
           name: QuickEDL-Windows
           path: quickedl_v${{ steps.version.outputs.VERSION }}_Windows.zip
 
-  build-macos:
-    runs-on: macos-latest
+  build-macos-intel:
+    runs-on: macos-13  # Intel runner
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -102,6 +102,7 @@ jobs:
           fi
           
           echo "Build successful, executable found at: $executable_path"
+          file "$executable_path"  # Show architecture info
 
       - name: Create .app bundle
         run: |
@@ -117,20 +118,85 @@ jobs:
       - name: Create DMG
         run: |
           version="${{ steps.version.outputs.VERSION }}"
-          filename="quickedl_v${version}_macOS_Universal.dmg"
+          filename="quickedl_v${version}_macOS_Intel.dmg"
           
           # Create temporary directory for DMG contents
           mkdir dmg_temp
           cp -r dist/QuickEDL.app dmg_temp/
           
           # Create DMG
-          hdiutil create -volname "QuickEDL v${version}" -srcfolder dmg_temp -ov -format UDZO "$filename"
+          hdiutil create -volname "QuickEDL v${version} (Intel)" -srcfolder dmg_temp -ov -format UDZO "$filename"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: QuickEDL-macOS-Universal
-          path: quickedl_v${{ steps.version.outputs.VERSION }}_macOS_Universal.dmg
+          name: QuickEDL-macOS-Intel
+          path: quickedl_v${{ steps.version.outputs.VERSION }}_macOS_Intel.dmg
+
+  build-macos-silicon:
+    runs-on: macos-14  # Apple Silicon runner
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r dependencies.txt
+
+      - name: Build executable
+        run: |
+          python setup.py build
+          
+      - name: Verify build
+        run: |
+          # Check if build was successful
+          if [ ! -d "build" ]; then
+            echo "Error: Build directory not found"
+            exit 1
+          fi
+          
+          executable_path=$(find build -name "QuickEDL" -type f | head -1)
+          if [ -z "$executable_path" ] || [ ! -f "$executable_path" ]; then
+            echo "Error: QuickEDL executable not found in build directory"
+            exit 1
+          fi
+          
+          echo "Build successful, executable found at: $executable_path"
+          file "$executable_path"  # Show architecture info
+
+      - name: Create .app bundle
+        run: |
+          chmod +x create_macos_app.sh
+          ./create_macos_app.sh
+
+      - name: Get version
+        id: version
+        run: |
+          version=$(python -c "from version import VERSION; print(VERSION)")
+          echo "VERSION=$version" >> $GITHUB_OUTPUT
+
+      - name: Create DMG
+        run: |
+          version="${{ steps.version.outputs.VERSION }}"
+          filename="quickedl_v${version}_macOS_AppleSilicon.dmg"
+          
+          # Create temporary directory for DMG contents
+          mkdir dmg_temp
+          cp -r dist/QuickEDL.app dmg_temp/
+          
+          # Create DMG
+          hdiutil create -volname "QuickEDL v${version} (Apple Silicon)" -srcfolder dmg_temp -ov -format UDZO "$filename"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: QuickEDL-macOS-AppleSilicon
+          path: quickedl_v${{ steps.version.outputs.VERSION }}_macOS_AppleSilicon.dmg
 
   build-linux:
     runs-on: ubuntu-latest
