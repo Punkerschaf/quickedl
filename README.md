@@ -12,7 +12,13 @@ Prefilled comments are chosen by button or hotkey and safed with timestamp in a 
 
 ## Terminology
 
+<<<<<<< HEAD
 ***Markerlabels*** are textfields next to the ***marker buttons***. They are used as comment (or label) for the ***markers***.
+=======
+## making entries
+To edit the prepared labels, just click the textfield. Leave the field by hitting return or clicking anywhere in the window.
+To write a timestamp with label to the edl fils, use the buttons next to the text field or using the number keys 1 to 9.
+>>>>>>> origin/main
 
 ***Markers*** are entries in the ***EDL-file***, containing the timestamp and the label.
 
@@ -21,9 +27,15 @@ The ***EDL-file*** is a simple text file saved in the project folder.
 ## Project menu
 A project is a folder named as it's project, which contains the *edl-file, markerlabels* and *playlist*. These files are automatically created.
 
+<<<<<<< HEAD
 - **New Project**: Creates a new project folder and containing files on the given location.
 - **Load Project**: Choose the project folder to load. Project files are scanes automatically.
 - **Recent Project**: List of recent opened projects. CLick to load. Number of max. entries is set in the settings. Default is 10.
+=======
+## Save & Load texts
+For saving and loading the content for the 9 prepared labels you can safe and load an additional txt file.
+It basically reads the first 9 lines of a file. So it's possible to save them into the edl-list itself.
+>>>>>>> origin/main
 
 > [!NOTE]
 > For JSX-export from single EDL-files (version 2.2.x and below) it is possible to open them without creating a project. They will be not importet in any way.
@@ -62,17 +74,25 @@ With the delete button you can delete the last marker. For safety reasons the sh
 
 # Settings
 
+<<<<<<< HEAD
 Settings are stored in a folder `/quickedl` currently located in the users home directory.
 The folder contains the settings file, defaults markerlabels and the list recent opened projects.
 If there is no settings folder found, the app will load default settings.
 In the settings window, you can create a the folder.
+=======
+## Saving settings
+Currently changing settings will not save them for the next time. When opened, QuickEDL will search for a folder named "quickedl" in you user directory and tries to read different files:
+- `settings.yaml` to load user settings. Just edit the file directly; it's very simple and documented
+- `texts.txt` to load users default labels
+- `quickedl.log` used as log file
+>>>>>>> origin/main
 
 ### Log File
 The logfile is located in the users home directory named quickedl.log. Logfile will be cleared at aplication startup.
 The log level can be set in the settings window. Default is 'warning'
 
 # Exporting Marker to Premiere Pro
-It is possible to export the edl markers as sequence markers to **Adobe Premiere Pro** via an JSX script.
+It is possible to export the edl entries as sequence markers to **Adobe Premiere Pro** via an JSX script.
 
 Unlikely there is still no way to execute them directly in Premiere Pro without useage of (paid) third party software.
 But there is a free workaround using *VS Code*:
