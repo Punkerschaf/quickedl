@@ -4,8 +4,21 @@ Dieses Dokument hilft bei der Diagnose und Behebung von macOS-spezifischen Probl
 
 ## 🔍 Schnelle Diagnose
 
-**Führen Sie das automatische Diagnose-Skript aus:**
+**Sofort-Reparatur** (für das häufigste Problem):
+```bash
+curl -O https://raw.githubusercontent.com/Punkerschaf/quickedl/main/fix_macos_app.sh
+chmod +x fix_macos_app.sh
+./fix_macos_app.sh
+```
 
+**Tcl/Tk Problem beheben** (falls "Can't find usable init.tcl" Fehler):
+```bash
+curl -O https://raw.githubusercontent.com/Punkerschaf/quickedl/main/fix_tcl_tk.sh
+chmod +x fix_tcl_tk.sh
+./fix_tcl_tk.sh
+```
+
+**Vollständige Diagnose** (falls Reparatur nicht hilft):
 ```bash
 curl -O https://raw.githubusercontent.com/Punkerschaf/quickedl/main/diagnose_macos.sh
 chmod +x diagnose_macos.sh
@@ -40,17 +53,90 @@ sudo codesign --force --deep --sign - /Applications/QuickEDL.app
 /Applications/QuickEDL.app/Contents/MacOS/QuickEDL
 ```
 
-### Problem: "App ist beschädigt" oder "kann nicht überprüft werden"
+### Problem: "App ist beschädigt" trotz erfolgreichem Diagnose-Test
 
-**Lösung**:
+**Symptom**: Das Diagnose-Skript meldet, dass die App funktioniert, aber beim Doppelklick erscheint "QuickEDL ist beschädigt".
+
+**Ursache**: Gatekeeper blockiert die App aufgrund fehlender Notarisierung, obwohl sie technisch funktionsfähig ist.
+
+**Komplette Lösung** (alle Schritte nacheinander ausführen):
+
 ```bash
-# Vollständige Bereinigung
+# 1. Vollständige Attribute-Bereinigung
 sudo xattr -cr /Applications/QuickEDL.app
+
+# 2. Gatekeeper-Quarantäne komplett entfernen
+sudo xattr -d com.apple.quarantine /Applications/QuickEDL.app 2>/dev/null || true
+
+# 3. Neue Ad-hoc Signierung erzwingen
 sudo codesign --force --deep --sign - /Applications/QuickEDL.app
+
+# 4. Gatekeeper für diese App deaktivieren
 sudo spctl --add /Applications/QuickEDL.app
+
+# 5. Zusätzliche macOS-spezifische Attribute entfernen
+sudo xattr -d com.apple.metadata:_kMDItemUserTags /Applications/QuickEDL.app 2>/dev/null || true
+sudo xattr -d com.apple.FinderInfo /Applications/QuickEDL.app 2>/dev/null || true
+
+# 6. App-Bundle-Struktur reparieren
+sudo chmod -R 755 /Applications/QuickEDL.app
+sudo chmod +x /Applications/QuickEDL.app/Contents/MacOS/QuickEDL
 ```
 
-### Problem: App startet kurz und schließt sich sofort
+**Alternative Methode** (falls obiges nicht funktioniert):
+
+```bash
+# Gatekeeper temporär systemweit deaktivieren
+sudo spctl --master-disable
+
+# App starten (sollte jetzt funktionieren)
+open /Applications/QuickEDL.app
+
+# Gatekeeper wieder aktivieren (nach erfolgreichem Start)
+sudo spctl --master-enable
+```
+
+**Permanente Lösung** (empfohlen):
+
+```bash
+# App zur Gatekeeper-Ausnahmeliste hinzufügen
+sudo spctl --add /Applications/QuickEDL.app
+sudo spctl --enable /Applications/QuickEDL.app
+```
+
+### Problem: "Can't find usable init.tcl" Fehler
+
+**Symptom**: App zeigt Fehler über fehlende Tcl/Tk-Bibliotheken beim Start über Terminal.
+
+**Ursache**: cx_Freeze hat die Tcl/Tk-Bibliotheken nicht korrekt eingebunden.
+
+**Sofortlösung**:
+```bash
+# Automatischer Tcl/Tk Fix
+curl -O https://raw.githubusercontent.com/Punkerschaf/quickedl/main/fix_tcl_tk.sh
+chmod +x fix_tcl_tk.sh
+./fix_tcl_tk.sh
+```
+
+**Manuelle Lösung**:
+```bash
+# 1. Tcl-Bibliothek finden
+find /Library/Frameworks/Python.framework -name "init.tcl" 2>/dev/null
+
+# 2. Umgebungsvariablen setzen und App starten
+export TCL_LIBRARY="/Library/Frameworks/Python.framework/Versions/3.10/lib/tcl8.6"
+export TK_LIBRARY="/Library/Frameworks/Python.framework/Versions/3.10/lib/tk8.6"
+/Applications/QuickEDL.app/Contents/MacOS/QuickEDL
+```
+
+**Alternative: Python mit Tkinter installieren**:
+```bash
+# Mit Homebrew
+brew install python-tk
+
+# Oder Anaconda/Miniconda verwenden
+conda install tk
+```
 
 **Diagnose**:
 ```bash

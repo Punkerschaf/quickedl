@@ -134,6 +134,15 @@ timeout 5s "$EXECUTABLE_PATH" --version 2>/dev/null && echo "✅ App startet erf
     fi
 }
 
+# Teste auch GUI-Start
+echo "   Teste GUI-Start..."
+timeout 3s open "$APP_PATH" 2>/dev/null && {
+    echo "✅ GUI-Start erfolgreich"
+} || {
+    echo "⚠️  GUI-Start fehlgeschlagen - Gatekeeper blockiert möglicherweise"
+    echo "   Lösung: Vollständige Gatekeeper-Bereinigung erforderlich"
+}
+
 # 10. Crash Reports prüfen
 echo
 echo "10. Crash Reports prüfen..."
@@ -148,6 +157,41 @@ fi
 
 echo
 echo "=== Diagnose abgeschlossen ==="
+echo
+
+# Automatische Reparatur anbieten
+if xattr -l "$APP_PATH" | grep -q "com.apple.quarantine" || ! sudo spctl --assess "$APP_PATH" 2>/dev/null; then
+    echo "🔧 REPARATUR ERFORDERLICH - Gatekeeper-Probleme erkannt"
+    echo
+    read -p "Möchten Sie eine automatische Reparatur durchführen? (j/n): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Jj]$ ]]; then
+        echo "Führe Reparatur durch..."
+        
+        # Vollständige Bereinigung
+        echo "1. Entferne Extended Attributes..."
+        sudo xattr -cr "$APP_PATH"
+        
+        echo "2. Entferne Quarantäne..."
+        sudo xattr -d com.apple.quarantine "$APP_PATH" 2>/dev/null || true
+        
+        echo "3. Neue Code-Signierung..."
+        sudo codesign --force --deep --sign - "$APP_PATH"
+        
+        echo "4. Gatekeeper-Ausnahme hinzufügen..."
+        sudo spctl --add "$APP_PATH"
+        
+        echo "5. Berechtigungen reparieren..."
+        sudo chmod -R 755 "$APP_PATH"
+        sudo chmod +x "$APP_PATH/Contents/MacOS/QuickEDL"
+        
+        echo "✅ Reparatur abgeschlossen!"
+        echo "   Versuchen Sie jetzt, die App zu öffnen."
+    else
+        echo "Reparatur übersprungen."
+    fi
+fi
+
 echo
 echo "Falls die App immer noch nicht funktioniert:"
 echo "1. Führen Sie aus: '$EXECUTABLE_PATH'"
