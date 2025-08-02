@@ -1,5 +1,4 @@
 ttkbootstrap
 pyyaml
 pyinstaller
-cx_Freeze>=6.15.0
 pillow
