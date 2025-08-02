@@ -92,17 +92,24 @@ class Playlist():
         self.text_ctx_menu.add_command(label="Copy", command=lambda: self.text_area.event_generate("<<Copy>>"))
         self.text_ctx_menu.add_command(label="Paste", command=lambda: self.text_area.event_generate("<<Paste>>"))
 
+<<<<<<< HEAD
         # Buttons - Choose based on project availability
         if self.project and self.project.project_isvalid:
             # New project-based workflow buttons
             ttk.Button(self.edit_window, text="Cancel", command=self.close_window, bootstyle="secondary").grid(column=1, row=2, padx=5, pady=5)
             ttk.Button(self.edit_window, text="Import", command=self.load_playlist, bootstyle="info-outline").grid(column=2, row=2, padx=5, pady=5)
-            ttk.Button(self.edit_window, text="Update & Save", command=self.update_and_save_to_project, bootstyle="success").grid(column=3, columnspan=2, row=2, padx=5, pady=5, sticky="EW")
+            ttk.Button(self.edit_window, text="Save", command=self.update_and_save_to_project, bootstyle="success").grid(column=3, columnspan=2, row=2, padx=5, pady=5, sticky="EW")
         else:
             # Legacy workflow buttons for backward compatibility
             ttk.Button(self.edit_window, text="Update", command=self.update_list).grid(column=1, row=2, padx=5, pady=5)
             ttk.Button(self.edit_window, text="Load", command=self.load_playlist, bootstyle="primary-outline").grid(column=2, row=2, padx=5, pady=5)
             ttk.Button(self.edit_window, text="Save", command=self.safe_playlist, bootstyle="primary-outline").grid(column=3, row=2, padx=5, pady=5)
+=======
+        # Buttons
+        ttk.Button(self.edit_window, text="Update", command=self.update_list).grid(column=1, row=2, padx=5, pady=5)
+        ttk.Button(self.edit_window, text="Load", command=self.load_playlist, bootstyle="primary-outline").grid(column=2, row=2, padx=5, pady=5)
+        ttk.Button(self.edit_window, text="Save", command=self.safe_playlist, bootstyle="primary-outline").grid(column=3, row=2, padx=5, pady=5)
+>>>>>>> origin/main
 
         self.populate_text_area()
         self.text_area.focus_set()
@@ -252,8 +259,7 @@ class Playlist():
             self.update_data_len()
             self.populate_text_area()
 
-
-
+<<<<<<< HEAD
     # PROJECT-BASED FILE HANDLING (New Workflow)
     def update_and_save_to_project(self):
         """
@@ -294,7 +300,7 @@ class Playlist():
                     self.repos_playhead()
                     # Ensure GUI is updated with the new data
                     self.on_playhead_update()
-                    logging.info(f"Playlist loaded from project file: {playlist_file}")
+                    logging.info(f"Playlist data successfully loaded from project file: {playlist_file} ({len(self.data)} entries)")
                 except Exception as e:
                     logging.error(f"Failed to load playlist from project: {e}")
             else:
@@ -328,9 +334,11 @@ class Playlist():
             self.update_data_len()
             self.populate_text_area()
             logging.info("Playlist loaded (legacy method).")
+=======
+>>>>>>> origin/main
 
 
-# TEST
+# EXEC
 if __name__ == "__main__":
     root = ttk.Window(themename="darkly")
     playlist = Playlist()
