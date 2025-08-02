@@ -1,0 +1,137 @@
+name: Build QuickEDL with cx_Freeze
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r dependencies.txt
+
+      - name: Build executable
+        run: |
+          python setup.py build
+          mkdir dist
+          Get-ChildItem -Path "build" -Recurse -Name "QuickEDL.exe" | ForEach-Object { Copy-Item "build\$_" "dist\" }
+
+      - name: Get version
+        id: version
+        run: |
+          $version = python -c "from version import VERSION; print(VERSION)"
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Create ZIP package
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          $filename = "quickedl_v${version}_Windows.zip"
+          Compress-Archive -Path "dist\QuickEDL.exe" -DestinationPath $filename
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: QuickEDL-Windows
+          path: quickedl_v${{ steps.version.outputs.VERSION }}_Windows.zip
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r dependencies.txt
+
+      - name: Build executable
+        run: |
+          python setup.py build
+
+      - name: Create .app bundle
+        run: |
+          chmod +x create_macos_app.sh
+          ./create_macos_app.sh
+
+      - name: Get version
+        id: version
+        run: |
+          version=$(python -c "from version import VERSION; print(VERSION)")
+          echo "VERSION=$version" >> $GITHUB_OUTPUT
+
+      - name: Create DMG
+        run: |
+          version="${{ steps.version.outputs.VERSION }}"
+          filename="quickedl_v${version}_macOS_Universal.dmg"
+          
+          # Create temporary directory for DMG contents
+          mkdir dmg_temp
+          cp -r dist/QuickEDL.app dmg_temp/
+          
+          # Create DMG
+          hdiutil create -volname "QuickEDL v${version}" -srcfolder dmg_temp -ov -format UDZO "$filename"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: QuickEDL-macOS-Universal
+          path: quickedl_v${{ steps.version.outputs.VERSION }}_macOS_Universal.dmg
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk
+
+      - name: Install dependencies
+        run: |
+          pip install -r dependencies.txt
+
+      - name: Build executable
+        run: |
+          python setup.py build
+          mkdir -p dist
+          find build -name "QuickEDL" -exec cp {} dist/ \;
+          chmod +x dist/QuickEDL
+
+      - name: Get version
+        id: version
+        run: |
+          version=$(python -c "from version import VERSION; print(VERSION)")
+          echo "VERSION=$version" >> $GITHUB_OUTPUT
+
+      - name: Create ZIP package
+        run: |
+          version="${{ steps.version.outputs.VERSION }}"
+          filename="quickedl_v${version}_Linux.zip"
+          cd dist && zip "../$filename" QuickEDL
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: QuickEDL-Linux
+          path: quickedl_v${{ steps.version.outputs.VERSION }}_Linux.zip

@@ -1,3 +1,5 @@
 ttkbootstrap
 pyyaml
 pyinstaller
+cx_Freeze
+pillow

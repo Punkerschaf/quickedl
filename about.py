@@ -1,12 +1,17 @@
+"""
+This file is part of QuickEDL.
+It provides the About dialog for the application.
+"""
+
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *  # noqa: F403
-import webbrowser
 from PIL import Image, ImageTk
 import io
-from logo import bin_logo
 
-def callback(url):
-    webbrowser.open_new(url)
+# internal imports
+from logo import bin_logo
+from constants import GITHUBURL
+from utils import open_in_browser
 
 def show_about(app, version):
     aboutscreen = ttk.Toplevel()
@@ -34,11 +39,11 @@ def show_about(app, version):
     label2 = ttk.Label(aboutscreen, text="© 2024-2025, Eric Kirchheim")
     label2.pack()
 
-    urlgithub = "https://www.github.com/punkerschaf/quickedl"
-    label3 = ttk.Label(aboutscreen, text=urlgithub, bootstyle="info")
+    githuburl = GITHUBURL
+    label3 = ttk.Label(aboutscreen, text=f"{githuburl} ↗", bootstyle="info")
     label3.configure(underline=True)
     label3.pack(padx=10, pady=10)
-    label3.bind("<Button-1>", lambda e: callback(urlgithub))
+    label3.bind("<Button-1>", lambda e: open_in_browser(githuburl))
 
     sep4 = ttk.Separator(aboutscreen)
     sep4.pack(fill="x", padx=10, pady=10)

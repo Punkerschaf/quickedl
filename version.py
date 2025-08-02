@@ -1,8 +1,6 @@
 """
-Version file.
-
-2.2.0 -> 2.2.1
-- Multi line text edit for playlist window
+This file is part of QuickEDL.
+It stores the current version number.
 """
 
-VERSION = "2.2.1"
+VERSION = "3.0.0-alpha"
