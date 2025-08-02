@@ -22,8 +22,25 @@ jobs:
       - name: Build executable
         run: |
           python setup.py build
+          
+      - name: Prepare distribution
+        run: |
           mkdir dist
-          Get-ChildItem -Path "build" -Recurse -Name "QuickEDL.exe" | ForEach-Object { Copy-Item "build\$_" "dist\" }
+          # Find and copy the executable from build directory
+          $buildDir = Get-ChildItem -Path "build" -Directory | Select-Object -First 1
+          if ($buildDir) {
+            $exePath = Get-ChildItem -Path $buildDir.FullName -Recurse -Name "QuickEDL.exe" | Select-Object -First 1
+            if ($exePath) {
+              Copy-Item (Join-Path $buildDir.FullName $exePath) "dist\"
+              Write-Output "Executable copied successfully"
+            } else {
+              Write-Error "QuickEDL.exe not found in build directory"
+              exit 1
+            }
+          } else {
+            Write-Error "Build directory not found"
+            exit 1
+          }
 
       - name: Get version
         id: version
@@ -33,9 +50,17 @@ jobs:
 
       - name: Create ZIP package
         run: |
+          # Verify the executable exists before creating ZIP
+          if (!(Test-Path "dist\QuickEDL.exe")) {
+            Write-Error "QuickEDL.exe not found in dist directory"
+            exit 1
+          }
+          
           $version = "${{ steps.version.outputs.VERSION }}"
           $filename = "quickedl_v${version}_Windows.zip"
           Compress-Archive -Path "dist\QuickEDL.exe" -DestinationPath $filename
+          
+          Write-Output "Created package: $filename"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -61,6 +86,22 @@ jobs:
       - name: Build executable
         run: |
           python setup.py build
+          
+      - name: Verify build
+        run: |
+          # Check if build was successful
+          if [ ! -d "build" ]; then
+            echo "Error: Build directory not found"
+            exit 1
+          fi
+          
+          executable_path=$(find build -name "QuickEDL" -type f | head -1)
+          if [ -z "$executable_path" ] || [ ! -f "$executable_path" ]; then
+            echo "Error: QuickEDL executable not found in build directory"
+            exit 1
+          fi
+          
+          echo "Build successful, executable found at: $executable_path"
 
       - name: Create .app bundle
         run: |
@@ -114,9 +155,20 @@ jobs:
       - name: Build executable
         run: |
           python setup.py build
+          
+      - name: Prepare distribution  
+        run: |
           mkdir -p dist
-          find build -name "QuickEDL" -exec cp {} dist/ \;
-          chmod +x dist/QuickEDL
+          # Find and copy the executable from build directory
+          executable_path=$(find build -name "QuickEDL" -type f | head -1)
+          if [ -n "$executable_path" ] && [ -f "$executable_path" ]; then
+            cp "$executable_path" dist/
+            chmod +x dist/QuickEDL
+            echo "Executable copied and made executable"
+          else
+            echo "Error: QuickEDL executable not found in build directory"
+            exit 1
+          fi
 
       - name: Get version
         id: version

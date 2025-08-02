@@ -60,12 +60,7 @@ build_exe_options = {
 }
 
 # Platform specific options
-if sys.platform == "win32":
-    # Windows specific options
-    build_exe_options.update({
-        "include_msvcrt": False
-    })
-# No special options needed for macOS and Linux with cx_Freeze
+# No special options needed for Windows, macOS and Linux with cx_Freeze
 
 setup(
     name="QuickEDL",
