@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 """
-PyInstaller build script for QuickEDL
-Handles local builds for current architecture
+QuickEDL Build Script for PyInstaller
+Cross-platform build automation for Windows and macOS
 """
 
 import os
 import sys
 import shutil
-import zipfile
 import subprocess
+import zipfile
 import platform
 from pathlib import Path
+
+# Import version
+sys.path.insert(0, os.path.dirname(__file__))
 from version import VERSION
 
 def get_platform_info():
@@ -19,81 +22,67 @@ def get_platform_info():
     machine = platform.machine().lower()
     
     if system == "windows":
-        platform_name = "win"
-        arch = "x64" if machine in ["amd64", "x86_64"] else "x86"
+        return "winx64", ""
     elif system == "darwin":
-        platform_name = "macOS"
-        # Use uname for reliable architecture detection
-        try:
-            result = subprocess.run(['uname', '-m'], capture_output=True, text=True)
-            actual_arch = result.stdout.strip().lower()
-            if actual_arch in ["arm64", "aarch64"]:
-                arch = "arm64"
-            else:
-                arch = "x86_64"
-        except Exception:
-            # Fallback
-            if machine in ["arm64", "aarch64"] or "arm" in machine:
-                arch = "arm64"
-            else:
-                arch = "x86_64"
+        # Check for explicit architecture override from environment
+        if os.environ.get("ARCHFLAGS") == "-arch x86_64":
+            return "macOS", "_x86_64"
+        elif os.environ.get("ARCHFLAGS") == "-arch arm64":
+            return "macOS", "_arm64"
+        
+        # Auto-detect based on machine type
+        if machine in ["arm64", "aarch64"]:
+            return "macOS", "_arm64"
+        else:
+            return "macOS", "_x86_64"
     else:
-        platform_name = "linux"
-        arch = "x64" if machine in ["x86_64", "amd64"] else machine
-    
-    return platform_name, arch
+        return system, f"_{machine}"
 
 def clean_build_dirs():
-    """Clean previous build directories"""
+    """Clean previous build artifacts"""
     dirs_to_clean = ["build", "dist"]
     for dir_name in dirs_to_clean:
         if os.path.exists(dir_name):
+            print(f"Cleaning {dir_name}/")
             shutil.rmtree(dir_name)
-            print(f"🧹 Cleaned {dir_name} directory")
+
+def get_spec_file():
+    """Get the spec file path"""
+    spec_file = "quickedl.spec"
+    if not os.path.exists(spec_file):
+        print(f"Error: {spec_file} not found!")
+        sys.exit(1)
+    return spec_file
 
 def build_with_pyinstaller():
-    """Build executable using PyInstaller"""
-    platform_name, arch = get_platform_info()
+    """Build the application using PyInstaller"""
+    spec_file = get_spec_file()
     
-    print(f"🏗️  Building QuickEDL {VERSION} for {platform_name} {arch}")
-    print(f"🐍 Python: {sys.executable}")
-    print(f"📍 Platform: {platform.platform()}")
+    # PyInstaller command
+    cmd = [
+        sys.executable, "-m", "PyInstaller",
+        "--clean",
+        "--noconfirm",
+        spec_file
+    ]
     
-    # Set up environment for architecture-specific builds
-    env = os.environ.copy()
-    
-    if sys.platform == "darwin":
-        if arch == "arm64":
-            env["ARCHFLAGS"] = "-arch arm64"
-            env["_PYTHON_HOST_PLATFORM"] = "macosx-11.0-arm64"
-            print("🔧 Targeting ARM64 architecture")
-        else:
-            env["ARCHFLAGS"] = "-arch x86_64"
-            env["_PYTHON_HOST_PLATFORM"] = "macosx-10.9-x86_64"
-            print("🔧 Targeting Intel x86_64 architecture")
-    
-    # Run PyInstaller
-    cmd = [sys.executable, "-m", "PyInstaller", "quickedl.spec", "--clean", "--noconfirm"]
-    
-    print(f"🚀 Running: {' '.join(cmd)}")
-    result = subprocess.run(cmd, env=env, capture_output=True, text=True)
+    print(f"Running: {' '.join(cmd)}")
+    result = subprocess.run(cmd, capture_output=True, text=True)
     
     if result.returncode != 0:
-        print("❌ Build failed!")
-        print(f"STDOUT: {result.stdout}")
-        print(f"STDERR: {result.stderr}")
-        return False
+        print("Build failed!")
+        print(result.stderr)
+        sys.exit(1)
     
-    print("✅ Build completed successfully!")
-    return True
+    print("Build completed successfully!")
 
 def package_windows():
-    """Package Windows executable into zip"""
+    """Package Windows executable into ZIP"""
     platform_name, arch = get_platform_info()
     
     exe_path = Path("dist/quickedl.exe")
     if not exe_path.exists():
-        print("❌ Windows executable not found!")
+        print("Windows executable not found!")
         return False
     
     # Create zip package
@@ -106,7 +95,7 @@ def package_windows():
         # Add any additional files if needed
         # zipf.write("README.md", "README.md")
     
-    print(f"📦 Windows package created: {zip_path}")
+    print(f"Windows package created: {zip_path}")
     return True
 
 def package_macos():
@@ -115,119 +104,127 @@ def package_macos():
     
     app_path = Path("dist/QuickEDL.app")
     if not app_path.exists():
-        print("❌ macOS app bundle not found!")
+        print("macOS app bundle not found!")
         if Path("dist").exists():
-            print(f"📁 Available files in dist/: {list(Path('dist').iterdir())}")
+            print(f"Available files in dist/: {list(Path('dist').iterdir())}")
         return False
     
-    print(f"📱 Found app bundle: {app_path}")
+    print(f"Found app bundle: {app_path}")
     
     # Create DMG
     dmg_name = f"quickedl_{VERSION}_{platform_name}_{arch}.dmg"
     dmg_path = Path("dist") / dmg_name
     
+    # Remove existing DMG if it exists
+    if dmg_path.exists():
+        dmg_path.unlink()
+    
+    # Use hdiutil to create DMG (macOS only)
     try:
-        # Create DMG using hdiutil
         cmd = [
             "hdiutil", "create",
             "-volname", "QuickEDL",
             "-srcfolder", str(app_path),
-            "-ov", "-format", "UDZO",
+            "-ov",
+            "-format", "UDZO",
             str(dmg_path)
         ]
         
-        print(f"📀 Creating DMG: {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True)
-        
         if result.returncode == 0:
-            print(f"📦 DMG package created: {dmg_path}")
+            print(f"DMG package created: {dmg_path}")
             return True
         else:
-            print(f"❌ DMG creation failed: {result.stderr}")
+            print(f"DMG creation failed: {result.stderr}")
             return False
             
     except FileNotFoundError:
-        print("❌ hdiutil not found - cannot create DMG on this system")
+        print("hdiutil not found - cannot create DMG on this system")
         return False
 
 def verify_build():
-    """Verify the built application"""
-    if sys.platform == "darwin":
+    """Verify the build results"""
+    platform_name, arch = get_platform_info()
+    
+    if platform_name.startswith("macOS"):
         app_path = Path("dist/QuickEDL.app")
         if app_path.exists():
-            print(f"🔍 Verifying app bundle: {app_path}")
+            print(f"Verifying app bundle: {app_path}")
             
             # Check executable
             executable = app_path / "Contents/MacOS/quickedl"
             if executable.exists():
-                print(f"✅ Executable found: {executable}")
+                # Check architecture using 'file' command
+                result = subprocess.run(["file", str(executable)], capture_output=True, text=True)
+                print(f"Executable found: {executable}")
+                print(f"Architecture: {result.stdout.strip()}")
                 
-                # Check architecture
-                try:
-                    result = subprocess.run(["file", str(executable)], capture_output=True, text=True)
-                    print(f"🏗️  Architecture: {result.stdout.strip()}")
-                    
-                    result = subprocess.run(["lipo", "-info", str(executable)], capture_output=True, text=True)
-                    print(f"🔧 Lipo info: {result.stdout.strip()}")
-                except FileNotFoundError:
-                    print("⚠️  Could not check architecture (file/lipo not found)")
+                # Check with lipo for detailed arch info
+                result = subprocess.run(["lipo", "-info", str(executable)], capture_output=True, text=True)
+                if result.returncode == 0:
+                    print(f"Architecture details: {result.stdout.strip()}")
             else:
-                print(f"❌ Executable not found at: {executable}")
+                print(f"Executable not found at: {executable}")
+                return False
                 
             # Check Info.plist
             plist_path = app_path / "Contents/Info.plist"
             if plist_path.exists():
-                print(f"✅ Info.plist found: {plist_path}")
+                print(f"Info.plist found: {plist_path}")
             else:
-                print(f"❌ Info.plist not found at: {plist_path}")
-    
-    elif sys.platform == "win32":
+                print(f"Info.plist not found at: {plist_path}")
+                
+    elif platform_name == "winx64":
         exe_path = Path("dist/quickedl.exe")
         if exe_path.exists():
-            print(f"✅ Windows executable found: {exe_path}")
-            print(f"📏 Size: {exe_path.stat().st_size / 1024 / 1024:.1f} MB")
+            print(f"Windows executable found: {exe_path}")
         else:
-            print(f"❌ Windows executable not found at: {exe_path}")
+            print(f"Windows executable not found at: {exe_path}")
+            return False
+    
+    return True
 
 def main():
     """Main build process"""
-    print("🚀 QuickEDL PyInstaller Build")
+    print("QuickEDL PyInstaller Build")
     print("=" * 50)
     
     # Clean previous builds
     clean_build_dirs()
     
     # Build with PyInstaller
-    if not build_with_pyinstaller():
-        sys.exit(1)
+    build_with_pyinstaller()
     
     # Verify build
-    verify_build()
+    if not verify_build():
+        print("Build verification failed!")
+        sys.exit(1)
     
-    # Package based on platform
+    # Platform-specific packaging
+    platform_name, _ = get_platform_info()
+    
     success = False
-    if sys.platform == "win32":
+    if platform_name == "winx64":
         success = package_windows()
-    elif sys.platform == "darwin":
+    elif platform_name.startswith("macOS"):
         success = package_macos()
     else:
-        print("⚠️  Linux packaging not implemented yet")
-        success = True  # Build succeeded, just no packaging
+        print(f"Packaging not implemented for platform: {platform_name}")
+        success = True  # Don't fail for unsupported packaging
     
     if success:
-        print("\n🎉 Build and packaging completed successfully!")
+        print("\nBuild and packaging completed successfully!")
         
-        # Show final output
-        if Path("dist").exists():
-            print("\n📁 Final output files:")
-            for item in Path("dist").iterdir():
+        # List final artifacts
+        dist_path = Path("dist")
+        if dist_path.exists():
+            print(f"\nCreated files in {dist_path}:")
+            for item in dist_path.iterdir():
                 if item.is_file():
-                    size = item.stat().st_size / 1024 / 1024
-                    print(f"   📄 {item.name} ({size:.1f} MB)")
-                elif item.is_dir():
-                    print(f"   📁 {item.name}/")
+                    size = item.stat().st_size / (1024 * 1024)  # MB
+                    print(f"  {item.name} ({size:.1f} MB)")
     else:
-        print("\n❌ Packaging failed!")
+        print("\nPackaging failed!")
         sys.exit(1)
 
 if __name__ == "__main__":
