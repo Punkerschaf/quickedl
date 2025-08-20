@@ -1,0 +1,156 @@
+name: Build QuickEDL Executables
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build'
+        required: false
+        default: 'auto'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        pip install -r dependencies.txt
+    
+    - name: Build Windows executable
+      run: |
+        python build.py
+    
+    - name: Upload Windows artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: quickedl-windows-x64
+        path: dist/*.zip
+        retention-days: 30
+
+  build-macos-intel:
+    runs-on: macos-13  # Intel runner
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        pip install -r dependencies.txt
+    
+    - name: Build macOS Intel executable
+      env:
+        ARCHFLAGS: "-arch x86_64"
+        _PYTHON_HOST_PLATFORM: "macosx-10.9-x86_64"
+      run: |
+        python build.py
+    
+    - name: Upload macOS Intel artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: quickedl-macos-intel
+        path: dist/*.dmg
+        retention-days: 30
+
+  build-macos-apple-silicon:
+    runs-on: macos-14  # Apple Silicon runner
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        pip install -r dependencies.txt
+    
+    - name: Build macOS Apple Silicon executable
+      env:
+        ARCHFLAGS: "-arch arm64"
+        _PYTHON_HOST_PLATFORM: "macosx-11.0-arm64"
+      run: |
+        python build.py
+    
+    - name: Upload macOS Apple Silicon artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: quickedl-macos-apple-silicon
+        path: dist/*.dmg
+        retention-days: 30
+
+  create-release:
+    needs: [build-windows, build-macos-intel, build-macos-apple-silicon]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Get version
+      id: version
+      run: |
+        VERSION=$(python -c "from version import VERSION; print(VERSION)")
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Version: $VERSION"
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: ./artifacts
+    
+    - name: Display structure of downloaded files
+      run: |
+        find artifacts -type f -name "*.zip" -o -name "*.dmg" | sort
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ steps.version.outputs.version }}
+        name: QuickEDL v${{ steps.version.outputs.version }}
+        files: |
+          artifacts/quickedl-windows-x64/*
+          artifacts/quickedl-macos-intel/*
+          artifacts/quickedl-macos-apple-silicon/*
+        draft: false
+        prerelease: ${{ contains(steps.version.outputs.version, 'alpha') || contains(steps.version.outputs.version, 'beta') || contains(steps.version.outputs.version, 'rc') }}
+        generate_release_notes: true
+        body: |
+          ## QuickEDL v${{ steps.version.outputs.version }}
+          
+          Cross-platform builds for Windows and macOS.
+          
+          ### Downloads:
+          - **Windows x64**: `quickedl_${{ steps.version.outputs.version }}_winx64.zip`
+          - **macOS Intel**: `quickedl_${{ steps.version.outputs.version }}_macOS_x86_64.dmg`  
+          - **macOS Apple Silicon**: `quickedl_${{ steps.version.outputs.version }}_macOS_arm64.dmg`
+          
+          ### Installation:
+          - **Windows**: Extract ZIP and run `quickedl.exe`
+          - **macOS**: Mount DMG and drag `QuickEDL.app` to Applications folder
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
