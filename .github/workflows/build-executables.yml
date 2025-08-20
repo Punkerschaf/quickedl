@@ -1,4 +1,4 @@
-name: Build QuickEDL Executables
+name: Build QuickEDL Executables (pyInstaller approach 2)
 
 on:
   workflow_dispatch:
