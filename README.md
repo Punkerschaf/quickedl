@@ -26,7 +26,7 @@ A project is a folder named as it's project, which contains the *edl-file, marke
 - **Recent Project**: List of recent opened projects. CLick to load. Number of max. entries is set in the settings. Default is 10.
 
 > [!NOTE]
-> For JSX-export from single EDL-files (version 2.2.x and below) it is possible to open them without creating a project. They will be not importet in any way.
+> For JSX-export from single EDL-files (version 2.2.x and below) it is possible to open them without creating a project. They will be not imported in any way.
 
 ## Markerlabels menu
 - **Save Markerlabels**: Saves current labels to a external file for some kind of library or compatibility with legacy versions.
