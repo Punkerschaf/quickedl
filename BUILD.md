@@ -1,77 +1,77 @@
 # QuickEDL Build System (PyInstaller)
 
-Dieses Build-System verwendet PyInstaller für Cross-Platform Builds von QuickEDL.
+This build system uses PyInstaller for cross-platform builds of QuickEDL.
 
 ## Features
 
-✅ **Separate Builds für alle Architekturen**:
+✅ **Separate builds for all architectures**:
 - Windows x64 (.exe in .zip)
 - macOS Intel x86_64 (.app in .dmg)
 - macOS Apple Silicon arm64 (.app in .dmg)
 
-✅ **Richtige macOS App-Bundles**:
-- Vollständige `QuickEDL.app` mit Info.plist
-- Native Berechtigungen für Dateizugriff
-- Korrekte Icons und Metadaten
+✅ **Proper macOS app bundles**:
+- Complete `QuickEDL.app` with Info.plist
+- Native file access permissions
+- Correct icons and metadata
 
-✅ **Automatische Paketierung**:
-- Windows: .exe in .zip verpackt
-- macOS: .app in .dmg verpackt
+✅ **Automatic packaging**:
+- Windows: .exe packaged in .zip
+- macOS: .app packaged in .dmg
 
-✅ **Flexible Builds**:
-- Lokale Builds (nur aktuelle Architektur)
-- GitHub Workflow (alle Architekturen)
+✅ **Flexible builds**:
+- Local builds (current architecture only)
+- GitHub workflow (all architectures)
 
-## Lokale Builds
+## Local Builds
 
-### Voraussetzungen
+### Prerequisites
 ```bash
 pip install pyinstaller
 pip install -r dependencies.txt
 ```
 
-### Build ausführen
+### Run build
 ```bash
 python build.py
 ```
 
-Das erstellt automatisch:
+This automatically creates:
 - **Windows**: `dist/quickedl_{VERSION}_winx64.zip`
 - **macOS Intel**: `dist/quickedl_{VERSION}_macOS_x86_64.dmg`
 - **macOS ARM64**: `dist/quickedl_{VERSION}_macOS_arm64.dmg`
 
-### Build-Verifikation
+### Build verification
 
-Das Build-Skript überprüft automatisch:
-- ✅ Executable wurde erstellt
-- ✅ Architektur ist korrekt (macOS)
-- ✅ App-Bundle-Struktur (macOS)
-- ✅ Info.plist vorhanden (macOS)
+The build script automatically checks:
+- ✅ Executable was created
+- ✅ Architecture is correct (macOS)
+- ✅ App bundle structure (macOS)
+- ✅ Info.plist present (macOS)
 
 ## GitHub Actions Workflow
 
-### Auslösung
-Der Workflow wird **nur manuell** ausgelöst:
+### Triggering
+The workflow is **only triggered manually**:
 1. GitHub Repository → Actions Tab
 2. "Build QuickEDL Executables" → "Run workflow"
 
-### Build-Matrix
-Der Workflow erstellt parallel:
-- **Windows**: `windows-latest` Runner
-- **macOS Intel**: `macos-13` Runner (Intel)
-- **macOS Apple Silicon**: `macos-14` Runner (ARM64)
+### Build matrix
+The workflow creates in parallel:
+- **Windows**: `windows-latest` runner
+- **macOS Intel**: `macos-13` runner (Intel)
+- **macOS Apple Silicon**: `macos-14` runner (ARM64)
 
-### Ausgabe
-- **Artifacts**: Alle Builds werden als Artifacts gespeichert
-- **Release**: Automatische Release-Erstellung mit allen Builds
+### Output
+- **Artifacts**: All builds are stored as artifacts
+- **Release**: Automatic release creation with all builds
 
-## Dateistruktur
+## File Structure
 
 ### Windows Build:
 ```
 dist/
-├── quickedl.exe                    # Hauptausführbare Datei
-└── quickedl_{VERSION}_winx64.zip   # Gepackte Distribution
+├── quickedl.exe                    # Main executable file
+└── quickedl_{VERSION}_winx64.zip   # Packaged distribution
 ```
 
 ### macOS Build:
@@ -79,77 +79,77 @@ dist/
 dist/
 ├── QuickEDL.app/                   # App Bundle
 │   ├── Contents/
-│   │   ├── Info.plist              # App-Metadaten
-│   │   ├── MacOS/quickedl          # Ausführbare Datei
-│   │   └── Resources/              # Icons und Ressourcen
-└── quickedl_{VERSION}_macOS_{ARCH}.dmg  # Gepackte Distribution
+│   │   ├── Info.plist              # App metadata
+│   │   ├── MacOS/quickedl          # Executable file
+│   │   └── Resources/              # Icons and resources
+└── quickedl_{VERSION}_macOS_{ARCH}.dmg  # Packaged distribution
 ```
 
-## PyInstaller Konfiguration
+## PyInstaller Configuration
 
-Die `quickedl.spec` Datei enthält:
+The `quickedl.spec` file contains:
 
-### Gemeinsame Konfiguration:
+### Common configuration:
 - **Hidden Imports**: ttkbootstrap, PIL, yaml, tkinter
-- **Data Files**: resources/ Ordner mit Icons
-- **Excludes**: Unnötige Pakete (matplotlib, numpy, etc.)
+- **Data Files**: resources/ folder with icons
+- **Excludes**: Unnecessary packages (matplotlib, numpy, etc.)
 
-### Plattform-spezifische Konfiguration:
+### Platform-specific configuration:
 
 #### Windows:
 - **Icon**: `resources/icon_win.ico`
-- **Console**: Ausgeblendet (`console=False`)
-- **Output**: Einzelne .exe Datei
+- **Console**: Hidden (`console=False`)
+- **Output**: Single .exe file
 
 #### macOS:
 - **Icon**: `resources/icon_mac.icns`
-- **Bundle**: Vollständige .app Struktur
-- **Info.plist**: Berechtigungen und Metadaten
+- **Bundle**: Complete .app structure
+- **Info.plist**: Permissions and metadata
 - **Bundle ID**: `com.punkerschaf.quickedl`
 
-## Architektur-Handling
+## Architecture Handling
 
-### Lokale Builds:
-- Automatische Erkennung der aktuellen Architektur
-- Umgebungsvariablen für architektur-spezifische Builds
+### Local builds:
+- Automatic detection of current architecture
+- Environment variables for architecture-specific builds
 
 ### GitHub Actions:
-- **Intel Runner** (`macos-13`): Explizit x86_64
-- **ARM64 Runner** (`macos-14`): Explizit arm64
-- Umgebungsvariablen setzen die Ziel-Architektur
+- **Intel Runner** (`macos-13`): Explicitly x86_64
+- **ARM64 Runner** (`macos-14`): Explicitly arm64
+- Environment variables set target architecture
 
 ## Troubleshooting
 
-### Build schlägt fehl
+### Build fails
 ```bash
-# Überprüfe Dependencies
+# Check dependencies
 pip list | grep -E "(pyinstaller|ttkbootstrap|pyyaml|pillow)"
 
-# Teste PyInstaller direkt
+# Test PyInstaller directly
 pyinstaller quickedl.spec --clean --noconfirm
 ```
 
-### macOS: App startet nicht
+### macOS: App won't start
 ```bash
-# Überprüfe App-Bundle
+# Check app bundle
 file dist/QuickEDL.app/Contents/MacOS/quickedl
 lipo -info dist/QuickEDL.app/Contents/MacOS/quickedl
 
-# Überprüfe Info.plist
+# Check Info.plist
 plutil -p dist/QuickEDL.app/Contents/Info.plist
 ```
 
 ### Windows: Missing DLLs
-- PyInstaller sollte automatisch alle DLLs einbinden
-- Bei Problemen: `--hidden-import` in der .spec hinzufügen
+- PyInstaller should automatically include all DLLs
+- If issues occur: Add `--hidden-import` in the .spec file
 
-## Vergleich zu cx_Freeze
+## Comparison to cx_Freeze
 
 | Feature | PyInstaller | cx_Freeze |
 |---------|-------------|-----------|
-| macOS App Bundles | ✅ Vollständig | ⚠️ Kompliziert |
-| Info.plist Integration | ✅ Native | ❌ Manuell |
+| macOS App Bundles | ✅ Complete | ⚠️ Complicated |
+| Info.plist Integration | ✅ Native | ❌ Manual |
 | Cross-Platform | ✅ Excellent | ✅ Good |
-| Architektur-Kontrolle | ✅ Einfach | ⚠️ Schwierig |
-| Bundle-Größe | ✅ Optimiert | ✅ Optimiert |
-| Konfiguration | ✅ .spec Datei | ❌ setup.py |
+| Architecture Control | ✅ Easy | ⚠️ Difficult |
+| Bundle Size | ✅ Optimized | ✅ Optimized |
+| Configuration | ✅ .spec file | ❌ setup.py |
