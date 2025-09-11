@@ -25,8 +25,14 @@ A project is a folder named as it's project, which contains the *edl-file, marke
 - **Load Project**: Choose the project folder to load. Project files are scanes automatically.
 - **Recent Project**: List of recent opened projects. CLick to load. Number of max. entries is set in the settings. Default is 10.
 
-> [!NOTE]
-> For JSX-export from single EDL-files (version 2.2.x and below) it is possible to open them without creating a project. They will be not imported in any way.
+## EDL menu
+- **New EDL**: Creates a new single edl-file without a project.
+- **Load EDL**: Load a single edl-file without a project. Markerlabels and playlist are kept from current.
+> [!WARNING]
+> Creating and loading single edl files are functions saving backward compatibility to older versions. They are not imported to the project but can corrupt the current loaded one.
+> Use this functions only after a clean start of the application.
+
+- **Export JSX**: Export to Premiere Pro. [How to use JSX-Script](docs/jsx.md)
 
 ## Markerlabels menu
 - **Save Markerlabels**: Saves current labels to a external file for some kind of library or compatibility with legacy versions.
