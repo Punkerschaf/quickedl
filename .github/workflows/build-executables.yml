@@ -122,35 +122,3 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         path: ./artifacts
-    
-    - name: Display structure of downloaded files
-      run: |
-        find artifacts -type f -name "*.zip" -o -name "*.dmg" | sort
-    
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: v${{ steps.version.outputs.version }}
-        name: QuickEDL v${{ steps.version.outputs.version }}
-        files: |
-          artifacts/quickedl-windows-x64/*
-          artifacts/quickedl-macos-intel/*
-          artifacts/quickedl-macos-apple-silicon/*
-        draft: false
-        prerelease: ${{ contains(steps.version.outputs.version, 'alpha') || contains(steps.version.outputs.version, 'beta') || contains(steps.version.outputs.version, 'rc') }}
-        generate_release_notes: true
-        body: |
-          ## QuickEDL v${{ steps.version.outputs.version }}
-          
-          Cross-platform builds for Windows and macOS.
-          
-          ### Downloads:
-          - **Windows x64**: `quickedl_${{ steps.version.outputs.version }}_winx64.zip`
-          - **macOS Intel**: `quickedl_${{ steps.version.outputs.version }}_macOS_x86_64.dmg`  
-          - **macOS Apple Silicon**: `quickedl_${{ steps.version.outputs.version }}_macOS_arm64.dmg`
-          
-          ### Installation:
-          - **Windows**: Extract ZIP and run `quickedl.exe`
-          - **macOS**: Mount DMG and drag `QuickEDL.app` to Applications folder
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
