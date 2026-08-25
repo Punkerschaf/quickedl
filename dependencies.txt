@@ -1,4 +1,4 @@
-ttkbootstrap
-pyyaml
-pyinstaller
-pillow
+ttkbootstrap<2.0.0  # held back deliberately: v2 is a breaking major release and this GUI is being replaced in the v4.0.0 rewrite (see roadmap.md) rather than migrated
+pyyaml>=6.0.3
+pyinstaller>=6.22
+pillow>=10.4,<11  # capped by ttkbootstrap 1.x's own pillow<11 requirement; 10.4.0 is already the newest version in that range

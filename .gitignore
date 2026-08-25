@@ -158,5 +158,7 @@ cython_debug/
 # MacOS
 .DS_Store
 
-VSCode
 .vscode/
+
+# Claude Code local settings (machine-specific; .claude/settings.json stays shared/tracked)
+.claude/settings.local.json
