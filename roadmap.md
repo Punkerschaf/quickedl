@@ -17,6 +17,9 @@ Diese Datei sammelt den aktuellen Planungsstand für den Umbau von QuickEDL als 
 | DaVinci Resolve | **Nice-to-have, später** – kein Bestandteil des ersten v4.0.0-Release |
 | Marker-Sync zu Premiere | **Batch-Sync-Button** nach der Show; lokale Datei bleibt während der Show alleinige verlässliche Quelle (kein Echtzeit-Push) |
 | Zeitrahmen | Kein festes Datum – sauberes Vorgehen inkl. Feasibility-Spike hat Vorrang vor Tempo |
+| Projekt-Speicherformat | **Eine Datei pro Projekt** (JSON, Vorschlag Endung `.qedl`), bei jeder Änderung atomar geschrieben – löst das bisherige Ordner+3-Textdateien-Modell ab |
+| Marker-Farbe | Wird beim Erstellen **fest vom Markerlabel geerbt** und danach nicht mehr pro Marker einzeln geändert |
+| Avid-Anbindung | Nur **Color-Set-Metadaten**, keine aktive Avid-Integration in dieser Roadmap geplant |
 
 **Begründung Tech-Stack:** Beide Ziel-Integrationen sind herstellerseitig sprachlich festgelegt (UXP = JS-only, Resolve-Scripting = Python/Lua-only). Bei Python-Kern ist die Resolve-Anbindung nahezu kostenlos (nativer Import), während das UXP-Panel ohnehin als separates JS-Modul existieren muss – unabhängig von der Sprache der Haupt-App. Das minimiert Migrationsrisiko für einen Einzelmaintainer und erhält den Großteil der bestehenden Logik (Projekte, Settings, Playlist).
 
@@ -43,19 +46,42 @@ Höchstes Risiko und zentrale Motivation des gesamten Vorhabens zuerst validiere
 
 ## Phase 1 – Kern-Rewrite (Feature-Parität, neues GUI, noch ohne Premiere/Resolve)
 
-- [ ] Neues Datenmodell: Append-only **JSON-Lines** (`.jsonl`) als Source of Truth pro Projekt (Felder mind. `id`, `created_at` als volles ISO8601-Datetime, `label`, `type`); behebt den bestehenden Mitternachts-Bug (aktuell nur `HH:MM:SS` ohne Datum)
-- [ ] Klartext-`.txt`-EDL bleibt als Export-/Backup-Format erhalten (Lesbarkeit während der Show ist eine bewusste Eigenschaft des aktuellen Designs)
-- [ ] Migrations-Importer für bestehende `_EDL.txt`-Projektordner (Parsing-Logik aus `export_jsx.py::get_edl_markers` / `main.py` wiederverwenden)
-- [ ] GUI-Neuaufbau in PySide6/Qt mit Feature-Parität zum aktuellen Funktionsumfang:
-  - [ ] Projekt-Verwaltung (Neu/Laden/Zuletzt verwendet)
-  - [ ] Marker-Buttons mit editierbaren Labels + Hotkeys 1–9
+### Projekt-Datei-Format & Speicherung
+- [ ] Neues Projekt-Format: **eine Datei pro Projekt** (JSON, Vorschlag Endung `.qedl`) statt Ordner mit drei Textdateien – kombiniert Marker-Liste, Playlist, Markerlabels und Projekt-Info in einer Struktur (Details siehe [Feature-Konzept: Projekt-Datei-Format](#feature-konzept-projekt-datei-format))
+- [ ] Sicheres Schreiben: bei jeder Änderung **atomarer Rewrite** (Temp-Datei + `os.replace`), nie direktes In-Place-Überschreiben – ersetzt die ursprünglich für JSON-Lines vorgesehene Append-only-Strategie, behält aber deren Crash-Safety-Eigenschaft
+- [ ] Neue Projekt-Felder: `production_date`, `notes` (Freitext), `color_set` (Referenz auf gewähltes Color-Set)
+- [ ] Behebt nebenbei den bestehenden Mitternachts-Bug (aktuell nur `HH:MM:SS` ohne Datum pro Marker – neues Format nutzt volle ISO8601-Zeitstempel)
+- [ ] TXT-Export-Funktion (ersetzt die bisherige Klartext-Datei als Kompatibilitäts-/Weitergabe-Format; Zeilenformat wie v3: `HH:MM:SS - Label`)
+- [ ] Migrations-Importer für bestehende v3.x-Projektordner (`_EDL.txt`/`_MARKERLABEL.txt`/`_PLAYLIST.txt` → neues Einzeldatei-Format; Parsing-Logik aus `export_jsx.py::get_edl_markers` / `main.py` wiederverwenden), aufrufbar aus dem Projekt-Manager
+
+### Projekt-Manager (neues Fenster)
+- [ ] Liste aller bekannten Projekte (Registry ähnlich der heutigen `RecentProjectsManager`-Logik, aber als vollwertig verwaltbare Liste statt nur "zuletzt verwendet")
+- [ ] Aktionen: Neues Projekt erstellen, Öffnen, Umbenennen (Projektname + Dateiname synchron), Löschen (mit Rückfrage; Unterscheidung "aus Liste entfernen" vs. "Datei endgültig löschen")
+- [ ] Import/Konvertierung alter v3.x-Projekte (siehe oben)
+- [ ] Anzeige der neuen Metadaten (Produktionsdatum, Notizen) in Liste/Detailansicht
+
+### Color-Sets & Marker-Farben
+- [ ] Color-Set-Datenformat definieren, als separate Dateien (Details siehe [Feature-Konzept: Color-Sets](#feature-konzept-color-sets))
+- [ ] Eingebaute Color-Sets: Premiere Pro, DaVinci Resolve, Avid Media Composer (nur Metadaten, keine aktive Avid-Anbindung), jeweils als mitgelieferte Ressourcen-Datei
+- [ ] Custom-Color-Sets: nutzerdefiniert, als Dateien in `~/quickedl/colorsets/`; für den v4.0.0-Erstrelease reicht dateibasiertes Anlegen/Bearbeiten – ein grafischer Color-Set-Editor ist eine mögliche spätere Ausbaustufe
+- [ ] Color-Set wird pro Projekt bei Erstellung festgelegt (Annahme: kein Wechsel danach, da bestehende Marker-Farben sonst inkonsistent zu ihrem Export-String würden – zur Prüfung/Anpassung beim Review)
+- [ ] Markerlabels bekommen je eine wählbare Farbe aus dem gewählten Color-Set (UI: Farbauswahl neben jedem Label-Eingabefeld)
+- [ ] Marker erben die Farbe ihres Labels **zum Erstellungszeitpunkt** fest (spätere Label-Farbänderungen wirken nicht rückwirkend auf bereits erstellte Marker)
+- [ ] Projekt-Settings: eigene Default-Farbe für Popup-Marker und für Playlist-Marker (projektweit einstellbar, nicht pro Playlist-Eintrag einzeln)
+
+### GUI-Neuaufbau (PySide6/Qt)
+- [ ] Feature-Parität zum aktuellen Funktionsumfang:
+  - [ ] Projekt-Verwaltung über neuen Projekt-Manager (s.o.) statt bisherigem Ordner-Dialog
+  - [ ] Marker-Buttons mit editierbaren Labels + Hotkeys 1–9 (inkl. Farbauswahl je Label)
   - [ ] Separator (Taste 0)
   - [ ] Popup-Marker mit Freitext (Space)
   - [ ] Playlist-Marker (P, Pfeiltasten-Navigation)
   - [ ] Letzten Marker löschen (Backspace, standardmäßig deaktiviert)
   - [ ] Auto-Save
   - [ ] Settings-Fenster (YAML-Speicherort ggf. beibehalten: `~/quickedl/`)
-- [ ] Modernes visuelles Redesign (Look & Feel, Theming über Qt-Stylesheets/qt-material o.ä.)
+- [ ] Modernes visuelles Redesign (Look & Feel, Theming über Qt-Stylesheets/qt-material o.ä.); Marker-Farben visuell in der Marker-Liste darstellen
+
+### Packaging
 - [ ] CI/Packaging für PySide6 neu aufsetzen (bestehendes `quickedl.spec`/`build.py`-Muster als Ausgangspunkt, PySide6-spezifische PyInstaller-Hooks berücksichtigen)
 - [ ] Linux als offizielle Zielplattform entscheiden und ggf. in CI-Matrix ergänzen (siehe offene Frage)
 - [ ] `version.py` auf 4.0.0 (bzw. `4.0.0-dev`) aktualisieren, sobald Feature-Parität erreicht ist
@@ -64,7 +90,8 @@ Höchstes Risiko und zentrale Motivation des gesamten Vorhabens zuerst validiere
 
 - [ ] Lokaler WebSocket/HTTP-Server in der Haupt-App (Marker-Events bereitstellen)
 - [ ] UXP-Companion-Panel (JS), verbindet sich zum lokalen Server, erstellt Marker in der aktiven Sequenz
-- [ ] JSON-Protokoll zwischen App und Panel definieren (marker id, timecode-Offset, label, type)
+- [ ] JSON-Protokoll zwischen App und Panel definieren (marker id, timecode-Offset, label, type, Farbe)
+- [ ] Marker-Farbe beim Export mitgeben: `export_string` des Color-Set-Eintrags an die UXP-Marker-API übergeben (genaues Premiere-Farb-Vokabular/API in Phase 0/2 gegen die reale UXP-Dokumentation verifizieren – im Color-Set-Konzept aktuell nur Platzhalter-Werte)
 - [ ] Batch-"Sync"-Button in der GUI (siehe Architektur-Entscheidung oben – kein automatischer Echtzeit-Push)
 - [ ] Distribution des Panels: `.ccx`-Paket über GitHub-Releases bündeln; einmaliger manueller Doppelklick-Install (Minimalversion) vs. automatischer Install über eigenen Installer via **UPIA**-CLI (Komfort-Ausbaustufe, siehe offene Frage)
 - [ ] Bestehenden JSX/ExtendScript-Export **als dauerhaften Fallback** für Premiere < 25.6 erhalten und in der neuen GUI weiter zugänglich machen
@@ -76,6 +103,75 @@ Höchstes Risiko und zentrale Motivation des gesamten Vorhabens zuerst validiere
 - [ ] "External Scripting" Voraussetzungen dokumentieren (Resolve-Einstellung, `RESOLVE_SCRIPT_API`/`RESOLVE_SCRIPT_LIB`/`PYTHONPATH`)
 - [ ] Frame-basierte Marker-API berücksichtigen (`timeline.AddMarker(frameId, color, name, note, duration, customData)`) – eigene FPS-Offset-Berechnung nötig (analog zur heutigen JSX-Sekundenberechnung, nur frame-genau)
 - [ ] Gleiches strukturiertes Marker-Modell aus Phase 1 wiederverwenden, sodass Resolve "nur ein weiterer Marker-Consumer" ist, symmetrisch zum UXP-Panel
+- [ ] Color-Set-`export_string` direkt als `color`-Parameter an `AddMarker` übergeben (Resolve nutzt bereits benannte Farb-Strings – Werte im DaVinci-Color-Set müssen mit Resolves tatsächlichem Namensvokabular abgeglichen werden, siehe Platzhalter im Color-Set-Konzept)
+
+## Feature-Konzept: Projekt-Datei-Format
+
+Ersetzt das bisherige Modell "Ordner + `_EDL.txt` + `_MARKERLABEL.txt` + `_PLAYLIST.txt`" durch eine einzelne Datei pro Projekt. Vorschlag: JSON mit eigener Endung `.qedl`, damit Projekte im Dateisystem als ein zusammengehöriges, doppelklickbares Objekt erkennbar sind (Endung/Name frei anpassbar).
+
+```jsonc
+{
+  "format_version": 1,
+  "project": {
+    "name": "Show XY",
+    "production_date": "2026-08-26",
+    "notes": "Freitext-Notizen zum Projekt",
+    "color_set": "premiere_pro",              // Referenz auf ein Color-Set (siehe unten)
+    "default_popup_marker_color": "red",      // Projekt-Setting, siehe Color-Set-Konzept
+    "default_playlist_marker_color": "blue",
+    "created_at": "2026-08-20T09:00:00",
+    "modified_at": "2026-08-26T20:15:03"
+  },
+  "marker_labels": [
+    { "index": 1, "label": "Take", "color": "red" },
+    { "index": 2, "label": "Cut",  "color": null }
+  ],
+  "playlist": [
+    { "label": "Song 1" },
+    { "label": "Song 2" }
+  ],
+  "markers": [
+    { "id": "uuid", "created_at": "2026-08-26T20:15:03", "type": "label",     "source_label_index": 1, "label": "Take",         "color": "red" },
+    { "id": "uuid", "created_at": "2026-08-26T20:16:10", "type": "popup",     "label": "Freitext",     "color": "blue" },
+    { "id": "uuid", "created_at": "2026-08-26T20:17:00", "type": "separator" }
+  ]
+}
+```
+
+**Schreibstrategie:** Bei jeder Änderung wird die komplette Datei in `<name>.qedl.tmp` geschrieben und danach per `os.replace()` atomar an die Stelle der bisherigen Datei verschoben. Die Originaldatei wird nie direkt verändert – bei einem Absturz während des Schreibens bleibt der zuletzt vollständig gespeicherte Stand erhalten. Separator-Zeilen bekommen keine Farbe (sie werden schon heute nicht als Marker exportiert, siehe `export_jsx.py`).
+
+## Feature-Konzept: Projekt-Manager
+
+Neues, eigenständiges Fenster, das die heutige verstreute Ordner-Logik (Menüpunkte "Neu/Laden/Zuletzt verwendet") durch eine zentrale Übersicht ersetzt:
+
+- **Liste**: alle bekannten Projekte (Registry aus Pfaden, erweitert aus der heutigen `settings/recent.py`-Logik), mit Name, Produktionsdatum, letzter Änderung; fehlt eine Datei am gespeicherten Pfad (verschoben/gelöscht), wird der Eintrag sichtbar als "nicht gefunden" markiert statt kommentarlos zu verschwinden
+- **Neu**: legt eine neue `.qedl`-Datei an einem wählbaren Ort an
+- **Umbenennen**: ändert `project.name` und den Dateinamen zusammen
+- **Löschen**: mit Rückfrage, getrennt in "aus Liste entfernen" (Datei bleibt erhalten) und "Datei endgültig löschen"
+- **Import**: wählt einen alten v3.x-Projektordner, konvertiert ihn in eine neue `.qedl`-Datei (fehlende neue Felder wie Produktionsdatum/Notizen/Color-Set werden beim Import leer bzw. mit einem Default-Color-Set vorbelegt und können direkt angepasst werden)
+
+## Feature-Konzept: Color-Sets
+
+Color-Sets sind eigenständige Dateien (kein hartcodiertes Enum im Programmcode), damit neue Schnittprogramme oder eigene Paletten ergänzt werden können, ohne den Kern der App zu ändern. Eingebaute Sets liegen als Ressourcen im Repo (z.B. `colorsets/*.json`), nutzerdefinierte "Custom"-Sets im Settings-Ordner (`~/quickedl/colorsets/`).
+
+```jsonc
+{
+  "id": "davinci_resolve",
+  "name": "DaVinci Resolve",
+  "colors": [
+    { "label": "Blau",   "display_color": "#3B5EA8", "export_string": "Blue" },
+    { "label": "Rot",    "display_color": "#C0392B", "export_string": "Red" },
+    { "label": "Grün",   "display_color": "#4E9A51", "export_string": "Green" },
+    { "label": "Gelb",   "display_color": "#E5C22D", "export_string": "Yellow" }
+  ]
+}
+```
+
+- `label`: Anzeigename in der QuickEDL-UI (frei wählbar, z.B. auch "Wichtig" statt Farbname)
+- `display_color`: Hex-Code, mit dem QuickEDL selbst die Farbe rendert
+- `export_string`: exakter Bezeichner, den die Ziel-Anwendung beim Marker-Import erwartet
+
+**Geplante Sets zum Start:** Premiere Pro, DaVinci Resolve, Avid Media Composer (nur Metadaten/keine aktive Anbindung, s.o.), Custom (nutzerdefiniert). Die `export_string`-Werte für Premiere und Avid sind noch **nicht verifiziert** (in obigem Beispiel bewusst nur für Resolve grob skizziert, da dessen `AddMarker`-API bereits benannte Farb-Strings verwendet) – die tatsächlichen Werte müssen bei Umsetzung von Phase 2 (Premiere-UXP-API) bzw. bei einer möglichen späteren Avid-Arbeit recherchiert und gegen die jeweilige Dokumentation/Version abgeglichen werden. Bis dahin sind die Sets Platzhalter mit plausibler Struktur, nicht garantiert korrekten Werten.
 
 ## Offene Fragen
 
@@ -84,9 +180,10 @@ Diese Punkte sollten geklärt werden (bzw. sind bewusst nachrangig), bevor die j
 1. **Premiere-Versionen im tatsächlichen Einsatz**: Reicht die Annahme "meist aktuell/UXP-fähig", oder muss der JSX-Fallback für einen relevanten Nutzeranteil erstklassig (nicht nur Notlösung) bleiben? Relevant für Phase 2.
 2. **Linux offiziell unterstützen?** Es gibt bereits ein totes Indiz dafür in der Vergangenheit (ein `resources/icon_unix.png` sowie – jetzt entfernte – alte Workflow-Dateien, die tatsächlich einen Unix-Build erzeugten). Beeinflusst die CI-Planung in Phase 1.
 3. **Panel-Installation**: Reicht ein einmaliger manueller `.ccx`-Doppelklick (einfachste Variante, ähnlich dem heutigen VS-Code-Setup), oder soll QuickEDL das Panel über UPIA automatisch mitinstallieren? Relevant für Phase 2.
-4. **Marker-Typ-Klassifizierung**: Soll jeder Marker/jede Zeile im neuen GUI einen expliziten Typ bekommen (für sauberen NLE-Export), oder bleibt das wie heute implizit? Relevant für Phase 1 Datenmodell.
-5. **Mehrplatz-/Sync-Interesse**: Besteht Interesse an späterem Teilen/Synchronisieren von Projektdaten über mehrere Maschinen/Operatoren hinweg? Würde die konservative Einzeldatei-JSONL-Architektur ggf. in Frage stellen.
-6. **Branch `struct-data-concept`**: Existiert (0 Commits gegenüber `main`, aktuell leerer Platzhalter) – steckt dahinter bereits Vordenken zum Datenmodell, das eingearbeitet werden sollte, oder kann er verworfen werden?
+4. **Mehrplatz-/Sync-Interesse**: Besteht Interesse an späterem Teilen/Synchronisieren von Projektdaten über mehrere Maschinen/Operatoren hinweg? Würde die konservative Einzeldatei-Architektur ggf. in Frage stellen.
+5. **Branch `struct-data-concept`**: Existiert (0 Commits gegenüber `main`, aktuell leerer Platzhalter) – steckt dahinter bereits Vordenken zum Datenmodell, das eingearbeitet werden sollte, oder kann er verworfen werden?
+6. **Farbauswahl-UI**: Soll die Farbe je Markerlabel direkt inline gewählt werden (z.B. Farb-Swatch-Button neben jedem Label-Feld), oder über einen separaten Dialog? Kleinere UI-Detailfrage für Phase 1.
+7. **Dateiendung für Projekt-Dateien**: Vorschlag `.qedl` (siehe Feature-Konzept) – passt das, oder lieber `.json` bzw. ein anderer Name?
 
 ## Referenzen aus der Recherche
 
