@@ -1,0 +1,29 @@
+{
+  "id": "de.quickedl.phase0spike",
+  "name": "QuickEDL Phase 0 Spike",
+  "version": "0.0.1",
+  "main": "index.html",
+  "host": {
+    "app": "premierepro",
+    "minVersion": "25.1.0"
+  },
+  "manifestVersion": 5,
+  "requiredPermissions": {
+    "network": {
+      "domains": "all"
+    }
+  },
+  "entrypoints": [
+    {
+      "id": "quickedlspikepanel",
+      "type": "panel",
+      "label": {
+        "default": "QuickEDL Spike"
+      },
+      "minimumSize": { "width": 230, "height": 200 },
+      "maximumSize": { "width": 2000, "height": 2000 },
+      "preferredDockedSize": { "width": 260, "height": 320 },
+      "preferredFloatingSize": { "width": 260, "height": 320 }
+    }
+  ]
+}

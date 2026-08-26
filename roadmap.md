@@ -36,11 +36,15 @@ Diese Datei sammelt den aktuellen Planungsstand für den Umbau von QuickEDL als 
 
 Höchstes Risiko und zentrale Motivation des gesamten Vorhabens zuerst validieren, bevor Aufwand in Phase 1 investiert wird.
 
-- [ ] Minimales UXP-Panel gegen die tatsächlich genutzte(n) Premiere-Pro-Version(en) bauen (Referenzarchitektur: [mikechambers/adb-mcp](https://github.com/mikechambers/adb-mcp) – Panel verbindet sich per WebSocket zu `http://localhost:PORT`)
-- [ ] Verifizieren: Panel kann sich zu einem lokalen WebSocket/HTTP-Server verbinden (Manifest-Permission `requiredPermissions.network.domains` inkl. `http://localhost:<port>`)
-- [ ] Verifizieren: `http://localhost` funktioniert unter macOS trotz grundsätzlicher HTTPS-Restriktion für `fetch` (adb-mcp legt das nahe, ist aber nicht offiziell dokumentiert)
-- [ ] Verifizieren: Marker lassen sich über die UXP-API tatsächlich in der aktiven Sequenz anlegen
-- [ ] Mindestversion in der Praxis bestätigen: offiziell **Premiere v25.6+, UDT v2.2, Manifest v5** – prüfen, ob das mit den tatsächlichen Zielumgebungen kompatibel ist (siehe offene Frage unten)
+**Code fertiggestellt, manueller Test steht noch aus:** siehe [`phase0-spike/`](phase0-spike/README.md) – ein lauffähiges UXP-Panel + lokaler Python-Server, direkt aus Adobes offiziellem Sample-Repo [`AdobeDocs/uxp-premiere-pro-samples`](https://github.com/AdobeDocs/uxp-premiere-pro-samples) abgeleitet. Der lokale Server-Teil ist bereits erfolgreich getestet (`curl`); der UXP-Panel-Teil erfordert eine laufende Premiere-Pro-GUI und damit einen manuellen Test durch dich – Details und Schritt-für-Schritt-Anleitung in `phase0-spike/README.md`.
+
+**Wichtige Erkenntnis aus der Umsetzung:** Da wir Batch-Sync statt Echtzeit-Push gewählt haben, genügt ein einfacher `fetch`-Request statt einer dauerhaften WebSocket-Verbindung (einfacher als das ursprünglich als Referenz herangezogene `adb-mcp`-Muster) – die untenstehenden Punkte sind entsprechend angepasst.
+
+- [x] Minimales UXP-Panel + lokaler Server bauen (`phase0-spike/`, Marker-API-Code direkt aus Adobes offiziellem Sample übernommen, nicht aus Sekundärquellen)
+- [ ] Manuell verifizieren (siehe `phase0-spike/README.md`): Panel kann sich per `fetch` zu `http://localhost:8642` verbinden – Adobes eigenes OAuth-Sample (`sample-panels/oauth-workflow-sample`) nutzt exakt dieses Muster (`fetch`/XHR zu `http://localhost:8000`, `requiredPermissions.network.domains`), das reduziert das Risiko gegenüber der bisherigen Einschätzung spürbar
+- [ ] Manuell verifizieren: Marker lassen sich über die UXP-API tatsächlich in der aktiven Sequenz anlegen (Button 1 im Spike-Panel)
+- [ ] Manuell verifizieren: Marker-Farbe setzbar (`createSetColorByIndexAction`, Button 2) und vollständige Farbliste auslesen (`ppro.Constants.MarkerColor`, Button 3) – liefert die echten `export_string`-Werte fürs Premiere-Color-Set
+- [ ] Mindestversion in der Praxis bestätigen: **widersprüchliche Angaben** – Adobes eigenes Sample-Manifest nennt `minVersion 25.1.0`/`25.2.0`, eine separate Quelle (Marker-Exporter-Plugin) nannte 25.6+. Gegen die tatsächlich installierte Premiere-Version prüfen (siehe offene Frage unten)
 - [ ] `.ccx`-Packaging + Installation einmal end-to-end durchspielen (UDT → "Package" → Doppelklick-Install über Creative Cloud Desktop)
 - [ ] Kurzes Entscheidungs-Memo: Architektur aus diesem Dokument bestätigen oder anpassen, bevor Phase 1 beginnt
 
@@ -88,8 +92,8 @@ Höchstes Risiko und zentrale Motivation des gesamten Vorhabens zuerst validiere
 
 ## Phase 2 – Premiere Pro UXP-Integration
 
-- [ ] Lokaler WebSocket/HTTP-Server in der Haupt-App (Marker-Events bereitstellen)
-- [ ] UXP-Companion-Panel (JS), verbindet sich zum lokalen Server, erstellt Marker in der aktiven Sequenz
+- [ ] Lokaler HTTP-Server in der Haupt-App (liefert ausstehende Marker auf Anfrage – kein WebSocket nötig, siehe Phase-0-Erkenntnis: Batch-Sync statt Echtzeit-Push macht eine dauerhafte Verbindung überflüssig; Prototyp in `phase0-spike/local-server/server.py`)
+- [ ] UXP-Companion-Panel (JS), holt sich per `fetch` die Marker vom lokalen Server, erstellt sie in der aktiven Sequenz (Prototyp in `phase0-spike/uxp-panel/`)
 - [ ] JSON-Protokoll zwischen App und Panel definieren (marker id, timecode-Offset, label, type, Farbe)
 - [ ] Marker-Farbe beim Export mitgeben: `export_string` des Color-Set-Eintrags an die UXP-Marker-API übergeben (genaues Premiere-Farb-Vokabular/API in Phase 0/2 gegen die reale UXP-Dokumentation verifizieren – im Color-Set-Konzept aktuell nur Platzhalter-Werte)
 - [ ] Batch-"Sync"-Button in der GUI (siehe Architektur-Entscheidung oben – kein automatischer Echtzeit-Push)
@@ -193,5 +197,6 @@ Diese Punkte sollten geklärt werden (bzw. sind bewusst nachrangig), bevor die j
 - [Distribution Overview](https://developer.adobe.com/premiere-pro/uxp/plugins/distribution/overview)
 - [Package a UXP plugin](https://developer.adobe.com/premiere-pro/uxp/plugins/distribution/package)
 - [Enterprise Distribution / UPIA](https://developer.adobe.com/premiere-pro/uxp/plugins/distribution/enterprise-distribution)
-- [mikechambers/adb-mcp – Referenzarchitektur für UXP↔lokaler-App-Kommunikation](https://github.com/mikechambers/adb-mcp)
+- [mikechambers/adb-mcp – ursprüngliche Referenzarchitektur für UXP↔lokaler-App-Kommunikation (WebSocket-basiert; für unseren Batch-Sync-Anwendungsfall inzwischen durch das einfachere `fetch`-Muster aus Adobes eigenem OAuth-Sample ersetzt)](https://github.com/mikechambers/adb-mcp)
+- [AdobeDocs/uxp-premiere-pro-samples – offizielle Adobe-Samples, Quelle für den Phase-0-Spike-Code (Marker-API, Netzwerk-Manifest, Panel-Grundstruktur)](https://github.com/AdobeDocs/uxp-premiere-pro-samples)
 - [Marker Exporter for Premiere Pro (Adobe Exchange) – Praxisbeleg für UXP-Marker-API, kompatibel ab Premiere 25.6](https://exchange.adobe.com/apps/cc/edd8fa87/marker-exporter-for-premiere-pro)
