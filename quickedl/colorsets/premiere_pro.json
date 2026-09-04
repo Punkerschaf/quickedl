@@ -1,0 +1,15 @@
+{
+  "id": "premiere_pro",
+  "name": "Adobe Premiere Pro",
+  "export_strings_verified": false,
+  "colors": [
+    { "id": "green",  "label": "Grün",    "display_color": "#4E9A51", "export_string": "GREEN" },
+    { "id": "red",    "label": "Rot",     "display_color": "#C0392B", "export_string": "RED" },
+    { "id": "purple", "label": "Violett", "display_color": "#8E44AD", "export_string": "PURPLE" },
+    { "id": "orange", "label": "Orange",  "display_color": "#E07B26", "export_string": "ORANGE" },
+    { "id": "yellow", "label": "Gelb",    "display_color": "#E5C22D", "export_string": "YELLOW" },
+    { "id": "white",  "label": "Weiß",    "display_color": "#ECF0F1", "export_string": "WHITE" },
+    { "id": "blue",   "label": "Blau",    "display_color": "#3B5EA8", "export_string": "BLUE" },
+    { "id": "cyan",   "label": "Cyan",    "display_color": "#28B5C4", "export_string": "CYAN" }
+  ]
+}

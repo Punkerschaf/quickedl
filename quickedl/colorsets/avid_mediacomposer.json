@@ -1,0 +1,15 @@
+{
+  "id": "avid_mediacomposer",
+  "name": "Avid Media Composer",
+  "export_strings_verified": false,
+  "colors": [
+    { "id": "red",     "label": "Rot",     "display_color": "#C0392B", "export_string": "red" },
+    { "id": "green",   "label": "Grün",    "display_color": "#4E9A51", "export_string": "green" },
+    { "id": "blue",    "label": "Blau",    "display_color": "#3B5EA8", "export_string": "blue" },
+    { "id": "cyan",    "label": "Cyan",    "display_color": "#28B5C4", "export_string": "cyan" },
+    { "id": "magenta", "label": "Magenta", "display_color": "#C0399F", "export_string": "magenta" },
+    { "id": "yellow",  "label": "Gelb",    "display_color": "#E5C22D", "export_string": "yellow" },
+    { "id": "black",   "label": "Schwarz", "display_color": "#2B2B2B", "export_string": "black" },
+    { "id": "white",   "label": "Weiß",    "display_color": "#ECF0F1", "export_string": "white" }
+  ]
+}

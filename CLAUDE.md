@@ -15,11 +15,39 @@ QuickEDL is a desktop tool used during live video productions to log a timestamp
 ```bash
 python -m venv .venv && source .venv/bin/activate  # or .venv\Scripts\activate on Windows
 pip install -r dependencies.txt
-python main.py                                       # run the app
-python build.py                                       # PyInstaller build via quickedl.spec -> dist/
+python -m quickedl                                    # run the v4 app (PySide6)
+python main.py                                        # run the v3 app (Tkinter, still functional)
+python build.py                                       # PyInstaller build via quickedl.spec -> dist/ (still v3)
 ```
 
-There is no automated test suite in this repository.
+There is no automated test suite in this repository. The v4 core and GUI were verified with throwaway
+scripts run under `QT_QPA_PLATFORM=offscreen`; a real test suite is still an open item.
+
+## v4 package layout (`quickedl/`)
+
+The rewrite lives in the `quickedl/` package alongside the untouched v3 files, so both run in parallel
+until v4 reaches feature parity.
+
+- `quickedl/core/` — no GUI imports at all. `project.py` (the `.qedl` model), `models.py` (Marker,
+  MarkerLabel, PlaylistEntry), `colorset.py`, `migration.py` (v3 folder → `.qedl`), `export_txt.py`,
+  `registry.py` (known-projects list backing the project manager), `settings.py`, `paths.py`.
+- `quickedl/gui/` — `main_window.py`, `project_manager.py`, `dialogs.py`, `widgets.py`, `style.py`.
+- `quickedl/colorsets/*.json` — bundled marker color palettes; users may add their own to
+  `~/quickedl/v4/colorsets/`.
+
+Key invariants:
+- **A v4 project is one JSON file.** Every mutation writes the whole file through a temp file plus
+  `os.replace()` (`Project.save()`), so a crash mid-write cannot corrupt or truncate an existing project.
+  Marker-adding methods persist immediately by default; only bulk operations pass `save=False`.
+- **Marker colors are copied from the marker label at creation time** and never rewritten afterwards.
+- **Hotkeys go through an application-wide event filter** (`MainWindow.eventFilter`), not `keyPressEvent`:
+  focused buttons and text fields consume key presses before the window would ever see them. Action
+  buttons therefore use `Qt.NoFocus` (otherwise Space activates the focused button instead of opening the
+  popup marker). `MainWindow.hotkey_state()` is the single guard — no project, an open modal dialog, an
+  inactive window, or focus in a text input disables hotkeys — and its result is always displayed in the
+  status bar indicator.
+- **v4 user data lives in `~/quickedl/v4/`**, deliberately separate from v3's `~/quickedl/`, so a v3
+  install still in productive use cannot be damaged. Promote it before release (see `paths.py`).
 
 ## Architecture (current v3.x codebase)
 

@@ -1,3 +1,7 @@
+# --- v4 (quickedl/ package, "python -m quickedl") ---
+PySide6>=6.11
+
+# --- v3 (main.py) -- still shipped until the rewrite reaches feature parity ---
 ttkbootstrap<2.0.0  # held back deliberately: v2 is a breaking major release and this GUI is being replaced in the v4.0.0 rewrite (see roadmap.md) rather than migrated
 pyyaml>=6.0.3
 pyinstaller>=6.22

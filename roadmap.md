@@ -50,40 +50,50 @@ Höchstes Risiko und zentrale Motivation des gesamten Vorhabens zuerst validiere
 
 ## Phase 1 – Kern-Rewrite (Feature-Parität, neues GUI, noch ohne Premiere/Resolve)
 
+Umgesetzt im Package `quickedl/` (parallel zum unangetasteten v3-Code, Start mit `python -m quickedl`). Kern und GUI sind mit Wegwerf-Skripten headless bzw. offscreen verifiziert – ein echtes Test-Setup fehlt noch (siehe offene Punkte am Ende der Phase).
+
 ### Projekt-Datei-Format & Speicherung
-- [ ] Neues Projekt-Format: **eine Datei pro Projekt** (JSON, Vorschlag Endung `.qedl`) statt Ordner mit drei Textdateien – kombiniert Marker-Liste, Playlist, Markerlabels und Projekt-Info in einer Struktur (Details siehe [Feature-Konzept: Projekt-Datei-Format](#feature-konzept-projekt-datei-format))
-- [ ] Sicheres Schreiben: bei jeder Änderung **atomarer Rewrite** (Temp-Datei + `os.replace`), nie direktes In-Place-Überschreiben – ersetzt die ursprünglich für JSON-Lines vorgesehene Append-only-Strategie, behält aber deren Crash-Safety-Eigenschaft
-- [ ] Neue Projekt-Felder: `production_date`, `notes` (Freitext), `color_set` (Referenz auf gewähltes Color-Set)
-- [ ] Behebt nebenbei den bestehenden Mitternachts-Bug (aktuell nur `HH:MM:SS` ohne Datum pro Marker – neues Format nutzt volle ISO8601-Zeitstempel)
-- [ ] TXT-Export-Funktion (ersetzt die bisherige Klartext-Datei als Kompatibilitäts-/Weitergabe-Format; Zeilenformat wie v3: `HH:MM:SS - Label`)
-- [ ] Migrations-Importer für bestehende v3.x-Projektordner (`_EDL.txt`/`_MARKERLABEL.txt`/`_PLAYLIST.txt` → neues Einzeldatei-Format; Parsing-Logik aus `export_jsx.py::get_edl_markers` / `main.py` wiederverwenden), aufrufbar aus dem Projekt-Manager
+- [x] Neues Projekt-Format: **eine Datei pro Projekt** (JSON, Endung `.qedl`) statt Ordner mit drei Textdateien – kombiniert Marker-Liste, Playlist, Markerlabels und Projekt-Info in einer Struktur (`quickedl/core/project.py`, Details siehe [Feature-Konzept](#feature-konzept-projekt-datei-format))
+- [x] Sicheres Schreiben: bei jeder Änderung **atomarer Rewrite** (Temp-Datei + `fsync` + `os.replace`), nie direktes In-Place-Überschreiben – ersetzt die ursprünglich für JSON-Lines vorgesehene Append-only-Strategie, behält aber deren Crash-Safety-Eigenschaft
+- [x] Neue Projekt-Felder: `production_date`, `notes` (Freitext), `color_set`
+- [x] Mitternachts-Bug behoben: Marker tragen volle ISO8601-Zeitstempel statt nur `HH:MM:SS`
+- [x] TXT-Export-Funktion im v3-Zeilenformat inkl. 20-Zeichen-Trennlinie (`quickedl/core/export_txt.py`)
+- [x] Migrations-Importer für v3.x-Projektordner (`quickedl/core/migration.py`), aufrufbar aus dem Projekt-Manager. Rekonstruiert zusätzlich die fehlenden Datumsangaben aus dem Änderungsdatum der EDL-Datei – inklusive Rückwärts-Rollover für Shows über Mitternacht
 
 ### Projekt-Manager (neues Fenster)
-- [ ] Liste aller bekannten Projekte (Registry ähnlich der heutigen `RecentProjectsManager`-Logik, aber als vollwertig verwaltbare Liste statt nur "zuletzt verwendet")
-- [ ] Aktionen: Neues Projekt erstellen, Öffnen, Umbenennen (Projektname + Dateiname synchron), Löschen (mit Rückfrage; Unterscheidung "aus Liste entfernen" vs. "Datei endgültig löschen")
-- [ ] Import/Konvertierung alter v3.x-Projekte (siehe oben)
-- [ ] Anzeige der neuen Metadaten (Produktionsdatum, Notizen) in Liste/Detailansicht
+- [x] Liste aller bekannten Projekte (Registry in `quickedl/core/registry.py`); fehlende Dateien werden sichtbar als "nicht gefunden" markiert statt still zu verschwinden
+- [x] Aktionen: Neues Projekt, Öffnen, Vorhandene Datei hinzufügen, Umbenennen (Projektname + Dateiname synchron), "Aus Liste entfernen" vs. "Datei löschen" (letzteres mit Rückfrage)
+- [x] Import/Konvertierung alter v3.x-Projekte
+- [x] Anzeige von Produktionsdatum und Änderungsdatum in der Liste
 
 ### Color-Sets & Marker-Farben
-- [ ] Color-Set-Datenformat definieren, als separate Dateien (Details siehe [Feature-Konzept: Color-Sets](#feature-konzept-color-sets))
-- [ ] Eingebaute Color-Sets: Premiere Pro, DaVinci Resolve, Avid Media Composer (nur Metadaten, keine aktive Avid-Anbindung), jeweils als mitgelieferte Ressourcen-Datei
-- [ ] Custom-Color-Sets: nutzerdefiniert, als Dateien in `~/quickedl/colorsets/`; für den v4.0.0-Erstrelease reicht dateibasiertes Anlegen/Bearbeiten – ein grafischer Color-Set-Editor ist eine mögliche spätere Ausbaustufe
-- [ ] Color-Set wird pro Projekt bei Erstellung festgelegt (Annahme: kein Wechsel danach, da bestehende Marker-Farben sonst inkonsistent zu ihrem Export-String würden – zur Prüfung/Anpassung beim Review)
-- [ ] Markerlabels bekommen je eine wählbare Farbe aus dem gewählten Color-Set (UI: Farbauswahl neben jedem Label-Eingabefeld)
-- [ ] Marker erben die Farbe ihres Labels **zum Erstellungszeitpunkt** fest (spätere Label-Farbänderungen wirken nicht rückwirkend auf bereits erstellte Marker)
-- [ ] Projekt-Settings: eigene Default-Farbe für Popup-Marker und für Playlist-Marker (projektweit einstellbar, nicht pro Playlist-Eintrag einzeln)
+- [x] Color-Set-Datenformat als separate Dateien (`quickedl/colorsets/*.json`)
+- [x] Eingebaute Color-Sets: Premiere Pro, DaVinci Resolve, Avid Media Composer
+- [x] Custom-Color-Sets aus `~/quickedl/v4/colorsets/` werden geladen und überschreiben gleichnamige eingebaute Sets. Grafischer Color-Set-Editor bleibt spätere Ausbaustufe
+- [x] Color-Set wird pro Projekt bei Erstellung festgelegt und ist danach nicht mehr wechselbar (in den Projekt-Einstellungen nur lesend angezeigt)
+- [x] Markerlabels haben je eine Farbe aus dem Color-Set (Farbauswahl-Button neben jedem Label-Feld)
+- [x] Marker erben die Label-Farbe **zum Erstellungszeitpunkt** fest; spätere Label-Farbänderungen wirken nicht rückwirkend
+- [x] Projekt-Settings: eigene Default-Farbe für Popup- und Playlist-Marker
+- [ ] **Offen:** die `export_string`-Werte aller drei Sets sind unverifizierte Platzhalter (im JSON per `"export_strings_verified": false` markiert). Echte Werte kommen aus dem Phase-0-Test (Button 3 liest `ppro.Constants.MarkerColor` aus)
 
 ### GUI-Neuaufbau (PySide6/Qt)
-- [ ] Feature-Parität zum aktuellen Funktionsumfang:
-  - [ ] Projekt-Verwaltung über neuen Projekt-Manager (s.o.) statt bisherigem Ordner-Dialog
-  - [ ] Marker-Buttons mit editierbaren Labels + Hotkeys 1–9 (inkl. Farbauswahl je Label)
-  - [ ] Separator (Taste 0)
-  - [ ] Popup-Marker mit Freitext (Space)
-  - [ ] Playlist-Marker (P, Pfeiltasten-Navigation)
-  - [ ] Letzten Marker löschen (Backspace, standardmäßig deaktiviert)
-  - [ ] Auto-Save
-  - [ ] Settings-Fenster (YAML-Speicherort ggf. beibehalten: `~/quickedl/`)
-- [ ] Modernes visuelles Redesign (Look & Feel, Theming über Qt-Stylesheets/qt-material o.ä.); Marker-Farben visuell in der Marker-Liste darstellen
+- [x] Feature-Parität zum bisherigen Funktionsumfang:
+  - [x] Projekt-Verwaltung über den neuen Projekt-Manager
+  - [x] Schmale nummerierte Marker-Buttons (1–9) mit separatem Label-Feld und Farbauswahl
+  - [x] Hotkeys 1–9, 0, Leertaste, P, ←/→, Backspace über einen anwendungsweiten Event-Filter (`keyPressEvent` reicht nicht: fokussierte Buttons und Textfelder fangen die Tasten vorher ab). Alle Aktions-Buttons sind auf `Qt.NoFocus` gesetzt, damit die Leertaste nicht den fokussierten Button auslöst
+  - [x] Hotkey-Indikator in der Statusleiste (grün „Hotkeys aktiv" / grau mit Grund: kein Projekt, Dialog offen, Fenster nicht aktiv, Texteingabe) – analog zum Indikator der v3-GUI. Escape verlässt ein Label-Feld und aktiviert die Hotkeys wieder
+  - [x] Trennlinie (Taste 0)
+  - [x] Popup-Marker mit Freitext (Leertaste) – Zeitstempel wird beim Öffnen des Dialogs genommen, nicht beim Bestätigen
+  - [x] Playlist-Marker (P) mit Auto-Advance und Pfeiltasten-Navigation
+  - [x] Letzten Marker löschen (Backspace, standardmäßig deaktiviert)
+  - [x] Auto-Save entfällt als eigenes Feature: jede Änderung wird sofort atomar geschrieben
+  - [x] Einstellungs-Fenster (YAML unter `~/quickedl/v4/`)
+- [x] Modernes visuelles Redesign (dunkles, kompaktes Qt-Stylesheet, `quickedl/gui/style.py`); Marker-Farben werden in der Marker-Liste als Farbstreifen dargestellt
+
+### Offene Punkte dieser Phase
+- [ ] Echtes Test-Setup statt Wegwerf-Skripten (der Kern ist rein logisch und gut testbar – pytest wäre naheliegend)
+- [ ] Manueller Praxistest der GUI durch dich (automatisiert bisher nur offscreen geprüft; die Offscreen-Plattform kennt keine echte Fenster-Aktivierung, daher ist der Indikator-Zustand „Fenster nicht aktiv" nur manuell prüfbar)
+- [ ] Vor Release: v4-Benutzerdaten von `~/quickedl/v4/` nach `~/quickedl/` hochziehen und v3-Dateien entfernen
 
 ### Packaging
 - [ ] CI/Packaging für PySide6 neu aufsetzen (bestehendes `quickedl.spec`/`build.py`-Muster als Ausgangspunkt, PySide6-spezifische PyInstaller-Hooks berücksichtigen)

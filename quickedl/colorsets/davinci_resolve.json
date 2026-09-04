@@ -1,0 +1,23 @@
+{
+  "id": "davinci_resolve",
+  "name": "DaVinci Resolve",
+  "export_strings_verified": false,
+  "colors": [
+    { "id": "blue",     "label": "Blau",     "display_color": "#3B5EA8", "export_string": "Blue" },
+    { "id": "cyan",     "label": "Cyan",     "display_color": "#28B5C4", "export_string": "Cyan" },
+    { "id": "green",    "label": "Grün",     "display_color": "#4E9A51", "export_string": "Green" },
+    { "id": "yellow",   "label": "Gelb",     "display_color": "#E5C22D", "export_string": "Yellow" },
+    { "id": "red",      "label": "Rot",      "display_color": "#C0392B", "export_string": "Red" },
+    { "id": "pink",     "label": "Pink",     "display_color": "#E888A8", "export_string": "Pink" },
+    { "id": "purple",   "label": "Violett",  "display_color": "#8E44AD", "export_string": "Purple" },
+    { "id": "fuchsia",  "label": "Fuchsia",  "display_color": "#C0399F", "export_string": "Fuchsia" },
+    { "id": "rose",     "label": "Rosé",     "display_color": "#F0B8C8", "export_string": "Rose" },
+    { "id": "lavender", "label": "Lavendel", "display_color": "#B9A5DE", "export_string": "Lavender" },
+    { "id": "sky",      "label": "Himmel",   "display_color": "#8FC7E8", "export_string": "Sky" },
+    { "id": "mint",     "label": "Mint",     "display_color": "#9DDCB8", "export_string": "Mint" },
+    { "id": "lemon",    "label": "Zitrone",  "display_color": "#F2E68A", "export_string": "Lemon" },
+    { "id": "sand",     "label": "Sand",     "display_color": "#D9C79A", "export_string": "Sand" },
+    { "id": "cocoa",    "label": "Kakao",    "display_color": "#8C6B52", "export_string": "Cocoa" },
+    { "id": "cream",    "label": "Creme",    "display_color": "#F0E6D2", "export_string": "Cream" }
+  ]
+}
